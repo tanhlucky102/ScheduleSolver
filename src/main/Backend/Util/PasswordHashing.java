@@ -2,13 +2,11 @@ package src.main.Backend.Util;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+// Hash password để bảo vệ thông tin trc khi lưu
 public final class PasswordHashing {
-
     private PasswordHashing() {
-        // Không cho tạo đối tượng PasswordHashing
     }
 
-    // Hash mật khẩu trước khi lưu
     public static String hashPassword(String password) {
         if (password == null || password.isEmpty()) {
             throw new IllegalArgumentException(
@@ -20,7 +18,6 @@ public final class PasswordHashing {
                 BCrypt.gensalt(12));
     }
 
-    // Kiểm tra mật khẩu khi đăng nhập
     public static boolean verifyPassword(
             String password,
             String passwordHash) {
