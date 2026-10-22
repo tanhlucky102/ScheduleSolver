@@ -1,1 +1,13 @@
 .vscode/
+target/
+out/
+bin/
+data/
+*.class
+*.db
+*.mv.db
+*.trace.db
+.idea/
+*.iml
+.DS_Store
+__MACOSX/
