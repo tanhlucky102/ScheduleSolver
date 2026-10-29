@@ -32,7 +32,7 @@ public class ScheduleService {
     public Problem buildProblem(Workspace workspace, List<Assignment> assignments) {
         Convention convention = new Convention(workspace.getRules());
         return new Problem(workspace.getPlan(), workspace.getTeachers(), convention.candidateMap(workspace.getPlan()),
-                workspace.getBusySlots(), lockedOf(assignments));
+                workspace.getAllBusySlots(), lockedOf(assignments));
     }
 
     public List<Assignment> toAssignments(Problem problem, Solution solution) {

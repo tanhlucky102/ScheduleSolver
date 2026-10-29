@@ -3,6 +3,7 @@ package vn.edu.fit.schedulesolver.service;
 import java.util.List;
 import vn.edu.fit.schedulesolver.model.Assignment;
 import vn.edu.fit.schedulesolver.model.BusySlot;
+import vn.edu.fit.schedulesolver.model.ExternalSession;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.Teacher;
 import vn.edu.fit.schedulesolver.model.TeachingRule;
@@ -24,6 +25,7 @@ public final class Sorting {
         sortAssignments(workspace.getDraft());
         sortAssignments(workspace.getPublished());
         sortBusySlots(workspace.getBusySlots());
+        sortExternalSessions(workspace.getExternalSessions());
     }
 
     public static void sortTeachers(List<Teacher> teachers) {
@@ -46,6 +48,19 @@ public final class Sorting {
 
     public static void sortAssignments(List<Assignment> assignments) {
         assignments.sort((a, b) -> a.getSessionId().compareTo(b.getSessionId()));
+    }
+
+    public static void sortExternalSessions(List<ExternalSession> sessions) {
+        sessions.sort((a, b) -> {
+            int byTeacher = a.getTeacherCode().compareToIgnoreCase(b.getTeacherCode());
+            if (byTeacher != 0) {
+                return byTeacher;
+            }
+            if (a.getDay() != b.getDay()) {
+                return a.getDay() - b.getDay();
+            }
+            return a.getStartMinute() - b.getStartMinute();
+        });
     }
 
     public static void sortBusySlots(List<BusySlot> slots) {
