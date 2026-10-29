@@ -42,6 +42,7 @@ import vn.edu.fit.schedulesolver.io.ExcelExporter;
 import vn.edu.fit.schedulesolver.io.TimetableTemplate;
 import vn.edu.fit.schedulesolver.model.Assignment;
 import vn.edu.fit.schedulesolver.model.BusySlot;
+import vn.edu.fit.schedulesolver.model.ExternalSession;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.Program;
 import vn.edu.fit.schedulesolver.model.SessionKind;
@@ -107,13 +108,15 @@ public class StaffPanel extends BasePanel {
     private final TableRowSorter<DefaultTableModel> draftSorter = new TableRowSorter<>(draftModel);
     private boolean updatingDraftFilters;
     private final JTextArea reportArea = new JTextArea();
-    private final DefaultTableModel busyModel = readOnlyModel("Giảng viên", "Thứ", "Ca", "Nơi bận");
+    private final DefaultTableModel busyModel = readOnlyModel("Giảng viên", "Thứ", "Giờ", "Ca của khoa bị chặn",
+            "Nơi bận", "Loại");
     private final JTable busyTable = createTable(busyModel);
     private final JTextField busyTeacherSearchField = new JTextField(14);
     private final JComboBox<String> busyDayFilter = new JComboBox<>();
     private final JComboBox<String> busySlotFilter = new JComboBox<>();
     private final TableRowSorter<DefaultTableModel> busySorter = new TableRowSorter<>(busyModel);
-    private final List<BusySlot> shownBusySlots = new ArrayList<>();
+    // dòng i của bảng lịch bận chặn những ca nào của khoa (lịch trường khác có thể lệch giờ nên lưu theo mask)
+    private final List<Integer> shownBusyMasks = new ArrayList<>();
     private boolean updatingBusyFilters;
 
     private final PlanViewTab planViewTab;
@@ -133,7 +136,7 @@ public class StaffPanel extends BasePanel {
         reportArea.setEditable(false);
         reportArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         tabs.addTab("Đánh giá (Verify + metrics)", new JScrollPane(reportArea));
-        tabs.addTab("Lịch bận giảng viên chia sẻ", createBusyTab());
+        tabs.addTab("Lịch bận GV chia sẻ (gồm giờ dạy trường khác)", createBusyTab());
         tabs.setMinimumSize(new Dimension(TAB_CONTENT_MIN_WIDTH, 0));
         JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createConfigPanel(), tabs);
         content.setResizeWeight(0.0);
@@ -542,12 +545,21 @@ public class StaffPanel extends BasePanel {
         refreshDraftDropdowns();
         planViewTab.refresh();
         busyModel.setRowCount(0);
-        shownBusySlots.clear();
+        shownBusyMasks.clear();
+        // giáo vụ không được xem ghi chú riêng, môn, lớp của giảng viên ở nơi khác
         for (BusySlot slot : workspace().getBusySlots()) {
-            // giáo vụ không được xem ghi chú riêng của giảng viên
-            shownBusySlots.add(slot);
-            busyModel.addRow(new Object[] { slot.getTeacherCode(), TimeSlots.dayName(slot.getDay()),
-                    "Ca " + (slot.getFromSlot() + 1) + " - " + (slot.getToSlot() + 1), slot.getPlace() });
+            String time = TimeSlots.formatTime(TimeSlots.startMinute(slot.getFromSlot())) + " - "
+                    + TimeSlots.formatTime(TimeSlots.endMinute(slot.getToSlot()));
+            String kind = slot.getPrivateNote().startsWith("[Giả lập") ? "Lịch bận (giả lập)" : "Lịch bận";
+            shownBusyMasks.add(slot.getMask());
+            busyModel.addRow(new Object[] {slot.getTeacherCode(), TimeSlots.dayName(slot.getDay()), time,
+                TimeSlots.describeMask(slot.getMask()), slot.getPlace(), kind});
+        }
+        for (ExternalSession session : workspace().getExternalSessions()) {
+            String kind = session.isAssumed() ? "Dạy ở trường khác (giả định)" : "Dạy ở trường khác";
+            shownBusyMasks.add(session.getMask());
+            busyModel.addRow(new Object[] {session.getTeacherCode(), TimeSlots.dayName(session.getDay()),
+                session.getTimeText(), TimeSlots.describeMask(session.getMask()), session.getSchool(), kind});
         }
         refreshBusyDropdowns();
         refreshBusyFilter();
@@ -589,14 +601,15 @@ public class StaffPanel extends BasePanel {
         busySorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                BusySlot slot = shownBusySlots.get(entry.getIdentifier());
-                Teacher teacher = workspace().findTeacher(slot.getTeacherCode());
-                boolean matchesTeacher = slot.getTeacherCode().toLowerCase(Locale.ROOT).contains(teacherQuery)
+                String teacherCode = entry.getStringValue(0);
+                Teacher teacher = workspace().findTeacher(teacherCode);
+                boolean matchesTeacher = teacherCode.toLowerCase(Locale.ROOT).contains(teacherQuery)
                         || (teacher != null
                                 && teacher.getFullName().toLowerCase(Locale.ROOT).contains(teacherQuery));
-                boolean matchesDay = day == null || day.equals(ALL) || day.equals(TimeSlots.dayName(slot.getDay()));
-                boolean matchesSlot = selectedSlot < 0
-                        || selectedSlot >= slot.getFromSlot() && selectedSlot <= slot.getToSlot();
+                boolean matchesDay = day == null || day.equals(ALL) || day.equals(entry.getStringValue(1));
+                // lọc theo ca: dòng nào chặn ca đang chọn thì hiện, kể cả giờ dạy trường khác lệch giờ với khoa
+                int mask = shownBusyMasks.get(entry.getIdentifier());
+                boolean matchesSlot = selectedSlot < 0 || (mask & (1 << selectedSlot)) != 0;
                 return matchesTeacher && matchesDay && matchesSlot;
             }
         });
@@ -656,7 +669,7 @@ public class StaffPanel extends BasePanel {
         }
         List<BusySlot> busy = new ArrayList<>();
         if (teacher != null && !teacher.equals(ALL)) {
-            busy = workspace().getBusySlotsOf(teacher);
+            busy = workspace().getAllBusySlotsOf(teacher);
         }
         String empty = workspace().getDraft().isEmpty() ? "Chưa có bản nháp. Bấm \"Xếp lịch\" để tạo."
                 : "Không có buổi nào khớp bộ lọc.";
