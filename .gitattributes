@@ -1,0 +1,6 @@
+# file dự án .ssp là file nhị phân, git không được đổi ký tự xuống dòng
+*.ssp binary
+*.xlsx binary
+*.png binary
+*.docx binary
+*.pdf binary
