@@ -87,6 +87,15 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Chạy trực tiếp ứng dụng: mvn exec:java -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <mainClass>vn.edu.fit.schedulesolver.App</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
