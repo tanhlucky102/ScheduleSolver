@@ -2,21 +2,32 @@ package vn.edu.fit.schedulesolver.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import vn.edu.fit.schedulesolver.model.Workspace;
 import vn.edu.fit.schedulesolver.service.Sorting;
 
-/** Lớp cha của màn hình 3 vai trò, MainFrame chỉ cần gọi refresh() cho từng màn hình (đa hình). */
+/**
+ * Lớp cha của màn hình 3 vai trò, MainFrame chỉ cần gọi refresh() cho từng màn
+ * hình (đa hình).
+ */
 public abstract class BasePanel extends JPanel {
     protected final MainFrame frame;
 
@@ -54,6 +65,41 @@ public abstract class BasePanel extends JPanel {
         JTable table = new JTable(model);
         Theme.styleTable(table);
         return table;
+    }
+
+    protected static JPanel createSearchPanel(String label, JTextField field) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        panel.add(new JLabel(label));
+        panel.add(field);
+        return panel;
+    }
+
+    protected static void addTableSearch(JTextField field, JTable table) {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
+        table.setRowSorter(sorter);
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            private void updateFilter() {
+                String query = field.getText().trim();
+                sorter.setRowFilter(query.isEmpty()
+                        ? null
+                        : RowFilter.regexFilter("(?iu)" + Pattern.quote(query)));
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                updateFilter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                updateFilter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                updateFilter();
+            }
+        });
     }
 
     /** Đổi về chỉ số trong model vì bảng có thể đã được sắp xếp lại. */
