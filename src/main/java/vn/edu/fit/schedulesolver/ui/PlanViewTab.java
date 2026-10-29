@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.Program;
@@ -70,7 +71,10 @@ public class PlanViewTab extends BasePanel {
         kindFilter.addActionListener(e -> refreshPlanTable());
 
         planPanel.add(planFilterRow, BorderLayout.NORTH);
-        planPanel.add(new JScrollPane(createTable(planModel)), BorderLayout.CENTER);
+        // độ rộng cột giống bảng kế hoạch của trưởng khoa, để mã buổi và tên môn không bị cắt
+        JTable planTable = createTable(planModel);
+        setColumnWidths(planTable, 160, 90, 190, 110, 50, 55, 60, 55, 50, 220);
+        planPanel.add(new JScrollPane(planTable), BorderLayout.CENTER);
         subTabs.addTab("Danh sách buổi", planPanel);
 
         // Sub-tab 2: Danh sách giảng viên
@@ -87,7 +91,9 @@ public class PlanViewTab extends BasePanel {
         ruleProgramFilter.addActionListener(e -> refreshRulesTable());
 
         rulePanel.add(ruleFilterRow, BorderLayout.NORTH);
-        rulePanel.add(new JScrollPane(createTable(ruleModel)), BorderLayout.CENTER);
+        JTable ruleTable = createTable(ruleModel);
+        setColumnWidths(ruleTable, 110, 100, 220, 120, 70, 70);
+        rulePanel.add(new JScrollPane(ruleTable), BorderLayout.CENTER);
         subTabs.addTab("Quy ước phân công", rulePanel);
 
         // Thẻ trạng thái kế hoạch từ trưởng khoa & kiểm tra quy ước
