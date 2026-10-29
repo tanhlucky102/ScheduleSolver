@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -62,7 +63,13 @@ public abstract class BasePanel extends JPanel {
     }
 
     protected static JTable createTable(TableModel model) {
-        JTable table = new JTable(model);
+        JTable table = new JTable(model) {
+            // đủ chỗ thì giãn các cột cho kín khung, thiếu chỗ thì cuộn ngang thay vì bóp cột làm mất chữ
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return getParent() instanceof JViewport && getPreferredSize().width < getParent().getWidth();
+            }
+        };
         Theme.styleTable(table);
         return table;
     }
@@ -100,6 +107,13 @@ public abstract class BasePanel extends JPanel {
                 updateFilter();
             }
         });
+    }
+
+    /** Độ rộng mong muốn của từng cột; bảng vẫn giãn theo cửa sổ nhưng chia theo tỉ lệ này thay vì chia đều. */
+    protected static void setColumnWidths(JTable table, int... widths) {
+        for (int i = 0; i < widths.length && i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+        }
     }
 
     /** Đổi về chỉ số trong model vì bảng có thể đã được sắp xếp lại. */

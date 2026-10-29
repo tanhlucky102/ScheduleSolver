@@ -4,8 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -61,8 +64,15 @@ public class MainFrame extends JFrame {
     public MainFrame(AuthService auth) {
         super("ScheduleSolver - Xếp thời khóa biểu khoa CNTT");
         this.auth = auth;
-        setSize(1380, 860);
+        // màn nhỏ (laptop 1366x768, hoặc Windows phóng to chữ 125-150%) thì thu cửa sổ cho vừa,
+        // không để phần dưới cửa sổ nằm ngoài màn hình
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        setSize(Math.min(1380, screen.width), Math.min(860, screen.height));
+        setMinimumSize(new Dimension(1024, 640));
         setLocationRelativeTo(null);
+        if (screen.width < 1380 || screen.height < 860) {
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override

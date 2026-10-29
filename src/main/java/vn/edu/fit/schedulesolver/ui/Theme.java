@@ -170,6 +170,8 @@ public final class Theme {
                 setBackground(row % 2 == 0 ? CARD : STRIPE);
                 setForeground(TEXT);
             }
+            // ô hẹp bị cắt chữ thì rê chuột vào vẫn đọc được đủ
+            setToolTipText(value == null || value.toString().isEmpty() ? null : value.toString());
             setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
             return this;
         }
