@@ -1,12 +1,16 @@
 package vn.edu.fit.schedulesolver.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -14,21 +18,27 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.RowFilter;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import vn.edu.fit.schedulesolver.io.DataFiles;
 import vn.edu.fit.schedulesolver.io.GridExcelReader;
 import vn.edu.fit.schedulesolver.io.PlanExcelReader;
 import vn.edu.fit.schedulesolver.io.PlanRow;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.Program;
+import vn.edu.fit.schedulesolver.model.SessionKind;
 import vn.edu.fit.schedulesolver.model.Teacher;
 import vn.edu.fit.schedulesolver.model.TeachingRule;
 import vn.edu.fit.schedulesolver.service.Convention;
@@ -40,11 +50,13 @@ import vn.edu.fit.schedulesolver.service.PlanBuilder;
 /** Màn hình của trưởng khoa: giảng viên, quy ước phân công và kế hoạch mở lớp. */
 public class DeanPanel extends BasePanel {
     private static final String ALL_PROGRAMS = "Tất cả chương trình";
+    private static final String ALL_FILTER_VALUES = "Tất cả";
 
     // tab Giảng viên
     private final DefaultTableModel teacherModel =
             readOnlyModel("Mã GV", "Họ tên", "Tối đa ca/ngày", "Tối đa ca/tuần");
     private final JTable teacherTable = createTable(teacherModel);
+    private final JTextField teacherSearchField = new JTextField(18);
     private final JTextField codeField = new JTextField(8);
     private final JTextField nameField = new JTextField(16);
     private final JSpinner maxDaySpinner = new JSpinner(new SpinnerNumberModel(4, 1, 6, 1));
@@ -52,6 +64,9 @@ public class DeanPanel extends BasePanel {
 
     // tab Quy ước phân công
     private final JComboBox<String> programFilter = new JComboBox<>();
+    private final JTextField courseSearchField = new JTextField(12);
+    private final JTextField ruleCourseNameSearchField = new JTextField(12);
+    private final JTextField ruleTeacherSearchField = new JTextField(12);
     private final RuleTableModel ruleModel = new RuleTableModel();
     private final JTable ruleTable = createTable(ruleModel);
     private final JComboBox<String> ruleCourseBox = new JComboBox<>();
@@ -63,6 +78,15 @@ public class DeanPanel extends BasePanel {
     // tab Kế hoạch mở lớp
     private final DefaultTableModel planModel = readOnlyModel("Mã buổi", "Mã môn", "Tên môn", "Chương trình",
             "Khóa", "Nhóm", "Loại", "Số SV", "Số ca", "GV phụ trách");
+    private final JTable planTable = createTable(planModel);
+    private final JTextField planCourseCodeSearch = new JTextField(12);
+    private final JTextField planCourseNameSearch = new JTextField(12);
+    private final JTextField planTeacherSearch = new JTextField(12);
+    private final JComboBox<String> planProgramFilter = new JComboBox<>();
+    private final JComboBox<String> planCohortFilter = new JComboBox<>();
+    private final JComboBox<String> planKindFilter = new JComboBox<>();
+    private final TableRowSorter<DefaultTableModel> planSorter = new TableRowSorter<>(planModel);
+    private boolean updatingPlanFilters;
     private final JLabel planStatus = new JLabel();
     private final JTextArea checkArea = new JTextArea(5, 60);
 
@@ -78,7 +102,11 @@ public class DeanPanel extends BasePanel {
     // Tab 1: Giảng viên
     private JPanel createTeacherTab() {
         JPanel panel = new JPanel(new BorderLayout(6, 6));
-        panel.add(new JScrollPane(teacherTable), BorderLayout.CENTER);
+        JPanel tablePanel = new JPanel(new BorderLayout(4, 4));
+        tablePanel.add(createSearchPanel("Tìm giảng viên:", teacherSearchField), BorderLayout.NORTH);
+        tablePanel.add(new JScrollPane(teacherTable), BorderLayout.CENTER);
+        panel.add(tablePanel, BorderLayout.CENTER);
+        addTableSearch(teacherSearchField, teacherTable);
         teacherTable.getSelectionModel().addListSelectionListener(e -> showSelectedTeacher());
 
         JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
@@ -190,7 +218,16 @@ public class DeanPanel extends BasePanel {
         }
         programFilter.addActionListener(e -> refreshRules());
         filterRow.add(programFilter);
+        filterRow.add(new JLabel("Tìm mã môn:"));
+        filterRow.add(courseSearchField);
+        filterRow.add(new JLabel("Tìm tên môn:"));
+        filterRow.add(ruleCourseNameSearchField);
+        filterRow.add(new JLabel("Tìm giảng viên:"));
+        filterRow.add(ruleTeacherSearchField);
         filterRow.add(ruleCount);
+        addRuleSearchListener(courseSearchField);
+        addRuleSearchListener(ruleCourseNameSearchField);
+        addRuleSearchListener(ruleTeacherSearchField);
         top.add(filterRow, BorderLayout.SOUTH);
         panel.add(top, BorderLayout.NORTH);
 
@@ -216,16 +253,44 @@ public class DeanPanel extends BasePanel {
 
     private void refreshRules() {
         String selected = (String) programFilter.getSelectedItem();
+        String courseSearch = courseSearchField.getText().trim().toLowerCase(Locale.ROOT);
+        String courseNameSearch = ruleCourseNameSearchField.getText().trim().toLowerCase(Locale.ROOT);
+        String teacherSearch = ruleTeacherSearchField.getText().trim().toLowerCase(Locale.ROOT);
         List<TeachingRule> shown = new ArrayList<>();
         for (TeachingRule rule : workspace().getRules()) {
             Program program = rule.getProgram();
+            Teacher teacher = workspace().findTeacher(rule.getTeacherCode());
             boolean all = selected == null || selected.equals(ALL_PROGRAMS);
-            if (all || (program != null && program.getLabel().equals(selected))) {
+            boolean matchesProgram = all || (program != null && program.getLabel().equals(selected));
+            boolean matchesCourse = rule.getCourseCode().toLowerCase(Locale.ROOT).contains(courseSearch);
+            boolean matchesCourseName = rule.getCourseName().toLowerCase(Locale.ROOT).contains(courseNameSearch);
+            boolean matchesTeacher = rule.getTeacherCode().toLowerCase(Locale.ROOT).contains(teacherSearch)
+                    || (teacher != null && teacher.getFullName().toLowerCase(Locale.ROOT).contains(teacherSearch));
+            if (matchesProgram && matchesCourse && matchesCourseName && matchesTeacher) {
                 shown.add(rule);
             }
         }
         ruleModel.setRows(shown);
         ruleCount.setText("   " + shown.size() + " dòng");
+    }
+
+    private void addRuleSearchListener(JTextField field) {
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                refreshRules();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                refreshRules();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                refreshRules();
+            }
+        });
     }
 
     private void addRule() {
@@ -451,16 +516,147 @@ public class DeanPanel extends BasePanel {
         JPanel explainCard = new JPanel(new BorderLayout());
         Theme.card(explainCard);
         explainCard.add(explain, BorderLayout.CENTER);
-        JPanel top = new JPanel(new BorderLayout(6, 6));
-        top.add(buttons, BorderLayout.NORTH);
-        top.add(explainCard, BorderLayout.CENTER);
-        panel.add(top, BorderLayout.NORTH);
-        panel.add(new JScrollPane(createTable(planModel)), BorderLayout.CENTER);
+        JScrollPane explainScroll = new JScrollPane(explainCard);
+        explainScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        explainScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        JPanel tablePanel = new JPanel(new BorderLayout(4, 4));
+        JPanel filters = new JPanel();
+        filters.setLayout(new BoxLayout(filters, BoxLayout.X_AXIS));
+        addPlanFilter(filters, "Mã môn:", planCourseCodeSearch, 100);
+        addPlanFilter(filters, "Tên môn:", planCourseNameSearch, 110);
+        addPlanFilter(filters, "GV phụ trách:", planTeacherSearch, 110);
+        addPlanFilter(filters, "Chương trình:", planProgramFilter, 150);
+        addPlanFilter(filters, "Khóa:", planCohortFilter, 85);
+        addPlanFilter(filters, "Loại:", planKindFilter, 95);
+        planTable.setRowSorter(planSorter);
+        planTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        int[] columnWidths = {140, 160, 280, 220, 80, 80, 90, 90, 80, 250};
+        for (int column = 0; column < columnWidths.length; column++) {
+            planTable.getColumnModel().getColumn(column).setPreferredWidth(columnWidths[column]);
+        }
+        addPlanSearchListener(planCourseCodeSearch);
+        addPlanSearchListener(planCourseNameSearch);
+        addPlanSearchListener(planTeacherSearch);
+        planProgramFilter.addActionListener(e -> refreshPlanFilter());
+        planCohortFilter.addActionListener(e -> refreshPlanFilter());
+        planKindFilter.addActionListener(e -> refreshPlanFilter());
+        JPanel controls = new JPanel(new BorderLayout(6, 4));
+        controls.add(buttons, BorderLayout.NORTH);
+        controls.add(new JScrollPane(filters, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        panel.add(controls, BorderLayout.NORTH);
+        tablePanel.add(new JScrollPane(planTable), BorderLayout.CENTER);
+        JSplitPane explainAndTable = new JSplitPane(JSplitPane.VERTICAL_SPLIT, explainScroll, tablePanel);
+        explainAndTable.setResizeWeight(0.18);
+        explainAndTable.setOneTouchExpandable(true);
+        explainAndTable.setDividerLocation(0.18);
+        panel.add(explainAndTable, BorderLayout.CENTER);
         checkArea.setEditable(false);
         JScrollPane checkScroll = new JScrollPane(checkArea);
         checkScroll.setBorder(Theme.titled("Kết quả kiểm tra"));
         panel.add(checkScroll, BorderLayout.SOUTH);
         return panel;
+    }
+
+    private void addPlanFilter(JPanel panel, String label, JTextField field, int width) {
+        addPlanFilterLabel(panel, label);
+        field.setPreferredSize(new Dimension(width, field.getPreferredSize().height));
+        panel.add(field);
+        panel.add(Box.createHorizontalStrut(8));
+    }
+
+    private void addPlanFilter(JPanel panel, String label, JComboBox<String> filter, int width) {
+        addPlanFilterLabel(panel, label);
+        filter.setPreferredSize(new Dimension(width, filter.getPreferredSize().height));
+        panel.add(filter);
+        panel.add(Box.createHorizontalStrut(8));
+    }
+
+    private void addPlanFilterLabel(JPanel panel, String label) {
+        panel.add(new JLabel(label));
+        panel.add(Box.createHorizontalStrut(4));
+    }
+
+    private void addPlanSearchListener(JTextField field) {
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                refreshPlanFilter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                refreshPlanFilter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                refreshPlanFilter();
+            }
+        });
+    }
+
+    private void refreshPlanFilter() {
+        if (updatingPlanFilters) {
+            return;
+        }
+        String courseCode = planCourseCodeSearch.getText().trim().toLowerCase(Locale.ROOT);
+        String courseName = planCourseNameSearch.getText().trim().toLowerCase(Locale.ROOT);
+        String teacher = planTeacherSearch.getText().trim().toLowerCase(Locale.ROOT);
+        String program = (String) planProgramFilter.getSelectedItem();
+        String cohort = (String) planCohortFilter.getSelectedItem();
+        String kind = (String) planKindFilter.getSelectedItem();
+        planSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
+            @Override
+            public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                return contains(entry.getStringValue(1), courseCode)
+                        && contains(entry.getStringValue(2), courseName)
+                        && contains(entry.getStringValue(9), teacher)
+                        && (program == null || program.equals(ALL_FILTER_VALUES)
+                                || program.equals(entry.getStringValue(3)))
+                        && (cohort == null || cohort.equals(ALL_FILTER_VALUES)
+                                || cohort.equals(entry.getStringValue(4)))
+                        && (kind == null || kind.equals(ALL_FILTER_VALUES)
+                                || kind.equals(entry.getStringValue(6)));
+            }
+        });
+    }
+
+    private boolean contains(String value, String query) {
+        return value.toLowerCase(Locale.ROOT).contains(query);
+    }
+
+    private void refreshPlanDropdowns() {
+        String selectedProgram = (String) planProgramFilter.getSelectedItem();
+        String selectedCohort = (String) planCohortFilter.getSelectedItem();
+        String selectedKind = (String) planKindFilter.getSelectedItem();
+        updatingPlanFilters = true;
+        planProgramFilter.removeAllItems();
+        planCohortFilter.removeAllItems();
+        planKindFilter.removeAllItems();
+        planProgramFilter.addItem(ALL_FILTER_VALUES);
+        for (Program program : Program.values()) {
+            planProgramFilter.addItem(program.getDisplayName());
+        }
+        planCohortFilter.addItem(ALL_FILTER_VALUES);
+        TreeSet<String> cohorts = new TreeSet<>();
+        for (PlanSession session : workspace().getPlan()) {
+            cohorts.add(session.getCohort());
+        }
+        for (String cohort : cohorts) {
+            planCohortFilter.addItem(cohort);
+        }
+        planKindFilter.addItem(ALL_FILTER_VALUES);
+        for (SessionKind kind : SessionKind.values()) {
+            planKindFilter.addItem(kind.getLabel());
+        }
+        planProgramFilter.setSelectedItem(selectedProgram == null ? ALL_FILTER_VALUES : selectedProgram);
+        planCohortFilter.setSelectedItem(
+                selectedCohort != null && cohorts.contains(selectedCohort) ? selectedCohort : ALL_FILTER_VALUES);
+        planKindFilter.setSelectedItem(selectedKind == null ? ALL_FILTER_VALUES : selectedKind);
+        updatingPlanFilters = false;
+        refreshPlanFilter();
     }
 
     private void importPlan() {
@@ -555,6 +751,7 @@ public class DeanPanel extends BasePanel {
                 session.getKind().getLabel(), session.getStudentCount(), session.getSlotCount(),
                 String.join(", ", convention.candidatesFor(session))});
         }
+        refreshPlanDropdowns();
         String sent = workspace().isPlanSent() ? "ĐÃ GỬI cho giáo vụ" : "chưa gửi";
         planStatus.setForeground(workspace().isPlanSent() ? Theme.SUCCESS : Theme.WARNING);
         planStatus.setText("   Kế hoạch: " + workspace().getPlan().size() + " buổi - " + sent);
