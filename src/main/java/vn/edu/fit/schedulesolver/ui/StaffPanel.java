@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,10 +16,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -68,7 +69,8 @@ import vn.edu.fit.schedulesolver.solver.Violation;
  */
 public class StaffPanel extends BasePanel {
     private static final String ALL = "Tất cả";
-    private static final int CONFIG_PANEL_MAX_WIDTH = 320;
+    private static final int CONFIG_WIDTH = 330;
+    private static final int LABEL_WIDTH = 128;
     private static final int TAB_CONTENT_MIN_WIDTH = 100;
 
     private final ScheduleService service = new ScheduleService();
@@ -133,16 +135,26 @@ public class StaffPanel extends BasePanel {
     public StaffPanel(MainFrame frame) {
         super(frame);
         this.planViewTab = new PlanViewTab(frame);
+        // cột cấu hình đặt trong khung cuộn: cửa sổ thấp thì cuộn xuống chứ không bị đè chữ
+        JScrollPane config = new JScrollPane(createConfigPanel(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        config.setBorder(null);
+        config.getVerticalScrollBar().setUnitIncrement(16);
+        int configWidth = CONFIG_WIDTH + config.getVerticalScrollBar().getPreferredSize().width;
+        config.setPreferredSize(new Dimension(configWidth, 10));
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Kế hoạch từ trưởng khoa", planViewTab);
         tabs.addTab("Lưới TKB nháp", createGridTab());
         tabs.addTab("Danh sách buổi", createListTab());
         reportArea.setEditable(false);
         reportArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        reportArea.setMargin(new Insets(8, 10, 8, 10));
         tabs.addTab("Đánh giá (Verify + metrics)", new JScrollPane(reportArea));
+        setColumnWidths(busyTable, 90, 60, 110, 130, 230, 200);
         tabs.addTab("Lịch bận GV chia sẻ (gồm giờ dạy trường khác)", createBusyTab());
         tabs.setMinimumSize(new Dimension(TAB_CONTENT_MIN_WIDTH, 0));
-        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createConfigPanel(), tabs);
+        // kéo vạch chia để thu hẹp cột cấu hình, nhưng không cho rộng hơn chỗ cột cần
+        JSplitPane content = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, config, tabs);
         content.setResizeWeight(0.0);
         content.setContinuousLayout(true);
         content.setOneTouchExpandable(false);
@@ -151,29 +163,39 @@ public class StaffPanel extends BasePanel {
         content.getRightComponent().setMinimumSize(new Dimension(TAB_CONTENT_MIN_WIDTH, 0));
         content.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, event -> {
             int location = (Integer) event.getNewValue();
-            if (location > CONFIG_PANEL_MAX_WIDTH) {
-                content.setDividerLocation(CONFIG_PANEL_MAX_WIDTH);
+            if (location > configWidth) {
+                content.setDividerLocation(configWidth);
             }
         });
-        content.setDividerLocation(CONFIG_PANEL_MAX_WIDTH);
+        content.setDividerLocation(configWidth);
         add(content, BorderLayout.CENTER);
         stopButton.setEnabled(false);
     }
 
+    /** Một dòng "nhãn: ô nhập", nhãn rộng cố định để ô nhập (nhất là ô chọn thuật toán) không bị cắt chữ. */
+    private static JPanel row(String label, JComponent field) {
+        JLabel text = new JLabel(label);
+        text.setPreferredSize(new Dimension(LABEL_WIDTH, text.getPreferredSize().height));
+        JPanel row = new JPanel(new BorderLayout(6, 0));
+        row.add(text, BorderLayout.WEST);
+        row.add(field, BorderLayout.CENTER);
+        return row;
+    }
+
     private JPanel createConfigPanel() {
-        JPanel fields = new JPanel(new GridLayout(0, 2, 6, 6));
-        fields.add(new JLabel("Thuật toán:"));
-        fields.add(algorithmBox);
-        fields.add(new JLabel("Số luồng (1 = tuần tự):"));
-        fields.add(threadSpinner);
-        fields.add(new JLabel("Thời gian (giây):"));
-        fields.add(secondSpinner);
-        fields.add(new JLabel("Seed:"));
-        fields.add(seedField);
-        fields.add(deterministicBox);
-        fields.add(new JLabel("(cùng seed → cùng kết quả)"));
-        fields.add(new JLabel("Số bước thử/luồng:"));
-        fields.add(iterationSpinner);
+        JPanel fields = new JPanel(new GridLayout(0, 1, 6, 6));
+        fields.add(row("Thuật toán:", algorithmBox));
+        fields.add(row("Số luồng:", threadSpinner));
+        fields.add(row("Thời gian (giây):", secondSpinner));
+        fields.add(row("Seed:", seedField));
+        JLabel same = new JLabel("cùng seed → cùng kết quả");
+        same.setFont(Theme.SMALL);
+        same.setForeground(Theme.MUTED_TEXT);
+        JPanel deterministicRow = new JPanel(new BorderLayout(6, 0));
+        deterministicRow.add(deterministicBox, BorderLayout.WEST);
+        deterministicRow.add(same, BorderLayout.CENTER);
+        fields.add(deterministicRow);
+        fields.add(row("Số bước thử/luồng:", iterationSpinner));
         iterationSpinner.setEnabled(false);
         deterministicBox.addActionListener(e -> {
             iterationSpinner.setEnabled(deterministicBox.isSelected());
@@ -220,7 +242,7 @@ public class StaffPanel extends BasePanel {
         status.setBorder(Theme.titled("Trạng thái"));
         progressLabel.setVerticalAlignment(JLabel.TOP);
         status.add(progressLabel, BorderLayout.CENTER);
-        // đặt width để chữ tự xuống dòng trong cột 320 px
+        // đặt width để chữ tự xuống dòng trong cột cấu hình
         JLabel scoreHelp = new JLabel("<html><div style='width:200px'><b>Điểm cứng</b> = số lỗi bắt buộc phải sửa "
                 + "(trùng giờ GV, trùng lớp, trùng lịch bận); phải bằng 0 mới công bố được.<br><b>Điểm mềm</b> = mức "
                 + "bất tiện cho GV (ca trống, ngày chỉ dạy 1 ca, số ngày lên trường...); càng nhỏ càng tốt.</div></html>");
@@ -232,7 +254,6 @@ public class StaffPanel extends BasePanel {
         column.add(form, BorderLayout.NORTH);
         column.add(status, BorderLayout.CENTER);
         column.add(actions, BorderLayout.SOUTH);
-        column.setPreferredSize(new Dimension(320, 600));
         return column;
     }
 
@@ -248,14 +269,17 @@ public class StaffPanel extends BasePanel {
         cohortFilter.addActionListener(e -> refreshGrid());
         teacherFilter.addActionListener(e -> refreshGrid());
 
+        // tách 2 dòng để cửa sổ hẹp không che mất phần chú thích
+        JLabel template = new JLabel("  Theo mẫu TKB của khoa: màu nền theo khóa, chữ xanh là MME, chữ đậm là CLC / Tiên tiến.");
+        template.setForeground(Theme.MUTED_TEXT);
         JPanel legend = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
-        legend.add(new JLabel(
-                "Theo mẫu TKB của khoa (màu nền theo khóa, chữ xanh: MME, chữ đậm: CLC / Tiên tiến). Đánh dấu thêm:"));
+        legend.add(new JLabel("Đánh dấu thêm:"));
         legend.add(Theme.legend("Viền đỏ: buổi đang vi phạm", Color.WHITE, Theme.CONFLICT_ACCENT));
         legend.add(Theme.legend("Nền vàng: giờ bận của GV đang lọc", Theme.BUSY_FILL, Theme.BUSY_ACCENT));
 
-        JPanel top = new JPanel(new GridLayout(2, 1));
+        JPanel top = new JPanel(new GridLayout(3, 1));
         top.add(filters);
+        top.add(template);
         top.add(legend);
 
         // xếp chung hai hệ để GV dạy cả hai không bị trùng giờ, chỉ tách lúc hiển thị
@@ -270,15 +294,21 @@ public class StaffPanel extends BasePanel {
     }
 
     private JPanel createListTab() {
+        // cột mã buổi và thời gian dài hơn các cột khác
+        setColumnWidths(draftTable, 140, 90, 116, 50, 105, 52, 55, 88, 185, 66);
         JPanel panel = new JPanel(new BorderLayout(4, 4));
-        JPanel filters = new JPanel();
-        filters.setLayout(new BoxLayout(filters, BoxLayout.X_AXIS));
-        addDraftFilter(filters, "Mã môn:", draftCourseCodeSearch, 130);
-        addDraftFilter(filters, "Tên môn:", draftCourseNameSearch, 140);
-        addDraftFilter(filters, "Giảng viên:", draftTeacherSearch, 130);
-        addDraftFilter(filters, "Loại:", draftKindFilter, 95);
-        addDraftFilter(filters, "Chương trình:", draftProgramFilter, 150);
-        addDraftFilter(filters, "Khóa:", draftCohortFilter, 85);
+        // 2 dòng lọc: cửa sổ hẹp vẫn thấy đủ ô lọc, không phải kéo thanh cuộn ngang
+        JPanel searchRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        addDraftFilter(searchRow, "Mã môn:", draftCourseCodeSearch, 130);
+        addDraftFilter(searchRow, "Tên môn:", draftCourseNameSearch, 140);
+        addDraftFilter(searchRow, "Giảng viên:", draftTeacherSearch, 130);
+        JPanel choiceRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        addDraftFilter(choiceRow, "Loại:", draftKindFilter, 95);
+        addDraftFilter(choiceRow, "Chương trình:", draftProgramFilter, 150);
+        addDraftFilter(choiceRow, "Khóa:", draftCohortFilter, 85);
+        JPanel filters = new JPanel(new GridLayout(2, 1));
+        filters.add(searchRow);
+        filters.add(choiceRow);
         draftTable.setRowSorter(draftSorter);
         addDraftSearchListener(draftCourseCodeSearch);
         addDraftSearchListener(draftCourseNameSearch);
@@ -286,10 +316,7 @@ public class StaffPanel extends BasePanel {
         draftKindFilter.addActionListener(e -> refreshDraftFilter());
         draftProgramFilter.addActionListener(e -> refreshDraftFilter());
         draftCohortFilter.addActionListener(e -> refreshDraftFilter());
-        JScrollPane filterScroll = new JScrollPane(filters, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        filterScroll.setPreferredSize(new Dimension(0, 48));
-        panel.add(filterScroll, BorderLayout.NORTH);
+        panel.add(filters, BorderLayout.NORTH);
         panel.add(new JScrollPane(draftTable), BorderLayout.CENTER);
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         buttons.add(createButton("Sửa buổi đã chọn...", e -> editSelected()));

@@ -31,7 +31,8 @@ public class TemplateGridPanel extends JPanel {
     private static final int PART_WIDTH = 26;
     private static final int TIME_WIDTH = 92;
     private static final int PERIOD_WIDTH = 36;
-    private static final int MIN_DAY_WIDTH = 134;
+    // 6 cột ngày x 118 + các cột bên cạnh vừa khung lưới trên màn 1366 px, chữ dài tự thu nhỏ
+    private static final int MIN_DAY_WIDTH = 118;
     private static final float MIN_FONT_SIZE = 9f;
     private static final int TITLE_HEIGHT = 56;
     private static final int ROW_HEIGHT = 40;
