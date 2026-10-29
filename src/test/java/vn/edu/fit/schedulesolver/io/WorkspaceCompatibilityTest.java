@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import vn.edu.fit.schedulesolver.model.Assignment;
 import vn.edu.fit.schedulesolver.model.BusySlot;
+import vn.edu.fit.schedulesolver.model.ExternalSession;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.Teacher;
 import vn.edu.fit.schedulesolver.model.TeachingRule;
@@ -41,6 +42,9 @@ class WorkspaceCompatibilityTest {
         assertEquals(3, workspace.getPublished().size());
         assertTrue(workspace.isPlanSent());
         assertEquals(Workspace.CURRENT_VERSION, workspace.getDataVersion(), "đọc xong phải được nâng lên phiên bản hiện tại");
+        // bản 28/10 chưa có TKB trường khác, đọc vào phải là danh sách rỗng chứ không phải null
+        assertTrue(workspace.getExternalSessions().isEmpty());
+        assertEquals(1, workspace.getAllBusySlots().size());
     }
 
     @Test
@@ -80,7 +84,7 @@ class WorkspaceCompatibilityTest {
     @Test
     void everySavedClassDeclaresSerialVersionUid() throws Exception {
         Class<?>[] saved = {Workspace.class, Teacher.class, TeachingRule.class, PlanSession.class,
-            BusySlot.class, Assignment.class};
+            BusySlot.class, Assignment.class, ExternalSession.class};
         for (Class<?> type : saved) {
             Field field = type.getDeclaredField("serialVersionUID");
             int modifiers = field.getModifiers();

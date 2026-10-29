@@ -12,8 +12,8 @@ import java.util.List;
 public class Workspace implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    // 1: bản 28/10 (chưa có trường dataVersion), 2: thêm dataVersion
-    public static final int CURRENT_VERSION = 2;
+    // 1: bản 28/10 (chưa có trường dataVersion), 2: thêm dataVersion, 3: thêm TKB trường khác
+    public static final int CURRENT_VERSION = 3;
 
     private final List<Teacher> teachers = new ArrayList<>();
     private final List<TeachingRule> rules = new ArrayList<>();
@@ -21,6 +21,8 @@ public class Workspace implements Serializable {
     private final List<BusySlot> busySlots = new ArrayList<>();
     private final List<Assignment> draft = new ArrayList<>();
     private final List<Assignment> published = new ArrayList<>();
+    // thêm từ phiên bản 3, đọc file cũ sẽ là null nên không để final
+    private List<ExternalSession> externalSessions = new ArrayList<>();
     // Trưởng khoa đã gửi kế hoạch cho giáo vụ chưa
     private boolean planSent;
     // file lưu từ bản 28/10 không có trường này nên đọc vào sẽ bằng 0
@@ -40,6 +42,10 @@ public class Workspace implements Serializable {
 
     public List<BusySlot> getBusySlots() {
         return busySlots;
+    }
+
+    public List<ExternalSession> getExternalSessions() {
+        return externalSessions;
     }
 
     public List<Assignment> getDraft() {
@@ -71,6 +77,9 @@ public class Workspace implements Serializable {
             throw new IllegalStateException("File được lưu bằng phiên bản mới hơn của chương trình (dữ liệu phiên bản "
                     + dataVersion + "). Hãy cập nhật chương trình rồi mở lại.");
         }
+        if (externalSessions == null) {
+            externalSessions = new ArrayList<>();
+        }
         dataVersion = CURRENT_VERSION;
     }
 
@@ -95,6 +104,38 @@ public class Workspace implements Serializable {
     public List<BusySlot> getBusySlotsOf(String teacherCode) {
         List<BusySlot> result = new ArrayList<>();
         for (BusySlot slot : busySlots) {
+            if (slot.getTeacherCode().equalsIgnoreCase(teacherCode)) {
+                result.add(slot);
+            }
+        }
+        return result;
+    }
+
+    public List<ExternalSession> getExternalSessionsOf(String teacherCode) {
+        List<ExternalSession> result = new ArrayList<>();
+        for (ExternalSession session : externalSessions) {
+            if (session.getTeacherCode().equalsIgnoreCase(teacherCode)) {
+                result.add(session);
+            }
+        }
+        return result;
+    }
+
+    /** Lịch bận tự khai cộng với giờ dạy ở trường khác (đổi ra các ca của khoa bị chồng giờ), dùng cho bộ giải. */
+    public List<BusySlot> getAllBusySlots() {
+        List<BusySlot> result = new ArrayList<>(busySlots);
+        for (ExternalSession session : externalSessions) {
+            BusySlot busy = session.toBusySlot();
+            if (busy != null) {
+                result.add(busy);
+            }
+        }
+        return result;
+    }
+
+    public List<BusySlot> getAllBusySlotsOf(String teacherCode) {
+        List<BusySlot> result = new ArrayList<>();
+        for (BusySlot slot : getAllBusySlots()) {
             if (slot.getTeacherCode().equalsIgnoreCase(teacherCode)) {
                 result.add(slot);
             }
