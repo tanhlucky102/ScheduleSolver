@@ -53,10 +53,11 @@ public class DeanPanel extends BasePanel {
     private static final String ALL_FILTER_VALUES = "Tất cả";
 
     // tab Giảng viên
-    private final DefaultTableModel teacherModel =
-            readOnlyModel("Mã GV", "Họ tên", "Tối đa ca/ngày", "Tối đa ca/tuần");
+    private final DefaultTableModel teacherModel = readOnlyModel("Mã GV", "Họ tên", "Tối đa ca/ngày",
+            "Tối đa ca/tuần", "Số môn", "Môn phụ trách (theo quy ước)");
     private final JTable teacherTable = createTable(teacherModel);
     private final JTextField teacherSearchField = new JTextField(18);
+    private final JLabel teacherCheck = new JLabel();
     private final JTextField codeField = new JTextField(8);
     private final JTextField nameField = new JTextField(16);
     private final JSpinner maxDaySpinner = new JSpinner(new SpinnerNumberModel(4, 1, 6, 1));
@@ -102,6 +103,16 @@ public class DeanPanel extends BasePanel {
     // Tab 1: Giảng viên
     private JPanel createTeacherTab() {
         JPanel panel = new JPanel(new BorderLayout(6, 6));
+        JLabel explain = new JLabel("<html>Mã GV là tên viết tắt ghi trên TKB của khoa (ví dụ NgaNT), Họ tên không bắt buộc. "
+                + "\"Dung\" (dạy truyền thông MME) và DungVT là hai người khác nhau.<br>"
+                + "Giới hạn mặc định 4 ca/ngày, 12 ca/tuần. GV nào trên TKB của khoa đã dạy nhiều hơn "
+                + "thì lấy theo tải thật (ví dụ ThaoDTP 18 ca/tuần), để bộ giải không báo vi phạm sai.</html>");
+        JPanel top = new JPanel(new BorderLayout(4, 4));
+        Theme.card(top);
+        top.add(explain, BorderLayout.CENTER);
+        teacherCheck.setFont(Theme.BOLD);
+        top.add(teacherCheck, BorderLayout.SOUTH);
+        panel.add(top, BorderLayout.NORTH);
         JPanel tablePanel = new JPanel(new BorderLayout(4, 4));
         tablePanel.add(createSearchPanel("Tìm giảng viên:", teacherSearchField), BorderLayout.NORTH);
         tablePanel.add(new JScrollPane(teacherTable), BorderLayout.CENTER);
@@ -735,11 +746,19 @@ public class DeanPanel extends BasePanel {
     public void refresh() {
         teacherModel.setRowCount(0);
         ruleTeacherBox.removeAllItems();
+        int noCourse = 0;
         for (Teacher teacher : workspace().getTeachers()) {
+            List<String> courses = coursesOf(teacher.getCode());
             teacherModel.addRow(new Object[] {teacher.getCode(), teacher.getFullName(), teacher.getMaxSlotsPerDay(),
-                teacher.getMaxSlotsPerWeek()});
+                teacher.getMaxSlotsPerWeek(), courses.size(), String.join(", ", courses)});
             ruleTeacherBox.addItem(teacher.getCode());
+            if (courses.isEmpty()) {
+                noCourse++;
+            }
         }
+        teacherCheck.setForeground(noCourse == 0 ? Theme.SUCCESS : Theme.WARNING);
+        teacherCheck.setText("Kiểm tra: " + workspace().getTeachers().size() + " giảng viên, "
+                + noCourse + " GV chưa phụ trách môn nào.");
         refreshCourseBox();
         refreshRules();
 
@@ -755,6 +774,17 @@ public class DeanPanel extends BasePanel {
         String sent = workspace().isPlanSent() ? "ĐÃ GỬI cho giáo vụ" : "chưa gửi";
         planStatus.setForeground(workspace().isPlanSent() ? Theme.SUCCESS : Theme.WARNING);
         planStatus.setText("   Kế hoạch: " + workspace().getPlan().size() + " buổi - " + sent);
+    }
+
+    /** Các mã môn mà GV được phân công trong quy ước, không lặp. */
+    private List<String> coursesOf(String teacherCode) {
+        List<String> courses = new ArrayList<>();
+        for (TeachingRule rule : workspace().getRules()) {
+            if (rule.getTeacherCode().equalsIgnoreCase(teacherCode) && !courses.contains(rule.getCourseCode())) {
+                courses.add(rule.getCourseCode());
+            }
+        }
+        return courses;
     }
 
     /** Dùng TreeSet để bỏ mã môn trùng và xếp A-Z. */
