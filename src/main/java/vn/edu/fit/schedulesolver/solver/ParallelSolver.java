@@ -15,6 +15,8 @@ public class ParallelSolver {
     private volatile BestSolutionHolder holder;
     private volatile List<SolverWorker> workers = new ArrayList<>();
     private volatile long startMillis;
+    // tổng số vòng mà các luồng phải chạy ở chế độ tái lập, dùng cho thanh tiến độ
+    private volatile long iterationBudget;
 
     /** Chạy bộ giải, chờ tới khi xong nên phải gọi trên luồng riêng (không gọi trên luồng giao diện). */
     public SolverResult solve(Problem problem, SolverConfig config) throws InterruptedException {
@@ -33,11 +35,20 @@ public class ParallelSolver {
             deadline = startMillis + config.getTimeLimitMillis();
         }
         List<SolverWorker> newWorkers = new ArrayList<>();
+        long totalBudget = 0;
         for (int i = 0; i < config.getThreadCount(); i++) {
             LocalSearch search = config.getAlgorithm().createSearch(problem, config.getSeed() + i, i);
-            newWorkers.add(new SolverWorker(i, search, initial, this, sharedBest, config.getMaxIterations(), deadline));
+            // giới hạn tính theo số bước thử: Tabu thử 50 bước mỗi vòng nên được ít vòng hơn,
+            // nhờ vậy luồng nào cũng làm khối lượng như nhau, không phải chờ luồng Tabu
+            long budget = 0;
+            if (config.getMaxIterations() > 0) {
+                budget = Math.max(1, config.getMaxIterations() / search.getMovesPerStep());
+                totalBudget += budget;
+            }
+            newWorkers.add(new SolverWorker(i, search, initial, this, sharedBest, budget, deadline));
         }
         workers = newWorkers;
+        iterationBudget = totalBudget;
 
         ExecutorService pool = Executors.newFixedThreadPool(config.getThreadCount());
         for (SolverWorker worker : newWorkers) {
@@ -110,6 +121,11 @@ public class ParallelSolver {
             total += worker.getIterations();
         }
         return total;
+    }
+
+    /** 0 nếu đang chạy theo thời gian. */
+    public long getIterationBudget() {
+        return iterationBudget;
     }
 
     public long getElapsedMillis() {
