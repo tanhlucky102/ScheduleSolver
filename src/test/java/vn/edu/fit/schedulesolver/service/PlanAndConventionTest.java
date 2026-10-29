@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import vn.edu.fit.schedulesolver.io.PlanRow;
+import vn.edu.fit.schedulesolver.model.Assignment;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.SessionKind;
 import vn.edu.fit.schedulesolver.model.Teacher;
@@ -17,6 +18,27 @@ class PlanAndConventionTest {
 
     private static PlanRow row(String code, int students, int periods) {
         return new PlanRow(1, code, "Môn " + code, students, 2024, 1, periods);
+    }
+
+    @Test
+    void teacherLimitsAreRaisedToRealLoadOnFacultyTimetable() {
+        List<Teacher> teachers = new ArrayList<>();
+        teachers.add(new Teacher("ThaoDTP"));
+        teachers.add(new Teacher("NgaNT"));
+        GridTimetable grid = new GridTimetable();
+        // ThaoDTP dạy 5 ca vào Thứ 2, NgaNT chỉ 2 ca
+        for (int slot = 0; slot < 5; slot++) {
+            grid.add(new PlanSession("T" + slot, "61FIT2PR1", "", "K25", "0" + slot, SessionKind.TUTORIAL, 30),
+                    new Assignment("T" + slot, "ThaoDTP", 2, slot, false));
+        }
+        grid.add(new PlanSession("N1", "61FIT3DBS", "", "K24", "", SessionKind.COMBINED, 30),
+                new Assignment("N1", "NgaNT", 3, 0, false));
+
+        List<String> changed = new ConventionBuilder().applyRealLoad(teachers, grid);
+        assertEquals(1, changed.size());
+        assertEquals(5, teachers.get(0).getMaxSlotsPerDay(), "5 ca thật trong một ngày");
+        assertEquals(Teacher.DEFAULT_MAX_SLOTS_PER_WEEK, teachers.get(0).getMaxSlotsPerWeek(), "5 ca/tuần chưa vượt 12");
+        assertEquals(Teacher.DEFAULT_MAX_SLOTS_PER_DAY, teachers.get(1).getMaxSlotsPerDay(), "NgaNT giữ mặc định");
     }
 
     @Test

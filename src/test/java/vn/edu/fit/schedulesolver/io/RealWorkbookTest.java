@@ -60,7 +60,10 @@ class RealWorkbookTest {
 
         List<Teacher> teachers = DataFiles.readTeachers(TEACHERS);
         GridTimetable grid = new GridTimetableConverter().convert(cells, teachers);
-        assertEquals(186, grid.getSessions().size());
+        // 186 buổi ghi đủ mã GV + 4 buổi chỉ ghi "Dung"
+        assertEquals(190, grid.getSessions().size());
+        assertTrue(grid.getTeacherCodes().contains("Dung"));
+        assertTrue(grid.getTeacherCodes().contains("DungVT"), "Dung và DungVT là hai người");
         // ô không rõ giảng viên phải có cảnh báo
         assertTrue(grid.getWarnings().size() > 0);
 
@@ -69,7 +72,7 @@ class RealWorkbookTest {
         workspace.getPlan().addAll(grid.getSessions());
         workspace.getRules().addAll(DataFiles.readRules(RULES));
         TimetableMetrics metrics = new ScheduleService().evaluate(workspace, grid.getAssignments());
-        assertEquals(186, grid.getAssignments().size());
+        assertEquals(190, grid.getAssignments().size());
         // TKB cũ có đúng 1 chỗ trùng lịch, ở lớp CLC01 K25
         assertEquals(1, metrics.getScore().getHard());
         assertEquals(1, metrics.countViolations(vn.edu.fit.schedulesolver.solver.Verifier.RULE_CLASS_CLASH));
