@@ -1,0 +1,696 @@
+[
+  {
+    "test_case_id": "GTC-NORM-01",
+    "scenario_name": "Bài toán cơ sở quy mô nhỏ hội tụ khả thi (Baseline Feasibility & Convergence)",
+    "category": "normal",
+    "objective": "Xác minh bộ giải tìm được lịch học khả thi (H=0) trên tập dữ liệu chuẩn mực, không mâu thuẫn cấu trúc.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 234,
+      "iterations_evaluated": 10000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 10,
+      "total_cost": 10,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Điểm vi phạm cứng bằng 0 (H == 0)",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Danh sách vi phạm Verifier rỗng",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "100% buổi học được xếp vị trí",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      },
+      {
+        "criterion": "Khung giờ bắt đầu hợp lệ (slot chẵn cho buổi 2 ca)",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-NORM-02",
+    "scenario_name": "Xếp lịch nhiều khóa học độc lập song song (Mixed Cohorts Regular Scheduling)",
+    "category": "normal",
+    "objective": "Đánh giá khả năng tối ưu hóa khi có nhiều khóa sinh viên chia sẻ tài nguyên GV mà không gây xung đột chéo.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 219,
+      "iterations_evaluated": 20000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 35,
+      "total_cost": 35,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Điểm vi phạm cứng bằng 0 (H == 0)",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Giảm điểm phạt mềm sau tối ưu cục bộ",
+        "expected": "< 135",
+        "actual": "35 (Giảm 74.1%)",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-EDGE-01",
+    "scenario_name": "Bài toán đơn nhất biên cực tiểu (Minimal Non-Trivial Problem)",
+    "category": "edge",
+    "objective": "Kiểm chứng thuật toán hoạt động chính xác ở điều kiện biên 1 buổi, 1 GV.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "GREEDY",
+      "time_elapsed_ms": 0,
+      "iterations_evaluated": 1,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 20,
+      "total_cost": 20,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Điểm phạt mềm lý thuyết S = 20",
+        "expected": "20",
+        "actual": "20",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-EDGE-02",
+    "scenario_name": "Ràng buộc ca biên và tính toàn vẹn của buổi 2 ca (Two-Slot Boundary & Slot Alignment)",
+    "category": "edge",
+    "objective": "Xác minh bộ giải không xếp buổi 2 ca ở các ca lẻ hoặc vắt qua ca cuối ngày.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "HILL_CLIMBING",
+      "time_elapsed_ms": 13,
+      "iterations_evaluated": 2000,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 10,
+      "total_cost": 10,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Mọi buổi 2 ca bắt đầu ở slot chẵn {0, 2, 4}",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      },
+      {
+        "criterion": "Thứ 2 chỉ có thể nhận buổi ở slot 4 (ca 5-6)",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-EDGE-03",
+    "scenario_name": "Giới hạn bão hòa công suất ngày của Giảng viên (Full Day Saturation & Boundary Limits)",
+    "category": "edge",
+    "objective": "Kiểm chứng thuật toán tính điểm và giải thuật khi 1 GV dạy kín cả 6 ca trong 1 ngày.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "HILL_CLIMBING",
+      "time_elapsed_ms": 12,
+      "iterations_evaluated": 2000,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 45,
+      "total_cost": 45,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Điểm mềm lý thuyết S = 45 (1 day + 2 over slots * 20)",
+        "expected": "45",
+        "actual": "45",
+        "passed": true
+      },
+      {
+        "criterion": "Thứ 2 có đủ 6 ca dạy",
+        "expected": "6",
+        "actual": "6",
+        "passed": true
+      },
+      {
+        "criterion": "Không có ca trống kẹp giữa (gaps = 0)",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNST-01",
+    "scenario_name": "Cưỡng chế nghiêm ngặt giờ bận cố định của Giảng viên (Hard Busy Slot Enforcement - H3)",
+    "category": "constraint",
+    "objective": "Xác minh bộ giải không bao giờ xếp lịch trùng vào khung giờ bận trường ngoài của GV.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "PORTFOLIO",
+      "time_elapsed_ms": 850,
+      "iterations_evaluated": 10000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 10,
+      "total_cost": 10,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Tổng chi phí trùng giờ bận (busyCost) = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNST-02",
+    "scenario_name": "Kiểm chứng tính tuân thủ quy ước phân công giảng viên (Convention Enforcement)",
+    "category": "constraint",
+    "objective": "Đảm bảo bộ giải không vi phạm quy ước phân công (GV chỉ dạy đúng loại Lec/Tut được phép).",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 9,
+      "iterations_evaluated": 5000,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 40,
+      "total_cost": 40,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "LEC được phân công đúng cho GV_LEC",
+        "expected": "GV_LEC",
+        "actual": "GV_LEC",
+        "passed": true
+      },
+      {
+        "criterion": "TUT được phân công đúng cho GV_TUT",
+        "expected": "GV_TUT",
+        "actual": "GV_TUT",
+        "passed": true
+      },
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNST-03",
+    "scenario_name": "Toàn vẹn cấu trúc đào tạo Lec - Tut cùng môn & Lớp CLC cố định (Curricular Integrity - H2)",
+    "category": "constraint",
+    "objective": "Kiểm chứng phân loại xung đột sinh viên giữa Lec-Tut, CLC và Tiên tiến.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "PORTFOLIO",
+      "time_elapsed_ms": 334,
+      "iterations_evaluated": 10000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 80,
+      "total_cost": 80,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lec A và Tut A01 cùng môn xung đột cứng (HARD_CONFLICT)",
+        "expected": "2",
+        "actual": "2",
+        "passed": true
+      },
+      {
+        "criterion": "Lec A và Tut B01 khác lớp không xung đột (NO_CONFLICT)",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Hai môn cùng lớp CLC01 xung đột cứng (HARD_CONFLICT)",
+        "expected": "2",
+        "actual": "2",
+        "passed": true
+      },
+      {
+        "criterion": "Hai môn cùng mã TT01 không xung đột cứng (NO_CONFLICT)",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Lịch xếp đạt tính khả thi H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNST-04",
+    "scenario_name": "Bất biến đối với các buổi học bị khóa bởi Giáo vụ (Locked Assignments Invariance)",
+    "category": "constraint",
+    "objective": "Xác minh các buổi học bị khóa không bao giờ bị thay đổi thời gian hoặc giảng viên.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 54,
+      "iterations_evaluated": 30000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 10,
+      "total_cost": 10,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Buổi khóa giữ đúng GV1",
+        "expected": "GV1",
+        "actual": "GV1",
+        "passed": true
+      },
+      {
+        "criterion": "Buổi khóa giữ đúng Thứ 3",
+        "expected": "3",
+        "actual": "3",
+        "passed": true
+      },
+      {
+        "criterion": "Buổi khóa giữ đúng Ca 1 (slot 0)",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Lỗi cứng toàn cục H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNFL-01",
+    "scenario_name": "Nút thắt Giảng viên độc quyền duy nhất (Exclusive Teacher Bottleneck)",
+    "category": "conflict",
+    "objective": "Kiểm chứng giải quyết tranh chấp tài nguyên khi 1 GV duy nhất phụ trách 12 buổi học.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 57,
+      "iterations_evaluated": 20000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 20,
+      "total_cost": 20,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Không có cặp buổi nào bị trùng giờ",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNFL-02",
+    "scenario_name": "Cân bằng giữa dồn lịch giảng viên và vượt trần tải (Compactness vs Overload Trade-off)",
+    "category": "normal",
+    "objective": "Đánh giá khả năng phân bổ đều tải để tránh phạt vượt trần ngày/tuần (S4, S5).",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "PORTFOLIO",
+      "time_elapsed_ms": 1419,
+      "iterations_evaluated": 30000,
+      "threads": 2
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 20,
+      "total_cost": 20,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      },
+      {
+        "criterion": "Tải tuần của GV_A và GV_B <= 6 ca",
+        "expected": "true",
+        "actual": "GV_A: 5, GV_B: 5",
+        "passed": true
+      },
+      {
+        "criterion": "Tải ngày của từng GV <= 3 ca",
+        "expected": "true",
+        "actual": "Max Day A: 3, Max Day B: 3",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CNFL-03",
+    "scenario_name": "Tối ưu hóa tránh trùng chéo môn cùng khóa Verify 3 (Soft Curricular Clash S6)",
+    "category": "constraint",
+    "objective": "Đảm bảo bộ giải chủ động tách 2 Lecture khác môn cùng khóa để giảm phạt mềm S6 (trọng số 20).",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 5,
+      "iterations_evaluated": 5000,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 40,
+      "total_cost": 40,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Hai Lecture cùng khóa K24 là xung đột mềm (SOFT_CONFLICT)",
+        "expected": "1",
+        "actual": "1",
+        "passed": true
+      },
+      {
+        "criterion": "Hai môn được xếp vào thời gian không trùng nhau",
+        "expected": "false",
+        "actual": "false",
+        "passed": true
+      },
+      {
+        "criterion": "Lỗi cứng H = 0",
+        "expected": "0",
+        "actual": "0",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-INFEAS-01",
+    "scenario_name": "Bất khả thi do nguyên lý Dirichlet/Pigeonhole vượt trần không gian (Pigeonhole Over-Demand Infeasibility)",
+    "category": "infeasible",
+    "objective": "Kiểm chứng hành vi khi số ca yêu cầu (35) vượt quá slot khả dụng (31).",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "GREEDY",
+      "time_elapsed_ms": 9,
+      "iterations_evaluated": 1000,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": false,
+      "hard_score": 4,
+      "soft_score": 350,
+      "total_cost": 4000350,
+      "total_violations_count": 4,
+      "violation_details": [
+        "[Trùng lịch bận của giảng viên] GV0 có lịch bận cố định lúc Thứ 2, Ca 5 (16:55 - 18:45) nhưng được xếp dạy OVERFLOW_6.",
+        "[Verify 1 - Trùng giờ giảng viên] GV0 dạy trùng giờ: OVERFLOW_0 và OVERFLOW_7 (Thứ 2, Ca 6 (18:55 - 21:00))",
+        "[Verify 1 - Trùng giờ giảng viên] GV0 dạy trùng giờ: OVERFLOW_1 và OVERFLOW_8 (Thứ 3, Ca 1 (07:10 - 09:15))",
+        "[Verify 1 - Trùng giờ giảng viên] GV0 dạy trùng giờ: OVERFLOW_9 và OVERFLOW_10 (Thứ 3, Ca 2 (09:30 - 11:35))"
+      ]
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Lịch học xác định bất khả thi (isFeasible == false)",
+        "expected": "false",
+        "actual": "false",
+        "passed": true
+      },
+      {
+        "criterion": "Số lỗi cứng phát hiện tối thiểu >= 4 (35 buổi - 31 slot)",
+        "expected": ">= 4",
+        "actual": "4",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-INFEAS-02",
+    "scenario_name": "Bất khả thi do mâu thuẫn phân công cố định (Contradictory Locked Assignments)",
+    "category": "infeasible",
+    "objective": "Xác minh bộ giải xử lý an toàn khi 2 buổi bị khóa trùng nhau về GV và thời gian.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 2,
+      "iterations_evaluated": 2000,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "is_feasible": false,
+      "hard_score": 1,
+      "soft_score": 20,
+      "total_cost": 1000020,
+      "total_violations_count": 1,
+      "violation_details": [
+        "[Verify 1 - Trùng giờ giảng viên] GV0 dạy trùng giờ: LOCKED_A và LOCKED_B (Thứ 2, Ca 1 (07:10 - 09:15))"
+      ]
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Bài toán xác định bất khả thi (isFeasible == false)",
+        "expected": "false",
+        "actual": "false",
+        "passed": true
+      },
+      {
+        "criterion": "Ghi nhận ít nhất 1 lỗi cứng H >= 1",
+        "expected": ">= 1",
+        "actual": "1",
+        "passed": true
+      },
+      {
+        "criterion": "Verifier phát hiện đúng RULE_TEACHER_CLASH giữa 2 buổi khóa",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-EXCP-01",
+    "scenario_name": "Ngoại lệ buổi học không có ứng viên theo quy ước (Zero Candidate Empty Rule Exception)",
+    "category": "exceptional",
+    "objective": "Kiểm chứng phản ứng phòng vệ khi tồn tại buổi học không có bất kỳ GV ứng viên nào.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "GREEDY",
+      "time_elapsed_ms": 2,
+      "iterations_evaluated": 0,
+      "threads": 1
+    },
+    "evaluation_result": {
+      "exception_thrown": "IllegalStateException",
+      "exception_message": "Buổi 61FIT3SPECIAL-LEC chưa có giảng viên được phép dạy."
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Ném ngoại lệ IllegalStateException",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      },
+      {
+        "criterion": "Thông điệp ngoại lệ chỉ rõ mã buổi học",
+        "expected": "chứa 61FIT3SPECIAL-LEC",
+        "actual": "Buổi 61FIT3SPECIAL-LEC chưa có giảng viên được phép dạy.",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-CONCUR-01",
+    "scenario_name": "Tính tất định và khả năng tái lập đa luồng (Deterministic Parallel Reproducibility)",
+    "category": "edge",
+    "objective": "Xác minh bộ giải đa luồng cho kết quả đồng nhất tuyệt đối giữa các lần chạy khi cố định seed và ngân sách vòng lặp.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "PORTFOLIO",
+      "time_elapsed_ms": 3317,
+      "iterations_evaluated": 80000,
+      "threads": 4
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 75,
+      "total_cost": 75,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Điểm số 2 lần chạy đa luồng bằng nhau tuyệt đối",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      },
+      {
+        "criterion": "Ma trận phân bổ lịch 2 lần chạy trùng khớp 100%",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      }
+    ]
+  },
+  {
+    "test_case_id": "GTC-EXCP-02",
+    "scenario_name": "Dừng sớm an toàn không hủy hoại trạng thái giải (Graceful Cancellation & Safe State Retrieval)",
+    "category": "exceptional",
+    "objective": "Xác minh khi kích hoạt cờ requestStop(), các worker dừng nhanh và trả về best-so-far toàn vẹn.",
+    "status": "PASSED",
+    "execution_metrics": {
+      "solver_algorithm": "SIMULATED_ANNEALING",
+      "time_elapsed_ms": 207,
+      "iterations_evaluated": 115955,
+      "threads": 4
+    },
+    "evaluation_result": {
+      "is_feasible": true,
+      "hard_score": 0,
+      "soft_score": 100,
+      "total_cost": 100,
+      "total_violations_count": 0,
+      "violation_details": []
+    },
+    "validation_criteria": [
+      {
+        "criterion": "Dừng các luồng nhanh chóng (< 1500 ms)",
+        "expected": "< 1500 ms",
+        "actual": "1 ms",
+        "passed": true
+      },
+      {
+        "criterion": "Thu hồi thành công best-solution-so-far",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      },
+      {
+        "criterion": "Cờ isStopped() mang giá trị true",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      },
+      {
+        "criterion": "Điểm số lưu trữ khớp với chấm lại độc lập",
+        "expected": "true",
+        "actual": "true",
+        "passed": true
+      }
+    ]
+  }
+]
