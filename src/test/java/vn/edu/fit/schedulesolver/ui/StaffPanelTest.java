@@ -12,7 +12,7 @@ import vn.edu.fit.schedulesolver.model.SessionKind;
 import vn.edu.fit.schedulesolver.model.Workspace;
 import vn.edu.fit.schedulesolver.service.AuthService;
 
-/** Kiểm thử tab Kế hoạch từ trưởng khoa trong StaffPanel (giao diện giáo vụ). */
+/** Kiểm thử tab Kế hoạch từ trưởng khoa (PlanViewTab) trong StaffPanel (giao diện giáo vụ). */
 class StaffPanelTest {
 
     @Test
@@ -36,10 +36,19 @@ class StaffPanelTest {
         frame.refreshAll();
         assertFalse(ws.isPlanSent());
 
+        // Kiểm tra PlanViewTab
+        PlanViewTab tab = new PlanViewTab(frame);
+        tab.refresh();
+        assertEquals(3, tab.getSubTabs().getTabCount(), "Phải có đúng 3 sub-tab");
+        assertTrue(tab.getStatusLabel().getText().contains("Trưởng khoa chưa bấm"));
+
         // Giả lập Trưởng khoa gửi kế hoạch cho Giáo vụ
         ws.setPlanSent(true);
         frame.refreshAll();
+        tab.refresh();
         assertTrue(ws.isPlanSent(), "Kế hoạch đã được đánh dấu là gửi");
+        assertTrue(tab.getStatusLabel().getText().contains("Kế hoạch đã được Trưởng khoa gửi"));
+        assertTrue(tab.getPlanModel().getRowCount() > 0, "Bảng danh sách buổi phải có dữ liệu");
 
         frame.dispose();
     }
