@@ -23,11 +23,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import vn.edu.fit.schedulesolver.model.Workspace;
-import vn.edu.fit.schedulesolver.service.Sorting;
 
 /**
- * Lớp cha của màn hình 3 vai trò, MainFrame chỉ cần gọi refresh() cho từng màn
- * hình (đa hình).
+ * Lớp cha của màn hình 3 vai trò và các tab bên trong. MainFrame chỉ cần gọi refresh() cho từng màn hình (đa hình),
+ * màn hình có tab thì gọi tiếp refresh() của từng tab.
  */
 public abstract class BasePanel extends JPanel {
     protected final MainFrame frame;
@@ -45,11 +44,16 @@ public abstract class BasePanel extends JPanel {
         return frame.getWorkspace();
     }
 
-    /** Gọi sau khi sửa dữ liệu: xếp lại A-Z, đánh dấu chưa lưu rồi vẽ lại. */
+    /** Gọi sau khi sửa dữ liệu: đánh dấu chưa lưu rồi vẽ lại mọi màn hình (MainFrame xếp lại A-Z trước khi vẽ). */
     protected void dataChanged() {
-        Sorting.sortWorkspace(workspace());
         frame.markChanged();
-        refresh();
+        frame.refreshAll();
+    }
+
+    /** Dùng cho tab nằm trong JTabbedPane của một màn hình: không cần lề như màn hình chính. */
+    protected void useTabLayout() {
+        setLayout(new BorderLayout(6, 6));
+        setBorder(null);
     }
 
     protected JButton createButton(String text, ActionListener listener) {
@@ -150,6 +154,17 @@ public abstract class BasePanel extends JPanel {
         chooser.setSelectedFile(new File(MainFrame.RESOURCES, defaultName));
         int result = save ? chooser.showSaveDialog(this) : chooser.showOpenDialog(this);
         if (result != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        return chooser.getSelectedFile();
+    }
+
+    /** Chọn file Excel của khoa, trả về null nếu bấm Hủy. */
+    protected File chooseWorkbook() {
+        JFileChooser chooser = new JFileChooser(MainFrame.RESOURCES);
+        chooser.setFileFilter(new FileNameExtensionFilter("File Excel (*.xlsx)", "xlsx"));
+        chooser.setSelectedFile(MainFrame.DEFAULT_WORKBOOK);
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return null;
         }
         return chooser.getSelectedFile();
