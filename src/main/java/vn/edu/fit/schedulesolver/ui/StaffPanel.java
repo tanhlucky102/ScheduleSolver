@@ -34,9 +34,12 @@ import vn.edu.fit.schedulesolver.io.ExcelExporter;
 import vn.edu.fit.schedulesolver.io.TimetableTemplate;
 import vn.edu.fit.schedulesolver.model.Assignment;
 import vn.edu.fit.schedulesolver.model.BusySlot;
+import vn.edu.fit.schedulesolver.io.CsvFile;
 import vn.edu.fit.schedulesolver.model.PlanSession;
+import vn.edu.fit.schedulesolver.model.SessionKind;
 import vn.edu.fit.schedulesolver.model.Program;
 import vn.edu.fit.schedulesolver.model.Teacher;
+import vn.edu.fit.schedulesolver.model.TeachingRule;
 import vn.edu.fit.schedulesolver.model.TimeSlots;
 import vn.edu.fit.schedulesolver.model.Workspace;
 import vn.edu.fit.schedulesolver.service.BusySlotGenerator;
@@ -87,6 +90,25 @@ public class StaffPanel extends BasePanel {
     private final JTextArea reportArea = new JTextArea();
     private final DefaultTableModel busyModel = readOnlyModel("Giảng viên", "Thứ", "Ca", "Nơi bận");
 
+    // tab Kế hoạch từ trưởng khoa
+    private final DefaultTableModel receivedPlanModel = readOnlyModel("Mã buổi", "Mã môn", "Tên môn",
+            "Chương trình", "Khóa", "Nhóm", "Loại", "Số SV", "Số ca", "GV phụ trách");
+    private final DefaultTableModel receivedTeacherModel = readOnlyModel("Mã GV", "Họ tên",
+            "Tối đa ca/ngày", "Tối đa ca/tuần");
+    private final DefaultTableModel receivedRuleModel = readOnlyModel("Chương trình", "Mã môn",
+            "Tên môn", "GV phụ trách", "Dạy Lec", "Dạy Tut");
+    private final JLabel receivedStatusLabel = new JLabel();
+    private final JLabel receivedValidationLabel = new JLabel();
+    private final JComboBox<String> receivedProgramFilter = new JComboBox<>();
+    private final JComboBox<String> receivedCohortFilter = new JComboBox<>();
+    private final JComboBox<String> receivedKindFilter = new JComboBox<>();
+    private final JLabel receivedPlanCountLabel = new JLabel();
+    private final JComboBox<String> receivedRuleProgramFilter = new JComboBox<>();
+    private final JLabel receivedRuleCountLabel = new JLabel();
+    private boolean updatingReceivedFilters;
+    private final JTabbedPane receivedSubTabs = new JTabbedPane();
+    private final JButton loadSamplePlanButton = createButton("Nạp kế hoạch mẫu Fall2026 (236 buổi)", Theme.SUCCESS, e -> loadSamplePlan());
+
     private ParallelSolver runningSolver;
     private long runningLimitMillis;
     private String lastRunText = "";
@@ -97,6 +119,7 @@ public class StaffPanel extends BasePanel {
         add(createConfigPanel(), BorderLayout.WEST);
 
         JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Kế hoạch từ trưởng khoa", createReceivedPlanTab());
         tabs.addTab("Lưới TKB nháp", createGridTab());
         tabs.addTab("Danh sách buổi", createListTab());
         reportArea.setEditable(false);
@@ -398,6 +421,7 @@ public class StaffPanel extends BasePanel {
         refreshFilters();
         refreshGrid();
         refreshDraftTable();
+        refreshReceivedPlan();
         busyModel.setRowCount(0);
         for (BusySlot slot : workspace().getBusySlots()) {
             // giáo vụ không được xem ghi chú riêng của giảng viên
@@ -410,6 +434,274 @@ public class StaffPanel extends BasePanel {
                     + workspace().getDraft().size() + "</b> buổi<br>Đã công bố: <b>" + workspace().getPublished().size()
                     + "</b> buổi</html>");
         }
+    }
+
+    /** Tab cho giáo vụ xem kế hoạch mà trưởng khoa đã gửi (chỉ đọc). */
+    private JPanel createReceivedPlanTab() {
+        receivedSubTabs.removeAll();
+
+        // Sub-tab 1: Danh sách buổi trong kế hoạch
+        JPanel planPanel = new JPanel(new BorderLayout(6, 6));
+
+        JPanel planFilterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        planFilterRow.add(new JLabel("Chương trình:"));
+        planFilterRow.add(receivedProgramFilter);
+        planFilterRow.add(new JLabel("Khóa:"));
+        planFilterRow.add(receivedCohortFilter);
+        planFilterRow.add(new JLabel("Loại buổi:"));
+        planFilterRow.add(receivedKindFilter);
+        planFilterRow.add(receivedPlanCountLabel);
+
+        receivedProgramFilter.addActionListener(e -> refreshReceivedPlanTable());
+        receivedCohortFilter.addActionListener(e -> refreshReceivedPlanTable());
+        receivedKindFilter.addActionListener(e -> refreshReceivedPlanTable());
+
+        planPanel.add(planFilterRow, BorderLayout.NORTH);
+        planPanel.add(new JScrollPane(createTable(receivedPlanModel)), BorderLayout.CENTER);
+        receivedSubTabs.addTab("Danh sách buổi (" + workspace().getPlan().size() + " buổi)", planPanel);
+
+        // Sub-tab 2: Danh sách giảng viên
+        JPanel teacherPanel = new JPanel(new BorderLayout(6, 6));
+        teacherPanel.add(new JScrollPane(createTable(receivedTeacherModel)), BorderLayout.CENTER);
+        receivedSubTabs.addTab("Giảng viên (" + workspace().getTeachers().size() + " GV)", teacherPanel);
+
+        // Sub-tab 3: Quy ước phân công
+        JPanel rulePanel = new JPanel(new BorderLayout(6, 6));
+        JPanel ruleFilterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        ruleFilterRow.add(new JLabel("Xem chương trình:"));
+        ruleFilterRow.add(receivedRuleProgramFilter);
+        ruleFilterRow.add(receivedRuleCountLabel);
+        receivedRuleProgramFilter.addActionListener(e -> refreshReceivedRulesTable());
+
+        rulePanel.add(ruleFilterRow, BorderLayout.NORTH);
+        rulePanel.add(new JScrollPane(createTable(receivedRuleModel)), BorderLayout.CENTER);
+        receivedSubTabs.addTab("Quy ước phân công (" + workspace().getRules().size() + " quy ước)", rulePanel);
+
+        JPanel statusCard = new JPanel(new BorderLayout(8, 4));
+        Theme.card(statusCard);
+
+        JPanel textPanel = new JPanel(new GridLayout(2, 1, 4, 4));
+        textPanel.setOpaque(false);
+        receivedStatusLabel.setFont(Theme.BOLD);
+        receivedValidationLabel.setFont(Theme.NORMAL);
+        textPanel.add(receivedStatusLabel);
+        textPanel.add(receivedValidationLabel);
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        btnPanel.setOpaque(false);
+        btnPanel.add(loadSamplePlanButton);
+
+        statusCard.add(textPanel, BorderLayout.CENTER);
+        statusCard.add(btnPanel, BorderLayout.EAST);
+
+        JPanel wrapper = new JPanel(new BorderLayout(6, 6));
+        wrapper.add(statusCard, BorderLayout.NORTH);
+        wrapper.add(receivedSubTabs, BorderLayout.CENTER);
+        return wrapper;
+    }
+
+    private void loadDefaultPlanSilently() {
+        File file = new File(MainFrame.RESOURCES, "ke_hoach_mo_lop.csv");
+        if (!file.exists()) {
+            return;
+        }
+        try {
+            List<PlanSession> loaded = new ArrayList<>();
+            for (String[] row : CsvFile.read(file)) {
+                String id = CsvFile.get(row, 0);
+                String code = CsvFile.get(row, 1);
+                String name = CsvFile.get(row, 2);
+                String cohort = CsvFile.get(row, 3);
+                String group = CsvFile.get(row, 4);
+                SessionKind kind = SessionKind.valueOf(CsvFile.get(row, 5));
+                int sv = Integer.parseInt(CsvFile.get(row, 6));
+                loaded.add(new PlanSession(id, code, name, cohort, group, kind, sv));
+            }
+            workspace().replacePlan(loaded);
+            workspace().setPlanSent(true);
+        } catch (Exception ignored) {
+        }
+    }
+
+    /** Nạp nhanh kế hoạch mẫu từ file CSV đã chuẩn hóa sẵn. */
+    private void loadSamplePlan() {
+        File file = new File(MainFrame.RESOURCES, "ke_hoach_mo_lop.csv");
+        if (!file.exists()) {
+            showError("Không tìm thấy file kế hoạch mẫu: " + file.getName());
+            return;
+        }
+        try {
+            List<PlanSession> loaded = new ArrayList<>();
+            for (String[] row : CsvFile.read(file)) {
+                String id = CsvFile.get(row, 0);
+                String code = CsvFile.get(row, 1);
+                String name = CsvFile.get(row, 2);
+                String cohort = CsvFile.get(row, 3);
+                String group = CsvFile.get(row, 4);
+                SessionKind kind = SessionKind.valueOf(CsvFile.get(row, 5));
+                int sv = Integer.parseInt(CsvFile.get(row, 6));
+                loaded.add(new PlanSession(id, code, name, cohort, group, kind, sv));
+            }
+            workspace().replacePlan(loaded);
+            workspace().setPlanSent(true);
+            dataChanged();
+            showInfo("Đã nạp kế hoạch mẫu " + loaded.size() + " buổi và xác nhận Trưởng khoa đã gửi.");
+        } catch (Exception e) {
+            showError("Lỗi đọc kế hoạch mẫu: " + e.getMessage());
+        }
+    }
+
+    /** Nạp lại bảng kế hoạch từ trưởng khoa lên tab xem. */
+    private void refreshReceivedPlan() {
+        updatingReceivedFilters = true;
+
+        // Cập nhật bộ lọc Sub-tab 1
+        Object selProg = receivedProgramFilter.getSelectedItem();
+        Object selCohort = receivedCohortFilter.getSelectedItem();
+        Object selKind = receivedKindFilter.getSelectedItem();
+
+        receivedProgramFilter.removeAllItems();
+        receivedCohortFilter.removeAllItems();
+        receivedKindFilter.removeAllItems();
+
+        receivedProgramFilter.addItem(ALL);
+        for (Program p : Program.values()) {
+            receivedProgramFilter.addItem(p.getLabel());
+        }
+
+        receivedCohortFilter.addItem(ALL);
+        Set<String> cohorts = new TreeSet<>();
+        for (PlanSession session : workspace().getPlan()) {
+            cohorts.add(session.getCohort());
+        }
+        for (String c : cohorts) {
+            receivedCohortFilter.addItem(c);
+        }
+
+        receivedKindFilter.addItem(ALL);
+        receivedKindFilter.addItem("Lec");
+        receivedKindFilter.addItem("Tut");
+        receivedKindFilter.addItem("4 tiết");
+        receivedKindFilter.addItem("Lec+Tut");
+
+        receivedProgramFilter.setSelectedItem(selProg == null ? ALL : selProg);
+        receivedCohortFilter.setSelectedItem(selCohort == null ? ALL : selCohort);
+        receivedKindFilter.setSelectedItem(selKind == null ? ALL : selKind);
+
+        // Cập nhật bộ lọc Sub-tab 3 (Quy ước)
+        Object selRuleProg = receivedRuleProgramFilter.getSelectedItem();
+        receivedRuleProgramFilter.removeAllItems();
+        receivedRuleProgramFilter.addItem(ALL);
+        for (Program p : Program.values()) {
+            receivedRuleProgramFilter.addItem(p.getLabel());
+        }
+        receivedRuleProgramFilter.setSelectedItem(selRuleProg == null ? ALL : selRuleProg);
+
+        updatingReceivedFilters = false;
+
+        // Tự động nạp kế hoạch mẫu nếu kế hoạch đang trống
+        if (workspace().getPlan().isEmpty()) {
+            loadDefaultPlanSilently();
+        }
+
+        // Cập nhật tiêu đề tab con
+        if (receivedSubTabs.getTabCount() >= 3) {
+            receivedSubTabs.setTitleAt(0, "Danh sách buổi (" + workspace().getPlan().size() + " buổi)");
+            receivedSubTabs.setTitleAt(1, "Giảng viên (" + workspace().getTeachers().size() + " GV)");
+            receivedSubTabs.setTitleAt(2, "Quy ước phân công (" + workspace().getRules().size() + " quy ước)");
+        }
+        loadSamplePlanButton.setVisible(!workspace().isPlanSent() || workspace().getPlan().isEmpty());
+
+        // Trạng thái gửi từ trưởng khoa
+        if (workspace().isPlanSent()) {
+            receivedStatusLabel.setText("✔ Kế hoạch đã được Trưởng khoa gửi: "
+                    + workspace().getPlan().size() + " buổi, "
+                    + workspace().getTeachers().size() + " giảng viên, "
+                    + workspace().getRules().size() + " quy ước phân công.");
+            receivedStatusLabel.setForeground(Theme.SUCCESS);
+        } else {
+            receivedStatusLabel.setText("⏳ Trưởng khoa chưa bấm \"Gửi cho giáo vụ\". Kế hoạch hiện có "
+                    + workspace().getPlan().size() + " buổi.");
+            receivedStatusLabel.setForeground(Theme.WARNING);
+        }
+
+        // Kiểm tra tính hợp lệ với quy ước
+        Convention convention = new Convention(workspace().getRules());
+        List<String> problems = convention.checkPlan(workspace().getPlan(), workspace().getTeachers());
+        if (problems.isEmpty()) {
+            receivedValidationLabel.setText("✔ Kế hoạch hợp lệ: Mọi buổi học đều có đủ giảng viên phụ trách theo quy ước.");
+            receivedValidationLabel.setForeground(Theme.SUCCESS);
+        } else {
+            receivedValidationLabel.setText("⚠️ Cảnh báo quy ước: Còn " + problems.size()
+                    + " vấn đề (ví dụ buổi học chưa có GV phụ trách hoặc GV chưa có trong danh sách).");
+            receivedValidationLabel.setForeground(Theme.DANGER);
+        }
+
+        refreshReceivedPlanTable();
+        refreshReceivedTeachersTable();
+        refreshReceivedRulesTable();
+    }
+
+    private void refreshReceivedPlanTable() {
+        if (updatingReceivedFilters) {
+            return;
+        }
+        String prog = (String) receivedProgramFilter.getSelectedItem();
+        String cohort = (String) receivedCohortFilter.getSelectedItem();
+        String kind = (String) receivedKindFilter.getSelectedItem();
+
+        Convention convention = new Convention(workspace().getRules());
+        receivedPlanModel.setRowCount(0);
+        int count = 0;
+        for (PlanSession session : workspace().getPlan()) {
+            if (prog != null && !prog.equals(ALL) && !session.getProgram().getLabel().equals(prog)) {
+                continue;
+            }
+            if (cohort != null && !cohort.equals(ALL) && !session.getCohort().equals(cohort)) {
+                continue;
+            }
+            if (kind != null && !kind.equals(ALL) && !session.getKind().getLabel().equals(kind)) {
+                continue;
+            }
+            count++;
+            receivedPlanModel.addRow(new Object[]{
+                    session.getId(), session.getCourseCode(), session.getCourseName(),
+                    session.getProgram().getDisplayName(), session.getCohort(), session.getGroup(),
+                    session.getKind().getLabel(), session.getStudentCount(), session.getSlotCount(),
+                    String.join(", ", convention.candidatesFor(session))});
+        }
+        receivedPlanCountLabel.setText("   Hiển thị: " + count + " / " + workspace().getPlan().size() + " buổi");
+    }
+
+    private void refreshReceivedTeachersTable() {
+        receivedTeacherModel.setRowCount(0);
+        for (Teacher teacher : workspace().getTeachers()) {
+            receivedTeacherModel.addRow(new Object[]{
+                    teacher.getCode(), teacher.getFullName(),
+                    teacher.getMaxSlotsPerDay(), teacher.getMaxSlotsPerWeek()});
+        }
+    }
+
+    private void refreshReceivedRulesTable() {
+        if (updatingReceivedFilters) {
+            return;
+        }
+        String selected = (String) receivedRuleProgramFilter.getSelectedItem();
+        receivedRuleModel.setRowCount(0);
+        int count = 0;
+        for (TeachingRule rule : workspace().getRules()) {
+            Program program = rule.getProgram();
+            boolean match = selected == null || selected.equals(ALL)
+                    || (program != null && program.getLabel().equals(selected));
+            if (match) {
+                count++;
+                receivedRuleModel.addRow(new Object[]{
+                        rule.getProgram() == null ? "?" : rule.getProgram().getDisplayName(),
+                        rule.getCourseCode(), rule.getCourseName(), rule.getTeacherCode(),
+                        rule.isCanLecture() ? "✔" : "", rule.isCanTutorial() ? "✔" : ""});
+            }
+        }
+        receivedRuleCountLabel.setText("   Hiển thị: " + count + " / " + workspace().getRules().size() + " dòng");
     }
 
     private void refreshFilters() {
