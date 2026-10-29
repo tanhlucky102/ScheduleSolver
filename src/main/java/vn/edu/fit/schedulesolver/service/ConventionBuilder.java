@@ -9,6 +9,7 @@ import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.SessionKind;
 import vn.edu.fit.schedulesolver.model.Teacher;
 import vn.edu.fit.schedulesolver.model.TeachingRule;
+import vn.edu.fit.schedulesolver.model.TimeSlots;
 
 /** Đề xuất quy ước phân công từ TKB cũ: ai đã dạy môn nào, dạy Lec hay Tut. */
 public class ConventionBuilder {
@@ -133,6 +134,37 @@ public class ConventionBuilder {
             }
         }
         return result;
+    }
+
+    /**
+     * Mức mặc định 4 ca/ngày, 12 ca/tuần thấp hơn tải thật của vài GV trên TKB của khoa.
+     * Nâng giới hạn của các GV đó lên bằng tải thật để bộ giải không coi tải thật là vi phạm.
+     * Trả về mô tả các GV đã được nâng.
+     */
+    public List<String> applyRealLoad(List<Teacher> teachers, GridTimetable grid) {
+        List<String> changed = new ArrayList<>();
+        for (Teacher teacher : teachers) {
+            int[] perDay = new int[TimeSlots.LAST_DAY + 1];
+            for (int k = 0; k < grid.getAssignments().size(); k++) {
+                Assignment assignment = grid.getAssignments().get(k);
+                if (assignment.getTeacherCode().equalsIgnoreCase(teacher.getCode())) {
+                    perDay[assignment.getDay()] += grid.getSessions().get(k).getSlotCount();
+                }
+            }
+            int week = 0;
+            int maxDay = 0;
+            for (int day = TimeSlots.FIRST_DAY; day <= TimeSlots.LAST_DAY; day++) {
+                week += perDay[day];
+                maxDay = Math.max(maxDay, perDay[day]);
+            }
+            if (maxDay > teacher.getMaxSlotsPerDay() || week > teacher.getMaxSlotsPerWeek()) {
+                teacher.setMaxSlotsPerDay(Math.max(teacher.getMaxSlotsPerDay(), maxDay));
+                teacher.setMaxSlotsPerWeek(Math.max(teacher.getMaxSlotsPerWeek(), week));
+                changed.add(teacher.getCode() + ": TKB của khoa có " + week + " ca/tuần, nhiều nhất "
+                        + maxDay + " ca/ngày");
+            }
+        }
+        return changed;
     }
 
     /** Dòng quy ước của cặp môn và giảng viên, chưa có thì trả về null. */
