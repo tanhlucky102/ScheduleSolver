@@ -6,16 +6,19 @@ import java.util.ArrayList;
 import java.util.List;
 import vn.edu.fit.schedulesolver.model.Account;
 import vn.edu.fit.schedulesolver.model.BusySlot;
+import vn.edu.fit.schedulesolver.model.ExternalSession;
 import vn.edu.fit.schedulesolver.model.Role;
 import vn.edu.fit.schedulesolver.model.Teacher;
 import vn.edu.fit.schedulesolver.model.TeachingRule;
+import vn.edu.fit.schedulesolver.model.TimeSlots;
 
-/** Đọc/ghi các file CSV: giảng viên, quy ước phân công, lịch bận và tài khoản. */
+/** Đọc/ghi các file CSV: giảng viên, quy ước phân công, lịch bận, TKB trường khác và tài khoản. */
 public final class DataFiles {
     public static final String TEACHER_HEADER = "ma_gv,ho_ten,toi_da_ca_ngay,toi_da_ca_tuan,bi_danh";
     public static final String RULE_HEADER = "ma_mon,ten_mon,ma_gv,day_lec,day_tut";
     public static final String BUSY_HEADER = "ma_gv,thu,tu_ca,den_ca,noi_ban,ghi_chu";
     public static final String ACCOUNT_HEADER = "ten_dang_nhap,mat_khau_sha256,vai_tro,ma_gv";
+    public static final String EXTERNAL_HEADER = "ma_gv,truong,mon,lop,thu,bat_dau,ket_thuc,phong,gia_dinh";
 
     private DataFiles() {
     }
@@ -107,6 +110,36 @@ public final class DataFiles {
             });
         }
         CsvFile.write(file, BUSY_HEADER, rows);
+    }
+
+    /** Giờ ghi dạng gg:pp, cột gia_dinh = x là TKB tự giả định. */
+    public static List<ExternalSession> readExternalSessions(File file) throws IOException {
+        List<ExternalSession> sessions = new ArrayList<>();
+        int lineNumber = 1;
+        for (String[] row : CsvFile.read(file)) {
+            lineNumber++;
+            try {
+                int day = Integer.parseInt(CsvFile.get(row, 4).trim());
+                sessions.add(new ExternalSession(CsvFile.get(row, 0), CsvFile.get(row, 1), CsvFile.get(row, 2),
+                        CsvFile.get(row, 3), day, TimeSlots.parseTime(CsvFile.get(row, 5)),
+                        TimeSlots.parseTime(CsvFile.get(row, 6)), CsvFile.get(row, 7), isMarked(CsvFile.get(row, 8))));
+            } catch (IllegalArgumentException e) {
+                throw new IOException(file.getName() + " dòng " + lineNumber + ": " + e.getMessage(), e);
+            }
+        }
+        return sessions;
+    }
+
+    public static void writeExternalSessions(File file, List<ExternalSession> sessions) throws IOException {
+        List<String[]> rows = new ArrayList<>();
+        for (ExternalSession session : sessions) {
+            rows.add(new String[] {
+                session.getTeacherCode(), session.getSchool(), session.getCourseName(), session.getClassName(),
+                String.valueOf(session.getDay()), TimeSlots.formatTime(session.getStartMinute()),
+                TimeSlots.formatTime(session.getEndMinute()), session.getRoom(), session.isAssumed() ? "x" : ""
+            });
+        }
+        CsvFile.write(file, EXTERNAL_HEADER, rows);
     }
 
     public static List<Account> readAccounts(File file) throws IOException {
