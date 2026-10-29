@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -78,6 +79,9 @@ public class StaffPanel extends BasePanel {
             Math.min(8, Runtime.getRuntime().availableProcessors()), 1, 32, 1));
     private final JSpinner secondSpinner = new JSpinner(new SpinnerNumberModel(10, 1, 600, 1));
     private final JTextField seedField = new JTextField("42", 6);
+    // chế độ tái lập: dừng theo số bước thử thay vì theo giờ
+    private final JCheckBox deterministicBox = new JCheckBox("Chạy tái lập");
+    private final JSpinner iterationSpinner = new JSpinner(new SpinnerNumberModel(1_000_000, 10_000, 50_000_000, 100_000));
     private final JButton solveButton = createButton("Xếp lịch", e -> startSolving());
     private final JButton stopButton = createButton("Dừng", Theme.DANGER, e -> stopSolving());
     private final JButton publishButton = createButton("Công bố cho giảng viên", Theme.SUCCESS, e -> publish());
@@ -122,7 +126,7 @@ public class StaffPanel extends BasePanel {
     private final PlanViewTab planViewTab;
 
     private ParallelSolver runningSolver;
-    private long runningLimitMillis;
+    private SolverConfig runningConfig;
     private String lastRunText = "";
     private TimetableMetrics lastMetrics;
 
@@ -166,6 +170,20 @@ public class StaffPanel extends BasePanel {
         fields.add(secondSpinner);
         fields.add(new JLabel("Seed:"));
         fields.add(seedField);
+        fields.add(deterministicBox);
+        fields.add(new JLabel("(cùng seed → cùng kết quả)"));
+        fields.add(new JLabel("Số bước thử/luồng:"));
+        fields.add(iterationSpinner);
+        iterationSpinner.setEnabled(false);
+        deterministicBox.addActionListener(e -> {
+            iterationSpinner.setEnabled(deterministicBox.isSelected());
+            secondSpinner.setEnabled(!deterministicBox.isSelected());
+        });
+        deterministicBox.setToolTipText("<html>Dừng theo số bước thử thay vì theo đồng hồ: cùng seed, số luồng và số bước<br>"
+                + "thì kết quả luôn giống hệt, dùng khi cần kiểm tra lại hoặc ghi vào báo cáo.<br>"
+                + "Chạy theo thời gian thì máy nhanh, chậm thử được số bước khác nhau nên kết quả có thể khác.</html>");
+        iterationSpinner.setToolTipText("<html>Mỗi luồng thử đúng chừng này bước di chuyển (Tabu thử 50 bước mỗi vòng).<br>"
+                + "Cùng số bước thì máy nào cũng ra cùng kết quả, chỉ khác thời gian chạy.</html>");
         algorithmBox.setSelectedItem(Algorithm.PORTFOLIO);
         algorithmBox.setToolTipText(
                 "<html>Leo đồi, Simulated Annealing, Tabu Search: 3 thuật toán thầy đề xuất, chọn riêng để so sánh.<br>"
@@ -357,8 +375,13 @@ public class StaffPanel extends BasePanel {
         try {
             problem = service.buildProblemForSolving(workspace());
             long seed = Long.parseLong(seedField.getText().trim());
-            config = new SolverConfig((Algorithm) algorithmBox.getSelectedItem(), (Integer) threadSpinner.getValue(),
-                    (Integer) secondSpinner.getValue() * 1000L, 0, seed);
+            Algorithm algorithm = (Algorithm) algorithmBox.getSelectedItem();
+            int threads = (Integer) threadSpinner.getValue();
+            if (deterministicBox.isSelected()) {
+                config = new SolverConfig(algorithm, threads, 0, (Integer) iterationSpinner.getValue(), seed);
+            } else {
+                config = new SolverConfig(algorithm, threads, (Integer) secondSpinner.getValue() * 1000L, 0, seed);
+            }
         } catch (NumberFormatException e) {
             showError("Seed phải là số nguyên.");
             return;
@@ -368,7 +391,7 @@ public class StaffPanel extends BasePanel {
         }
         ParallelSolver solver = new ParallelSolver();
         runningSolver = solver;
-        runningLimitMillis = config.getTimeLimitMillis();
+        runningConfig = config;
         setRunning(true);
         progressTimer.start();
         frame.setStatus("Đang xếp lịch: " + config);
@@ -404,7 +427,12 @@ public class StaffPanel extends BasePanel {
             return;
         }
         long elapsed = runningSolver.getElapsedMillis();
-        progressBar.setValue((int) Math.min(100, elapsed * 100 / Math.max(1, runningLimitMillis)));
+        if (runningConfig.isDeterministic()) {
+            long total = Math.max(1, runningSolver.getIterationBudget());
+            progressBar.setValue((int) Math.min(100, runningSolver.getTotalIterations() * 100 / total));
+        } else {
+            progressBar.setValue((int) Math.min(100, elapsed * 100 / Math.max(1, runningConfig.getTimeLimitMillis())));
+        }
         Score best = runningSolver.getCurrentBestScore();
         String bestText = best == null ? "đang tạo lời giải ban đầu..." : best.toString();
         progressLabel.setText("<html>Đã chạy: <b>" + (elapsed / 100) / 10.0 + " giây</b><br>"
@@ -424,7 +452,8 @@ public class StaffPanel extends BasePanel {
         lastRunText = "=== LẦN CHẠY GẦN NHẤT ===\n" + result.describe() + "\n";
         frame.markChanged();
         evaluateDraft();
-        frame.setStatus("Xếp lịch xong: " + result.getBestScore() + " trong " + result.getElapsedMillis() + " ms.");
+        frame.setStatus("Xếp lịch xong: " + result.getBestScore() + " trong " + result.getElapsedMillis()
+                + " ms. Mã kiểm tra kết quả: " + result.getFingerprint());
     }
 
     private void setRunning(boolean running) {
@@ -434,6 +463,7 @@ public class StaffPanel extends BasePanel {
         exportButton.setEnabled(!running);
         busyButton.setEnabled(!running);
         draftTable.setEnabled(!running);
+        deterministicBox.setEnabled(!running);
     }
 
     private void evaluateDraft() {
