@@ -18,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -90,6 +89,7 @@ public class DeanPanel extends BasePanel {
     private boolean updatingPlanFilters;
     private final JLabel planStatus = new JLabel();
     private final JTextArea checkArea = new JTextArea(5, 60);
+    private final JTabbedPane planInfoTabs = new JTabbedPane();
 
     public DeanPanel(MainFrame frame) {
         super(frame);
@@ -113,6 +113,7 @@ public class DeanPanel extends BasePanel {
         teacherCheck.setFont(Theme.BOLD);
         top.add(teacherCheck, BorderLayout.SOUTH);
         panel.add(top, BorderLayout.NORTH);
+        setColumnWidths(teacherTable, 90, 200, 100, 100, 60, 420);
         JPanel tablePanel = new JPanel(new BorderLayout(4, 4));
         tablePanel.add(createSearchPanel("Tìm giảng viên:", teacherSearchField), BorderLayout.NORTH);
         tablePanel.add(new JScrollPane(teacherTable), BorderLayout.CENTER);
@@ -526,12 +527,8 @@ public class DeanPanel extends BasePanel {
                 + "Cột \"GV phụ trách\": các GV có thể dạy buổi đó theo quy ước; bộ giải của giáo vụ sẽ chọn 1 người.</html>");
         JPanel explainCard = new JPanel(new BorderLayout());
         Theme.card(explainCard);
-        explainCard.add(explain, BorderLayout.CENTER);
-        JScrollPane explainScroll = new JScrollPane(explainCard);
-        explainScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        explainScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        explainCard.add(explain, BorderLayout.NORTH);
 
-        JPanel tablePanel = new JPanel(new BorderLayout(4, 4));
         JPanel filters = new JPanel();
         filters.setLayout(new BoxLayout(filters, BoxLayout.X_AXIS));
         addPlanFilter(filters, "Mã môn:", planCourseCodeSearch, 100);
@@ -541,11 +538,7 @@ public class DeanPanel extends BasePanel {
         addPlanFilter(filters, "Khóa:", planCohortFilter, 85);
         addPlanFilter(filters, "Loại:", planKindFilter, 95);
         planTable.setRowSorter(planSorter);
-        planTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        int[] columnWidths = {140, 160, 280, 220, 80, 80, 90, 90, 80, 250};
-        for (int column = 0; column < columnWidths.length; column++) {
-            planTable.getColumnModel().getColumn(column).setPreferredWidth(columnWidths[column]);
-        }
+        setColumnWidths(planTable, 160, 90, 190, 110, 50, 55, 60, 55, 50, 220);
         addPlanSearchListener(planCourseCodeSearch);
         addPlanSearchListener(planCourseNameSearch);
         addPlanSearchListener(planTeacherSearch);
@@ -556,17 +549,15 @@ public class DeanPanel extends BasePanel {
         controls.add(buttons, BorderLayout.NORTH);
         controls.add(new JScrollPane(filters, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-        panel.add(controls, BorderLayout.NORTH);
-        tablePanel.add(new JScrollPane(planTable), BorderLayout.CENTER);
-        JSplitPane explainAndTable = new JSplitPane(JSplitPane.VERTICAL_SPLIT, explainScroll, tablePanel);
-        explainAndTable.setResizeWeight(0.18);
-        explainAndTable.setOneTouchExpandable(true);
-        explainAndTable.setDividerLocation(0.18);
-        panel.add(explainAndTable, BorderLayout.CENTER);
         checkArea.setEditable(false);
-        JScrollPane checkScroll = new JScrollPane(checkArea);
-        checkScroll.setBorder(Theme.titled("Kết quả kiểm tra"));
-        panel.add(checkScroll, BorderLayout.SOUTH);
+        // giải thích và kết quả kiểm tra chung một khung có tab ở dưới, bảng kế hoạch được phần lớn chiều cao
+        planInfoTabs.addTab("Giải thích các cột", new JScrollPane(explainCard));
+        planInfoTabs.addTab("Kết quả kiểm tra", new JScrollPane(checkArea));
+        planInfoTabs.setPreferredSize(new Dimension(10, 170));
+
+        panel.add(controls, BorderLayout.NORTH);
+        panel.add(new JScrollPane(planTable), BorderLayout.CENTER);
+        panel.add(planInfoTabs, BorderLayout.SOUTH);
         return panel;
     }
 
@@ -697,6 +688,7 @@ public class DeanPanel extends BasePanel {
             workspace().replacePlan(result.sessions);
             dataChanged();
             checkArea.setText(String.join("\n", result.messages));
+            planInfoTabs.setSelectedIndex(1);
         });
     }
 
@@ -714,6 +706,7 @@ public class DeanPanel extends BasePanel {
         List<String> problems = runCheck();
         if (problems.isEmpty()) {
             checkArea.setText("Kế hoạch hợp lệ: mọi buổi đều có giảng viên phụ trách theo quy ước.");
+            planInfoTabs.setSelectedIndex(1);
         } else {
             checkArea.setText(String.join("\n", problems));
         }

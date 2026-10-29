@@ -151,6 +151,7 @@ public class TeacherPanel extends BasePanel {
         form.add(row2);
         form.add(row3);
 
+        setColumnWidths(externalTable, 60, 70, 70, 210, 160, 90, 70, 140, 80);
         JPanel panel = new JPanel(new BorderLayout(4, 4));
         panel.add(info, BorderLayout.NORTH);
         panel.add(new JScrollPane(externalTable), BorderLayout.CENTER);
