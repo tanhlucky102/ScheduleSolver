@@ -33,13 +33,16 @@ public class DataSetup {
         {"ThaoDTP", "Thảo"}, {"KhoaTN", "Khoa"}, {"VanHT", "VânHT"}
     };
 
+    // GV mà TKB cũ chỉ ghi tên, giữ đúng tên đó làm mã. "Dung" dạy các môn truyền thông của MME,
+    // là người khác với DungVT (dạy các môn phần mềm, TKB luôn ghi đủ "DungVT")
+    private static final String[] NAME_ONLY_TEACHERS = {"Dung"};
+
     // TKB cũ không ghi ai dạy các môn này nên tạm đề xuất, dạng {môn, GV, Lec, Tut}
     private static final String[][] ASSUMED_RULES = {
         {"61FIT3JSD", "QuyenNV", "x", "x"},
         {"61FIT3JSD", "AnhVQ", "", "x"},
         {"61MME2PRE", "PhuongTM", "x", "x"},
-        {"61MME2PRE", "KhoaTN", "", "x"},
-        {"61MME4CCMA", "ChauNTB", "x", "x"}
+        {"61MME2PRE", "KhoaTN", "", "x"}
     };
 
     public static void main(String[] args) throws IOException {
@@ -48,6 +51,9 @@ public class DataSetup {
             Teacher teacher = new Teacher(alias[0]);
             teacher.addAlias(alias[1]);
             teachers.add(teacher);
+        }
+        for (String code : NAME_ONLY_TEACHERS) {
+            teachers.add(new Teacher(code));
         }
 
         GridExcelReader gridReader = new GridExcelReader();
@@ -65,6 +71,8 @@ public class DataSetup {
 
         ConventionBuilder builder = new ConventionBuilder();
         teachers.addAll(builder.newTeachers(grid, teachers));
+        System.out.println("Nâng giới hạn ca theo tải thật trên TKB của khoa:");
+        printAll(builder.applyRealLoad(teachers, grid));
         List<TeachingRule> rules = builder.buildDefault(grid, plan);
         for (String[] assumed : ASSUMED_RULES) {
             if (ConventionBuilder.findRule(rules, assumed[0], assumed[1]) == null) {
