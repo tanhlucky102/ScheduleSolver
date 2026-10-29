@@ -23,24 +23,31 @@ public final class DataFiles {
     private DataFiles() {
     }
 
-    public static List<Teacher> readTeachers(File file) throws IOException {
-        List<Teacher> teachers = new ArrayList<>();
+    /** Đọc mọi dòng của file bằng parser; dòng sai được báo kèm tên file và số dòng. */
+    private static <T> List<T> readAll(File file, RowParser<T> parser) throws IOException {
+        List<T> result = new ArrayList<>();
         int lineNumber = 1;
         for (String[] row : CsvFile.read(file)) {
             lineNumber++;
             try {
-                int maxDay = parseInt(CsvFile.get(row, 2), Teacher.DEFAULT_MAX_SLOTS_PER_DAY);
-                int maxWeek = parseInt(CsvFile.get(row, 3), Teacher.DEFAULT_MAX_SLOTS_PER_WEEK);
-                Teacher teacher = new Teacher(CsvFile.get(row, 0), CsvFile.get(row, 1), maxDay, maxWeek);
-                for (String alias : CsvFile.get(row, 4).split("\\|")) {
-                    teacher.addAlias(alias);
-                }
-                teachers.add(teacher);
+                result.add(parser.parse(row));
             } catch (IllegalArgumentException e) {
                 throw new IOException(file.getName() + " dòng " + lineNumber + ": " + e.getMessage(), e);
             }
         }
-        return teachers;
+        return result;
+    }
+
+    public static List<Teacher> readTeachers(File file) throws IOException {
+        return readAll(file, row -> {
+            int maxDay = parseInt(CsvFile.get(row, 2), Teacher.DEFAULT_MAX_SLOTS_PER_DAY);
+            int maxWeek = parseInt(CsvFile.get(row, 3), Teacher.DEFAULT_MAX_SLOTS_PER_WEEK);
+            Teacher teacher = new Teacher(CsvFile.get(row, 0), CsvFile.get(row, 1), maxDay, maxWeek);
+            for (String alias : CsvFile.get(row, 4).split("\\|")) {
+                teacher.addAlias(alias);
+            }
+            return teacher;
+        });
     }
 
     public static void writeTeachers(File file, List<Teacher> teachers) throws IOException {
@@ -56,19 +63,8 @@ public final class DataFiles {
     }
 
     public static List<TeachingRule> readRules(File file) throws IOException {
-        List<TeachingRule> rules = new ArrayList<>();
-        int lineNumber = 1;
-        for (String[] row : CsvFile.read(file)) {
-            lineNumber++;
-            try {
-                boolean lecture = isMarked(CsvFile.get(row, 3));
-                boolean tutorial = isMarked(CsvFile.get(row, 4));
-                rules.add(new TeachingRule(CsvFile.get(row, 0), CsvFile.get(row, 1), CsvFile.get(row, 2), lecture, tutorial));
-            } catch (IllegalArgumentException e) {
-                throw new IOException(file.getName() + " dòng " + lineNumber + ": " + e.getMessage(), e);
-            }
-        }
-        return rules;
+        return readAll(file, row -> new TeachingRule(CsvFile.get(row, 0), CsvFile.get(row, 1), CsvFile.get(row, 2),
+                isMarked(CsvFile.get(row, 3)), isMarked(CsvFile.get(row, 4))));
     }
 
     public static void writeRules(File file, List<TeachingRule> rules) throws IOException {
@@ -83,21 +79,13 @@ public final class DataFiles {
     }
 
     public static List<BusySlot> readBusySlots(File file) throws IOException {
-        List<BusySlot> slots = new ArrayList<>();
-        int lineNumber = 1;
-        for (String[] row : CsvFile.read(file)) {
-            lineNumber++;
-            try {
-                int day = Integer.parseInt(CsvFile.get(row, 1));
-                // trong file ca đếm từ 1 cho dễ đọc, trong code đếm từ 0
-                int from = Integer.parseInt(CsvFile.get(row, 2)) - 1;
-                int to = Integer.parseInt(CsvFile.get(row, 3)) - 1;
-                slots.add(new BusySlot(CsvFile.get(row, 0), day, from, to, CsvFile.get(row, 4), CsvFile.get(row, 5)));
-            } catch (IllegalArgumentException e) {
-                throw new IOException(file.getName() + " dòng " + lineNumber + ": " + e.getMessage(), e);
-            }
-        }
-        return slots;
+        return readAll(file, row -> {
+            int day = Integer.parseInt(CsvFile.get(row, 1));
+            // trong file ca đếm từ 1 cho dễ đọc, trong code đếm từ 0
+            int from = Integer.parseInt(CsvFile.get(row, 2)) - 1;
+            int to = Integer.parseInt(CsvFile.get(row, 3)) - 1;
+            return new BusySlot(CsvFile.get(row, 0), day, from, to, CsvFile.get(row, 4), CsvFile.get(row, 5));
+        });
     }
 
     public static void writeBusySlots(File file, List<BusySlot> slots) throws IOException {
@@ -114,20 +102,9 @@ public final class DataFiles {
 
     /** Giờ ghi dạng gg:pp, cột gia_dinh = x là TKB tự giả định. */
     public static List<ExternalSession> readExternalSessions(File file) throws IOException {
-        List<ExternalSession> sessions = new ArrayList<>();
-        int lineNumber = 1;
-        for (String[] row : CsvFile.read(file)) {
-            lineNumber++;
-            try {
-                int day = Integer.parseInt(CsvFile.get(row, 4).trim());
-                sessions.add(new ExternalSession(CsvFile.get(row, 0), CsvFile.get(row, 1), CsvFile.get(row, 2),
-                        CsvFile.get(row, 3), day, TimeSlots.parseTime(CsvFile.get(row, 5)),
-                        TimeSlots.parseTime(CsvFile.get(row, 6)), CsvFile.get(row, 7), isMarked(CsvFile.get(row, 8))));
-            } catch (IllegalArgumentException e) {
-                throw new IOException(file.getName() + " dòng " + lineNumber + ": " + e.getMessage(), e);
-            }
-        }
-        return sessions;
+        return readAll(file, row -> new ExternalSession(CsvFile.get(row, 0), CsvFile.get(row, 1), CsvFile.get(row, 2),
+                CsvFile.get(row, 3), Integer.parseInt(CsvFile.get(row, 4).trim()), TimeSlots.parseTime(CsvFile.get(row, 5)),
+                TimeSlots.parseTime(CsvFile.get(row, 6)), CsvFile.get(row, 7), isMarked(CsvFile.get(row, 8))));
     }
 
     public static void writeExternalSessions(File file, List<ExternalSession> sessions) throws IOException {
@@ -143,18 +120,8 @@ public final class DataFiles {
     }
 
     public static List<Account> readAccounts(File file) throws IOException {
-        List<Account> accounts = new ArrayList<>();
-        int lineNumber = 1;
-        for (String[] row : CsvFile.read(file)) {
-            lineNumber++;
-            try {
-                Role role = Role.valueOf(CsvFile.get(row, 2));
-                accounts.add(new Account(CsvFile.get(row, 0), CsvFile.get(row, 1), role, CsvFile.get(row, 3)));
-            } catch (IllegalArgumentException e) {
-                throw new IOException(file.getName() + " dòng " + lineNumber + ": " + e.getMessage(), e);
-            }
-        }
-        return accounts;
+        return readAll(file, row -> new Account(CsvFile.get(row, 0), CsvFile.get(row, 1),
+                Role.valueOf(CsvFile.get(row, 2)), CsvFile.get(row, 3)));
     }
 
     public static void writeAccounts(File file, List<Account> accounts) throws IOException {
