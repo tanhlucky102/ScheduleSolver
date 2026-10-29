@@ -78,6 +78,11 @@ public class SolverResult {
         return stoppedByUser;
     }
 
+    /** Mã kiểm tra lời giải tốt nhất, chạy tái lập lại phải ra đúng mã này. */
+    public String getFingerprint() {
+        return bestSolution.fingerprint();
+    }
+
     public List<WorkerInfo> getWorkers() {
         return workers;
     }
@@ -94,6 +99,14 @@ public class SolverResult {
     public String describe() {
         StringBuilder text = new StringBuilder();
         text.append("Cấu hình: ").append(config).append('\n');
+        if (!config.isDeterministic()) {
+            text.append("Chế độ: theo thời gian (số vòng phụ thuộc tốc độ máy, chạy lại có thể ra kết quả khác)\n");
+        } else if (stoppedByUser) {
+            text.append("Chế độ: tái lập, nhưng bị bấm Dừng giữa chừng nên chạy lại sẽ không ra đúng kết quả này\n");
+        } else {
+            text.append("Chế độ: tái lập (cùng seed, số luồng, số vòng thì luôn ra cùng kết quả)\n");
+        }
+        text.append("Mã kiểm tra kết quả: ").append(getFingerprint()).append('\n');
         text.append("Điểm ban đầu (tham lam): ").append(initialScore).append('\n');
         text.append("Điểm tốt nhất: ").append(bestScore).append("  - tìm bởi: ").append(bestFoundBy).append('\n');
         text.append("Thời gian chạy: ").append(elapsedMillis).append(" ms");
