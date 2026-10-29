@@ -27,6 +27,19 @@ class StaffPanelTest {
         assertTrue(ws.getTeachers().size() > 0, "Đã nạp giảng viên mặc định");
         assertTrue(ws.getRules().size() > 0, "Đã nạp quy ước mặc định");
 
+        // Trước khi thêm buổi, gọi frame.refreshAll() (giống lúc vừa đăng nhập)
+        frame.refreshAll();
+        assertFalse(ws.isPlanSent(), "Sau khi refreshAll ban đầu, kế hoạch vẫn chưa được gửi");
+        assertTrue(ws.getPlan().isEmpty(), "Sau khi refreshAll ban đầu, danh sách buổi kế hoạch phải rỗng");
+
+        // Kiểm tra PlanViewTab khi trưởng khoa chưa gửi
+        PlanViewTab tab = new PlanViewTab(frame);
+        tab.refresh();
+        assertEquals(3, tab.getSubTabs().getTabCount(), "Phải có đúng 3 sub-tab");
+        assertTrue(tab.getStatusLabel().getText().contains("Trưởng khoa chưa gửi"),
+                "Thông báo phải là: Trưởng khoa chưa gửi kế hoạch mở lớp.");
+        assertEquals(0, tab.getPlanModel().getRowCount(), "Khi chưa gửi, bảng danh sách buổi phải có 0 dòng");
+
         // Thêm các buổi học vào kế hoạch
         ws.getPlan().add(new PlanSession("S01", "61FIT3DBS", "Database", "K24", "01", SessionKind.LECTURE, 150));
         ws.getPlan().add(new PlanSession("S02", "61FIT3DBS", "Database", "K24", "01", SessionKind.TUTORIAL, 30));
@@ -34,13 +47,9 @@ class StaffPanelTest {
 
         // Chưa gửi kế hoạch
         frame.refreshAll();
-        assertFalse(ws.isPlanSent());
-
-        // Kiểm tra PlanViewTab
-        PlanViewTab tab = new PlanViewTab(frame);
         tab.refresh();
-        assertEquals(3, tab.getSubTabs().getTabCount(), "Phải có đúng 3 sub-tab");
-        assertTrue(tab.getStatusLabel().getText().contains("Trưởng khoa chưa bấm"));
+        assertFalse(ws.isPlanSent());
+        assertEquals(0, tab.getPlanModel().getRowCount(), "Khi Trưởng khoa chưa bấm gửi, giáo vụ vẫn chưa thấy dữ liệu");
 
         // Giả lập Trưởng khoa gửi kế hoạch cho Giáo vụ
         ws.setPlanSent(true);
@@ -48,7 +57,7 @@ class StaffPanelTest {
         tab.refresh();
         assertTrue(ws.isPlanSent(), "Kế hoạch đã được đánh dấu là gửi");
         assertTrue(tab.getStatusLabel().getText().contains("Kế hoạch đã được Trưởng khoa gửi"));
-        assertTrue(tab.getPlanModel().getRowCount() > 0, "Bảng danh sách buổi phải có dữ liệu");
+        assertEquals(3, tab.getPlanModel().getRowCount(), "Bảng danh sách buổi phải hiển thị đúng 3 buổi đã gửi");
 
         frame.dispose();
     }
