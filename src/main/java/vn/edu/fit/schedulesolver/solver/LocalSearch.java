@@ -27,6 +27,11 @@ public abstract class LocalSearch {
 
     public abstract String getName();
 
+    /** Số bước đi được thử trong một vòng: leo đồi, SA thử 1 bước; Tabu thử nhiều bước rồi chọn một. */
+    public int getMovesPerStep() {
+        return 1;
+    }
+
     /** Lớp con nhớ cập nhật current và currentCost. */
     protected abstract void doStep();
 

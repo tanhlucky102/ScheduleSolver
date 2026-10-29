@@ -25,7 +25,9 @@ class ParallelSolverTest {
         Set<String> threadNames = new HashSet<>();
         for (SolverResult.WorkerInfo worker : result.getWorkers()) {
             threadNames.add(worker.getThreadName());
-            assertEquals(20_000, worker.getIterations());
+            // giới hạn tính theo số bước thử: luồng Tabu thử 50 bước mỗi vòng nên chạy ít vòng hơn
+            long expected = worker.getLabel().contains("Tabu") ? 20_000 / TabuSearch.CANDIDATES_PER_STEP : 20_000;
+            assertEquals(expected, worker.getIterations());
             // kết quả chung không được tệ hơn luồng nào
             assertTrue(result.getBestScore().compareTo(worker.getBestScore()) <= 0);
         }
@@ -47,6 +49,22 @@ class ParallelSolverTest {
                 assertTrue(first.getBestSolution().sameAs(again.getBestSolution()), threads + " luồng, lần " + run);
             }
         }
+    }
+
+    @Test
+    void deterministicModeGivesSameFingerprintEveryRun() throws InterruptedException {
+        Problem problem = TestProblems.randomProblem(24);
+        SolverConfig config = new SolverConfig(Algorithm.PORTFOLIO, 4, 0, 10_000, 5);
+        assertTrue(config.isDeterministic());
+        assertTrue(!new SolverConfig(Algorithm.PORTFOLIO, 4, 1_000, 0, 5).isDeterministic(), "chạy theo giờ thì không hứa giống nhau");
+
+        SolverResult first = new ParallelSolver().solve(problem, config);
+        for (int run = 0; run < 3; run++) {
+            SolverResult again = new ParallelSolver().solve(problem, config);
+            assertEquals(first.getFingerprint(), again.getFingerprint(), "lần " + run);
+        }
+        assertTrue(first.describe().contains("Chế độ: tái lập"));
+        assertTrue(first.describe().contains(first.getFingerprint()));
     }
 
     @Test

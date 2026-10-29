@@ -5,7 +5,7 @@ package vn.edu.fit.schedulesolver.solver;
  * Buổi vừa di chuyển bị cấm vài vòng cho khỏi quay lại chỗ cũ, trừ khi bước đó cho điểm tốt nhất từ trước tới giờ.
  */
 public class TabuSearch extends LocalSearch {
-    private static final int CANDIDATES_PER_STEP = 50;
+    static final int CANDIDATES_PER_STEP = 50;
     private static final int TABU_TENURE = 10;
 
     // tabuUntil[i]: buổi i bị cấm di chuyển cho tới vòng này
@@ -19,6 +19,11 @@ public class TabuSearch extends LocalSearch {
     @Override
     public String getName() {
         return "Tabu Search";
+    }
+
+    @Override
+    public int getMovesPerStep() {
+        return CANDIDATES_PER_STEP;
     }
 
     @Override

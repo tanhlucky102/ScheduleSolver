@@ -67,6 +67,17 @@ public class Solution {
         slot[session] = newSlot;
     }
 
+    /** Mã kiểm tra ngắn của lời giải: hai lần chạy ra cùng mã là cùng phân công (cùng GV, ngày, ca cho mọi buổi). */
+    public String fingerprint() {
+        long hash = 17;
+        for (int i = 0; i < teacher.length; i++) {
+            hash = hash * 31 + teacher[i];
+            hash = hash * 31 + day[i];
+            hash = hash * 31 + slot[i];
+        }
+        return Long.toHexString(hash).toUpperCase();
+    }
+
     /** Dùng trong test chạy lại cùng seed. */
     public boolean sameAs(Solution other) {
         if (teacher.length != other.teacher.length) {
