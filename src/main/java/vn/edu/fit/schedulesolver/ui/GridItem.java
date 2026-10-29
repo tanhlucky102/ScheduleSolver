@@ -1,23 +1,24 @@
 package vn.edu.fit.schedulesolver.ui;
 
 import java.awt.Color;
+import vn.edu.fit.schedulesolver.model.TimeSlots;
 
-/** Một ô chữ nhật vẽ trên lưới thời khóa biểu (một buổi dạy hoặc một lịch bận). */
+/** Một ô chữ nhật trên lịch cá nhân, vị trí tính theo giờ thật (số phút từ 0 giờ). */
 public class GridItem {
     private final int day;
-    private final int startSlot;
-    private final int slotCount;
+    private final int startMinute;
+    private final int endMinute;
     private final String title;
     private final String subtitle;
     private final String detail;
     private final Color fill;
     private final Color accent;
 
-    public GridItem(int day, int startSlot, int slotCount, String title, String subtitle, String detail,
+    public GridItem(int day, int startMinute, int endMinute, String title, String subtitle, String detail,
                     Color fill, Color accent) {
         this.day = day;
-        this.startSlot = startSlot;
-        this.slotCount = slotCount;
+        this.startMinute = startMinute;
+        this.endMinute = endMinute;
         this.title = title;
         this.subtitle = subtitle;
         this.detail = detail;
@@ -29,8 +30,16 @@ public class GridItem {
         return day;
     }
 
-    public int getStartSlot() {
-        return startSlot;
+    public int getStartMinute() {
+        return startMinute;
+    }
+
+    public int getEndMinute() {
+        return endMinute;
+    }
+
+    public String getTimeText() {
+        return TimeSlots.formatTime(startMinute) + " - " + TimeSlots.formatTime(endMinute);
     }
 
     public String getTitle() {
@@ -53,9 +62,5 @@ public class GridItem {
     /** Màu vạch bên trái của ô. */
     public Color getAccent() {
         return accent;
-    }
-
-    public boolean covers(int otherDay, int slot) {
-        return day == otherDay && slot >= startSlot && slot < startSlot + slotCount;
     }
 }

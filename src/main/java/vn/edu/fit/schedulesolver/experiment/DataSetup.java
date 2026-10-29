@@ -9,12 +9,14 @@ import vn.edu.fit.schedulesolver.io.GridCell;
 import vn.edu.fit.schedulesolver.io.GridExcelReader;
 import vn.edu.fit.schedulesolver.io.PlanExcelReader;
 import vn.edu.fit.schedulesolver.io.PlanRow;
+import vn.edu.fit.schedulesolver.model.ExternalSession;
 import vn.edu.fit.schedulesolver.model.PlanSession;
 import vn.edu.fit.schedulesolver.model.Teacher;
 import vn.edu.fit.schedulesolver.model.TeachingRule;
 import vn.edu.fit.schedulesolver.service.AuthService;
 import vn.edu.fit.schedulesolver.service.Convention;
 import vn.edu.fit.schedulesolver.service.ConventionBuilder;
+import vn.edu.fit.schedulesolver.service.ExternalScheduleGenerator;
 import vn.edu.fit.schedulesolver.service.GridTimetable;
 import vn.edu.fit.schedulesolver.service.GridTimetableConverter;
 import vn.edu.fit.schedulesolver.service.PlanBuilder;
@@ -27,6 +29,9 @@ public class DataSetup {
     public static final File TEACHER_FILE = new File(RESOURCES, "giang_vien.csv");
     public static final File RULE_FILE = new File(RESOURCES, "quy_uoc_phan_cong.csv");
     public static final File ACCOUNT_FILE = new File(RESOURCES, "tai_khoan.csv");
+    public static final File EXTERNAL_FILE = new File(RESOURCES, "lich_truong_khac.csv");
+    // seed cố định để lần nào tạo TKB trường khác giả định cũng giống nhau
+    private static final long EXTERNAL_SEED = 2026;
 
     // tên khác của cùng một giảng viên trên TKB cũ, dạng {mã, bí danh}
     private static final String[][] KNOWN_ALIASES = {
@@ -89,7 +94,12 @@ public class DataSetup {
         DataFiles.writeRules(RULE_FILE, rules);
         // tài khoản demo, mật khẩu 123456
         new AuthService(ACCOUNT_FILE).ensureDefaultAccounts(teachers);
-        System.out.println("Đã ghi " + TEACHER_FILE + ", " + RULE_FILE + " và " + ACCOUNT_FILE);
+        // chưa có TKB thật của các trường khác nên tạo giả định cho khoảng 1/4 số GV
+        List<ExternalSession> external = new ExternalScheduleGenerator().generate(teachers, 0.25, EXTERNAL_SEED);
+        Sorting.sortExternalSessions(external);
+        DataFiles.writeExternalSessions(EXTERNAL_FILE, external);
+        System.out.println("TKB trường khác (giả định): " + external.size() + " buổi");
+        System.out.println("Đã ghi " + TEACHER_FILE + ", " + RULE_FILE + ", " + ACCOUNT_FILE + " và " + EXTERNAL_FILE);
     }
 
     private static void printAll(List<String> lines) {

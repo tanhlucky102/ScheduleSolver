@@ -26,6 +26,61 @@ public final class TimeSlots {
         return SLOT_TIMES[slot];
     }
 
+    /** "7:05" hoặc "07:05" đổi ra số phút tính từ 0 giờ (07:05 = 425); sai định dạng thì báo lỗi. */
+    public static int parseTime(String text) {
+        String[] parts = text == null ? new String[0] : text.trim().split(":");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Giờ phải có dạng gg:pp, ví dụ 07:00.");
+        }
+        int hour;
+        int minute;
+        try {
+            hour = Integer.parseInt(parts[0].trim());
+            minute = Integer.parseInt(parts[1].trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Giờ phải có dạng gg:pp, ví dụ 07:00.");
+        }
+        if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+            throw new IllegalArgumentException("Giờ không hợp lệ: " + text.trim());
+        }
+        return hour * 60 + minute;
+    }
+
+    public static String formatTime(int minute) {
+        return String.format("%02d:%02d", minute / 60, minute % 60);
+    }
+
+    /** Giờ bắt đầu của ca tính bằng phút, ví dụ Ca 1 (07:10) là 430. */
+    public static int startMinute(int slot) {
+        return parseTime(SLOT_TIMES[slot].substring(0, 5));
+    }
+
+    public static int endMinute(int slot) {
+        return parseTime(SLOT_TIMES[slot].substring(8));
+    }
+
+    /** Các ca của khoa bị khoảng giờ [start, end) chồng lên, bit i = 1 là ca i. Chỉ chạm nhau thì không tính. */
+    public static int maskOfTime(int start, int end) {
+        int result = 0;
+        for (int slot = 0; slot < SLOTS_PER_DAY; slot++) {
+            if (start < endMinute(slot) && startMinute(slot) < end) {
+                result = result | (1 << slot);
+            }
+        }
+        return result;
+    }
+
+    /** Ví dụ ca 0 và ca 1 thì ra "Ca 1, 2"; không có ca nào thì ra "không ca nào". */
+    public static String describeMask(int mask) {
+        String text = "";
+        for (int slot = 0; slot < SLOTS_PER_DAY; slot++) {
+            if ((mask & (1 << slot)) != 0) {
+                text = text.isEmpty() ? "Ca " + (slot + 1) : text + ", " + (slot + 1);
+            }
+        }
+        return text.isEmpty() ? "không ca nào" : text;
+    }
+
     public static boolean isValidDay(int day) {
         return day >= FIRST_DAY && day <= LAST_DAY;
     }

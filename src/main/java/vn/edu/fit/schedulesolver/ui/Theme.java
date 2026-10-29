@@ -41,6 +41,8 @@ public final class Theme {
     public static final Color BUSY_FILL = new Color(254, 243, 199);
     public static final Color BUSY_ACCENT = new Color(217, 119, 6);
     public static final Color CONFLICT_FILL = new Color(254, 202, 202);
+    public static final Color EXTERNAL_FILL = new Color(204, 251, 241);
+    public static final Color EXTERNAL_ACCENT = new Color(13, 148, 136);
     public static final Color CONFLICT_ACCENT = new Color(220, 38, 38);
 
     public static final Font NORMAL = new Font("Segoe UI", Font.PLAIN, 13);

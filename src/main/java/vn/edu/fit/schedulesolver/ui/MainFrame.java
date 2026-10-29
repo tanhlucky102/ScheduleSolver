@@ -180,6 +180,7 @@ public class MainFrame extends JFrame {
     private void loadDefaultData() {
         File teacherFile = new File(RESOURCES, "giang_vien.csv");
         File ruleFile = new File(RESOURCES, "quy_uoc_phan_cong.csv");
+        File externalFile = new File(RESOURCES, "lich_truong_khac.csv");
         try {
             if (teacherFile.exists()) {
                 workspace.getTeachers().addAll(DataFiles.readTeachers(teacherFile));
@@ -187,9 +188,13 @@ public class MainFrame extends JFrame {
             if (ruleFile.exists()) {
                 workspace.getRules().addAll(DataFiles.readRules(ruleFile));
             }
+            if (externalFile.exists()) {
+                workspace.getExternalSessions().addAll(DataFiles.readExternalSessions(externalFile));
+            }
             Sorting.sortWorkspace(workspace);
-            setStatus("Đã nạp " + workspace.getTeachers().size() + " giảng viên và "
-                    + workspace.getRules().size() + " dòng quy ước phân công từ thư mục resources.");
+            setStatus("Đã nạp " + workspace.getTeachers().size() + " giảng viên, "
+                    + workspace.getRules().size() + " dòng quy ước phân công và "
+                    + workspace.getExternalSessions().size() + " buổi dạy ở trường khác từ thư mục resources.");
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Không đọc được dữ liệu mặc định: " + e.getMessage(),
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
