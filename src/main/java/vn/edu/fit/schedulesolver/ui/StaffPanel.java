@@ -116,6 +116,8 @@ public class StaffPanel extends BasePanel {
     private final List<BusySlot> shownBusySlots = new ArrayList<>();
     private boolean updatingBusyFilters;
 
+    private final PlanViewTab planViewTab;
+
     private ParallelSolver runningSolver;
     private long runningLimitMillis;
     private String lastRunText = "";
@@ -123,7 +125,9 @@ public class StaffPanel extends BasePanel {
 
     public StaffPanel(MainFrame frame) {
         super(frame);
+        this.planViewTab = new PlanViewTab(frame);
         JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Kế hoạch từ trưởng khoa", planViewTab);
         tabs.addTab("Lưới TKB nháp", createGridTab());
         tabs.addTab("Danh sách buổi", createListTab());
         reportArea.setEditable(false);
@@ -536,6 +540,7 @@ public class StaffPanel extends BasePanel {
         refreshGrid();
         refreshDraftTable();
         refreshDraftDropdowns();
+        planViewTab.refresh();
         busyModel.setRowCount(0);
         shownBusySlots.clear();
         for (BusySlot slot : workspace().getBusySlots()) {
@@ -747,5 +752,9 @@ public class StaffPanel extends BasePanel {
                     TimeSlots.describe(assignment.getDay(), assignment.getStartSlot(), session.getSlotCount()),
                     assignment.isLocked() ? "Có" : "" });
         }
+    }
+
+    public PlanViewTab getPlanViewTab() {
+        return planViewTab;
     }
 }
