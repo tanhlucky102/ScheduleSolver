@@ -45,9 +45,16 @@ public class SolverResult {
     private final boolean stoppedByUser;
     private final String bestFoundBy;
     private final List<WorkerInfo> workers = new ArrayList<>();
+    private final List<BestSolutionHolder.Milestone> milestones = new ArrayList<>();
 
     public SolverResult(SolverConfig config, Solution bestSolution, Score bestScore, Score initialScore,
                         long elapsedMillis, boolean stoppedByUser, String bestFoundBy, List<WorkerInfo> workers) {
+        this(config, bestSolution, bestScore, initialScore, elapsedMillis, stoppedByUser, bestFoundBy, workers, new ArrayList<>());
+    }
+
+    public SolverResult(SolverConfig config, Solution bestSolution, Score bestScore, Score initialScore,
+                        long elapsedMillis, boolean stoppedByUser, String bestFoundBy, List<WorkerInfo> workers,
+                        List<BestSolutionHolder.Milestone> milestones) {
         this.config = config;
         this.bestSolution = bestSolution;
         this.bestScore = bestScore;
@@ -56,6 +63,42 @@ public class SolverResult {
         this.stoppedByUser = stoppedByUser;
         this.bestFoundBy = bestFoundBy;
         this.workers.addAll(workers);
+        if (milestones != null) {
+            this.milestones.addAll(milestones);
+        }
+    }
+
+    public List<BestSolutionHolder.Milestone> getMilestones() {
+        return milestones;
+    }
+
+    /** Trả về điểm số tốt nhất ghi nhận được tại thời điểm millis tính từ lúc bắt đầu chạy. */
+    public Score getScoreAtTime(long millis) {
+        Score score = initialScore;
+        for (BestSolutionHolder.Milestone m : milestones) {
+            if (m.getElapsedMillis() <= millis) {
+                score = m.getScore();
+            } else {
+                break;
+            }
+        }
+        return score;
+    }
+
+    /** Thời gian (ms) tìm ra nghiệm khả thi đầu tiên (H = 0), trả về -1 nếu không đạt được. */
+    public long getTimeToFeasible() {
+        if (!bestScore.isFeasible()) {
+            return -1;
+        }
+        if (initialScore.isFeasible()) {
+            return 0;
+        }
+        for (BestSolutionHolder.Milestone m : milestones) {
+            if (m.getScore().isFeasible()) {
+                return m.getElapsedMillis();
+            }
+        }
+        return elapsedMillis;
     }
 
     public Solution getBestSolution() {

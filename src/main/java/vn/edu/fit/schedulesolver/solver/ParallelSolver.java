@@ -26,7 +26,7 @@ public class ParallelSolver {
         ScoreCalculator calculator = new ScoreCalculator(problem);
         Solution initial = new GreedyBuilder(problem, calculator).build();
         Score initialScore = calculator.calculate(initial);
-        BestSolutionHolder sharedBest = new BestSolutionHolder();
+        BestSolutionHolder sharedBest = new BestSolutionHolder(startMillis);
         sharedBest.offer(initial, initialScore.toCost(), "Tham lam (khởi tạo)");
         holder = sharedBest;
 
@@ -87,7 +87,7 @@ public class ParallelSolver {
         }
         long elapsed = System.currentTimeMillis() - startMillis;
         return new SolverResult(config, best.copy(), Score.fromCost(bestCost), initialScore,
-                elapsed, stopRequested, foundBy, infos);
+                elapsed, stopRequested, foundBy, infos, holder != null ? holder.getMilestones() : new ArrayList<>());
     }
 
     public void requestStop() {

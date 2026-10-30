@@ -1,0 +1,580 @@
+{
+  "timestamp": "2026-10-30T11:54:35.748675752",
+  "system_environment": {
+    "os_name": "Linux",
+    "os_arch": "amd64",
+    "java_version": "24.0.2",
+    "available_cpu_cores": 8,
+    "max_jvm_memory_mb": 4096,
+    "full_plan_session_count": 236,
+    "historical_grid_session_count": 190,
+    "teacher_count": 35,
+    "teaching_rules_count": 105,
+    "external_sessions_count": 22
+  },
+  "scenarios": [
+    {
+      "scenario_id": "SCN-REAL-01",
+      "name": "Kế hoạch mở lớp toàn diện (Full-Scale Production Plan)",
+      "description": "Đánh giá động lực học thời gian (1 phút) và tính ổn định trên 3 giải thuật độc lập (bỏ Portfolio).",
+      "session_count": 236,
+      "teacher_count": 35,
+      "initial_greedy_score": {
+        "soft": 1537,
+        "hard": 0,
+        "cost": 1537
+      },
+      "algorithms": {
+        "HILL_CLIMBING": {
+          "runs": [
+            {
+              "seed": 1,
+              "final_hard": 0,
+              "final_soft": 461,
+              "total_iterations": 9841152,
+              "iterations_per_sec": 164013,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 486,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 461,
+                  "hard": 0
+                }
+              }
+            },
+            {
+              "seed": 2,
+              "final_hard": 0,
+              "final_soft": 466,
+              "total_iterations": 10610816,
+              "iterations_per_sec": 176841,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 486,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 466,
+                  "hard": 0
+                }
+              }
+            },
+            {
+              "seed": 3,
+              "final_hard": 0,
+              "final_soft": 466,
+              "total_iterations": 10835712,
+              "iterations_per_sec": 180589,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 486,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 471,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 466,
+                  "hard": 0
+                }
+              }
+            }
+          ],
+          "stats_1s": {
+            "mean": 486.0,
+            "std_dev": 0.0,
+            "min": 486.0,
+            "max": 486.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "stats_5s": {
+            "mean": 471.0,
+            "std_dev": 0.0,
+            "min": 471.0,
+            "max": 471.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "stats_15s": {
+            "mean": 471.0,
+            "std_dev": 0.0,
+            "min": 471.0,
+            "max": 471.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "stats_30s": {
+            "mean": 469.3,
+            "std_dev": 2.89,
+            "min": 466.0,
+            "max": 471.0,
+            "range": 5.0,
+            "coefficient_of_variation_pct": 0.62
+          },
+          "stats_60s_final": {
+            "mean": 464.3,
+            "std_dev": 2.89,
+            "min": 461.0,
+            "max": 466.0,
+            "range": 5.0,
+            "coefficient_of_variation_pct": 0.62
+          },
+          "avg_iterations_per_sec": 173814.33333333334,
+          "avg_time_to_feasible_ms": 0.0
+        },
+        "SIMULATED_ANNEALING": {
+          "runs": [
+            {
+              "seed": 1,
+              "final_hard": 0,
+              "final_soft": 471,
+              "total_iterations": 10647808,
+              "iterations_per_sec": 177457,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 938,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 492,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 476,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 476,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 471,
+                  "hard": 0
+                }
+              }
+            },
+            {
+              "seed": 2,
+              "final_hard": 0,
+              "final_soft": 476,
+              "total_iterations": 10615808,
+              "iterations_per_sec": 176921,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 968,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 512,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 476,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 476,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 476,
+                  "hard": 0
+                }
+              }
+            },
+            {
+              "seed": 3,
+              "final_hard": 0,
+              "final_soft": 476,
+              "total_iterations": 9749248,
+              "iterations_per_sec": 162479,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 942,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 522,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 482,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 481,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 476,
+                  "hard": 0
+                }
+              }
+            }
+          ],
+          "stats_1s": {
+            "mean": 949.3,
+            "std_dev": 16.29,
+            "min": 938.0,
+            "max": 968.0,
+            "range": 30.0,
+            "coefficient_of_variation_pct": 1.72
+          },
+          "stats_5s": {
+            "mean": 508.7,
+            "std_dev": 15.28,
+            "min": 492.0,
+            "max": 522.0,
+            "range": 30.0,
+            "coefficient_of_variation_pct": 3.0
+          },
+          "stats_15s": {
+            "mean": 478.0,
+            "std_dev": 3.46,
+            "min": 476.0,
+            "max": 482.0,
+            "range": 6.0,
+            "coefficient_of_variation_pct": 0.72
+          },
+          "stats_30s": {
+            "mean": 477.7,
+            "std_dev": 2.89,
+            "min": 476.0,
+            "max": 481.0,
+            "range": 5.0,
+            "coefficient_of_variation_pct": 0.6
+          },
+          "stats_60s_final": {
+            "mean": 474.3,
+            "std_dev": 2.89,
+            "min": 471.0,
+            "max": 476.0,
+            "range": 5.0,
+            "coefficient_of_variation_pct": 0.61
+          },
+          "avg_iterations_per_sec": 172285.66666666666,
+          "avg_time_to_feasible_ms": 0.0
+        },
+        "TABU_SEARCH": {
+          "runs": [
+            {
+              "seed": 1,
+              "final_hard": 0,
+              "final_soft": 466,
+              "total_iterations": 187264,
+              "iterations_per_sec": 3115,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 486,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 466,
+                  "hard": 0
+                }
+              }
+            },
+            {
+              "seed": 2,
+              "final_hard": 0,
+              "final_soft": 466,
+              "total_iterations": 183552,
+              "iterations_per_sec": 3054,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 491,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 466,
+                  "hard": 0
+                }
+              }
+            },
+            {
+              "seed": 3,
+              "final_hard": 0,
+              "final_soft": 466,
+              "total_iterations": 191872,
+              "iterations_per_sec": 3192,
+              "time_to_feasible_ms": 0,
+              "convergence_trajectory": {
+                "1000ms": {
+                  "soft": 491,
+                  "hard": 0
+                },
+                "5000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "15000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "30000ms": {
+                  "soft": 466,
+                  "hard": 0
+                },
+                "60000ms": {
+                  "soft": 466,
+                  "hard": 0
+                }
+              }
+            }
+          ],
+          "stats_1s": {
+            "mean": 489.3,
+            "std_dev": 2.89,
+            "min": 486.0,
+            "max": 491.0,
+            "range": 5.0,
+            "coefficient_of_variation_pct": 0.59
+          },
+          "stats_5s": {
+            "mean": 466.0,
+            "std_dev": 0.0,
+            "min": 466.0,
+            "max": 466.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "stats_15s": {
+            "mean": 466.0,
+            "std_dev": 0.0,
+            "min": 466.0,
+            "max": 466.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "stats_30s": {
+            "mean": 466.0,
+            "std_dev": 0.0,
+            "min": 466.0,
+            "max": 466.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "stats_60s_final": {
+            "mean": 466.0,
+            "std_dev": 0.0,
+            "min": 466.0,
+            "max": 466.0,
+            "range": 0.0,
+            "coefficient_of_variation_pct": 0.0
+          },
+          "avg_iterations_per_sec": 3120.3333333333335,
+          "avg_time_to_feasible_ms": 0.0
+        }
+      }
+    },
+    {
+      "scenario_id": "SCN-REAL-02",
+      "name": "Tái cấu trúc TKB lịch sử (Manual Baseline Reconstruction)",
+      "session_count": 190,
+      "manual_baseline": {
+        "hard": 1,
+        "soft": 1715,
+        "gaps_S1": 28,
+        "single_slot_days_S2": 39,
+        "teaching_days_S3": 114,
+        "over_day_S4": 0,
+        "over_week_S5": 0,
+        "max_slots_1_teacher": 18,
+        "cross_course_clashes_S6": 14,
+        "peak_sessions_in_slot": 11,
+        "iterations": 0,
+        "elapsed_ms": 0
+      },
+      "greedy_only": {
+        "hard": 0,
+        "soft": 985,
+        "gaps_S1": 7,
+        "single_slot_days_S2": 4,
+        "teaching_days_S3": 61,
+        "over_day_S4": 20,
+        "over_week_S5": 5,
+        "max_slots_1_teacher": 18,
+        "cross_course_clashes_S6": 6,
+        "peak_sessions_in_slot": 29,
+        "iterations": 0,
+        "elapsed_ms": 0
+      },
+      "fixed_teachers_sa_10s": {
+        "runs": [
+          {
+            "hard": 0,
+            "soft": 380,
+            "gaps_S1": 0,
+            "single_slot_days_S2": 1,
+            "teaching_days_S3": 73,
+            "over_day_S4": 0,
+            "over_week_S5": 0,
+            "max_slots_1_teacher": 18,
+            "cross_course_clashes_S6": 0,
+            "peak_sessions_in_slot": 14,
+            "iterations": 1928320,
+            "elapsed_ms": 10002
+          },
+          {
+            "hard": 0,
+            "soft": 395,
+            "gaps_S1": 0,
+            "single_slot_days_S2": 1,
+            "teaching_days_S3": 76,
+            "over_day_S4": 0,
+            "over_week_S5": 0,
+            "max_slots_1_teacher": 18,
+            "cross_course_clashes_S6": 0,
+            "peak_sessions_in_slot": 13,
+            "iterations": 1847424,
+            "elapsed_ms": 10002
+          },
+          {
+            "hard": 0,
+            "soft": 395,
+            "gaps_S1": 0,
+            "single_slot_days_S2": 1,
+            "teaching_days_S3": 76,
+            "over_day_S4": 0,
+            "over_week_S5": 0,
+            "max_slots_1_teacher": 18,
+            "cross_course_clashes_S6": 0,
+            "peak_sessions_in_slot": 11,
+            "iterations": 1794304,
+            "elapsed_ms": 10002
+          }
+        ],
+        "stats": {
+          "mean": 390.0,
+          "std_dev": 8.66,
+          "min": 380.0,
+          "max": 395.0,
+          "range": 15.0,
+          "coefficient_of_variation_pct": 2.22
+        }
+      },
+      "free_teachers_sa_10s": {
+        "runs": [
+          {
+            "hard": 0,
+            "soft": 375,
+            "gaps_S1": 0,
+            "single_slot_days_S2": 1,
+            "teaching_days_S3": 72,
+            "over_day_S4": 0,
+            "over_week_S5": 0,
+            "max_slots_1_teacher": 18,
+            "cross_course_clashes_S6": 0,
+            "peak_sessions_in_slot": 13,
+            "iterations": 1816192,
+            "elapsed_ms": 10001
+          },
+          {
+            "hard": 0,
+            "soft": 375,
+            "gaps_S1": 0,
+            "single_slot_days_S2": 1,
+            "teaching_days_S3": 72,
+            "over_day_S4": 0,
+            "over_week_S5": 0,
+            "max_slots_1_teacher": 18,
+            "cross_course_clashes_S6": 0,
+            "peak_sessions_in_slot": 13,
+            "iterations": 1880704,
+            "elapsed_ms": 10001
+          },
+          {
+            "hard": 0,
+            "soft": 375,
+            "gaps_S1": 0,
+            "single_slot_days_S2": 1,
+            "teaching_days_S3": 72,
+            "over_day_S4": 0,
+            "over_week_S5": 0,
+            "max_slots_1_teacher": 18,
+            "cross_course_clashes_S6": 0,
+            "peak_sessions_in_slot": 12,
+            "iterations": 1814912,
+            "elapsed_ms": 10002
+          }
+        ],
+        "stats": {
+          "mean": 375.0,
+          "std_dev": 0.0,
+          "min": 375.0,
+          "max": 375.0,
+          "range": 0.0,
+          "coefficient_of_variation_pct": 0.0
+        }
+      }
+    }
+  ]
+}
