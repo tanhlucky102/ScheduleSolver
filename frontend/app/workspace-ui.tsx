@@ -41,6 +41,7 @@ export function DepartmentProgress({departments,sessions,staff,busy,navigate,onC
 }
 export function AssignmentPanel({sessions,teachers,departments,head,busy,onCommand}:{sessions:ClassSession[];teachers:Teacher[];departments:Department[];head:boolean;busy:boolean;onCommand:(action:string,payload:unknown)=>Promise<void>}) {
  const [query,setQuery]=useState(""),[status,setStatus]=useState("all"),[department,setDepartment]=useState("");
+ const [showMobileFilters, setShowMobileFilters] = useState(false);
  const [selected,setSelected]=useState(""),[capabilities,setCapabilities]=useState("{}"),[assistant,setAssistant]=useState(false);
  const [teacherQuery,setTeacherQuery]=useState("");
  const editable=head&&departments[0]?.status==="SENT";
@@ -53,7 +54,41 @@ export function AssignmentPanel({sessions,teachers,departments,head,busy,onComma
  <Metrics items={[{label:"Lớp trong kế hoạch",value:sessions.length,detail:"Phạm vi bộ môn được phép xem"},{label:"Phân công hợp lệ",value:sessions.length-pending,detail:"Đúng bộ môn và năng lực",tone:"text-success"},{label:"Cần hoàn tất",value:pending,detail:"Chưa phân công hoặc cần điều chỉnh",tone:pending?"text-warning":""}]}/>
  {head&&<div className={"context-banner "+(editable?"":"subtle")}><Icon name="assign"/><div><b>{editable?"Bộ môn đang tiếp nhận phân công":departments[0]?.status==="SUBMITTED"?"Đã nộp phân công cho giáo vụ":"Chờ giáo vụ gửi kế hoạch"}</b><p>{editable?"Chọn giảng viên đủ năng lực cho từng lớp, kiểm tra khối lượng rồi nộp.":"Chỉ chỉnh sửa khi giáo vụ gửi hoặc trả lại kế hoạch cho bộ môn."}</p>{departments[0]?.note&&<p><b>Yêu cầu điều chỉnh:</b> {departments[0].note}</p>}</div></div>}
  <div className="assignment-layout"><section className="card assignment-table"><div className="section-heading"><div><h2>Phân công lớp học phần</h2><p>{head?"Lựa chọn được lọc theo bộ môn, loại buổi và năng lực.":"Theo dõi phân công do Trưởng bộ môn thực hiện."}</p></div></div>
- <div className="filters"><label className="search-field">Tìm lớp, môn hoặc giảng viên<input type="search" placeholder="Mã lớp, môn hoặc tên giảng viên…" value={query} onChange={e=>setQuery(e.target.value)}/></label><label>Trạng thái<select aria-label="Trạng thái" value={status} onChange={e=>setStatus(e.target.value)}><option value="all">Tất cả trạng thái</option><option value="pending">Chưa phân công</option><option value="assigned">Đã phân công hợp lệ</option><option value="invalid">Cần điều chỉnh</option></select></label>{!head&&<label>Bộ môn<select value={department} onChange={e=>setDepartment(e.target.value)}><option value="">Tất cả bộ môn</option>{departments.map(d=><option key={d.id} value={d.id}>{d.name||d.id}</option>)}</select></label>}</div>
+ <div className="filters assignment-filters">
+  <label className="search-field">
+    Tìm lớp, môn hoặc giảng viên
+    <input type="search" placeholder="Mã lớp, môn hoặc tên giảng viên…" value={query} onChange={e=>setQuery(e.target.value)}/>
+  </label>
+  <button
+    type="button"
+    className="mobile-filter-toggle"
+    onClick={() => setShowMobileFilters((prev) => !prev)}
+    aria-expanded={showMobileFilters}
+  >
+    <span>Bộ lọc ⚙️</span>
+    {(status !== "all" || department) && <span className="filter-badge">● Đang lọc</span>}
+  </button>
+  <div className={`filter-group ${showMobileFilters ? "open" : ""}`}>
+    <label>
+      Trạng thái
+      <select aria-label="Trạng thái" value={status} onChange={e=>setStatus(e.target.value)}>
+        <option value="all">Tất cả trạng thái</option>
+        <option value="pending">Chưa phân công</option>
+        <option value="assigned">Đã phân công hợp lệ</option>
+        <option value="invalid">Cần điều chỉnh</option>
+      </select>
+    </label>
+    {!head && (
+      <label>
+        Bộ môn
+        <select value={department} onChange={e=>setDepartment(e.target.value)}>
+          <option value="">Tất cả bộ môn</option>
+          {departments.map(d=><option key={d.id} value={d.id}>{d.name||d.id}</option>)}
+        </select>
+      </label>
+    )}
+  </div>
+</div>
  <div className="table-wrap table-scroll" style={{ maxHeight: "560px" }}><table role="table"><caption className="sr-only">Phân công lớp học phần, {filtered.length} kết quả</caption><thead><tr><th scope="col">Lớp / Môn học</th><th scope="col">Loại buổi</th><th scope="col">Quy mô</th><th scope="col">Giảng viên phụ trách</th><th scope="col">Trạng thái</th></tr></thead><tbody>{filtered.map(s=>{
  const candidates=teachers.filter(t=>eligible(s,t));
  return <tr key={s.id}><td><b>{s.course}</b><small>{s.id}</small></td><td><span className="badge neutral">{({LEC:"Lý thuyết",TUT:"Thực hành",COMBINED:"LT + TH"} as Record<string,string>)[s.kind]??s.kind}</span></td><td>{s.students} SV<small>{s.periods??"—"} tiết/tuần</small></td><td data-label="Giảng viên phụ trách">{head?<><select aria-label={"Giảng viên cho "+s.id} disabled={busy||!editable||!candidates.length} value={s.teacher??""} onChange={e=>onCommand("assign",{department:s.department,session:s.id,teacher:e.target.value})}><option value="" disabled>Chọn giảng viên</option>{s.teacher&&!candidates.some(t=>t.id===s.teacher)&&<option value={s.teacher}>Cần điều chỉnh: {teachers.find(t=>t.id===s.teacher)?.name||s.teacher}</option>}{candidates.map(t=><option value={t.id} key={t.id}>{t.name} · {load(t.id)} tiết</option>)}</select>{!candidates.length&&<small className="text-warning">Chưa có GV đủ năng lực. Cập nhật năng lực bên dưới.</small>}</>:teachers.find(t=>t.id===s.teacher)?.name||s.teacher||"Chưa phân công"}</td><td><span className={"badge "+(invalid(s)?"warning":"success")}>{!s.teacher?"Chưa phân công":invalid(s)?"Cần điều chỉnh":"Đã phân công"}</span></td></tr>;

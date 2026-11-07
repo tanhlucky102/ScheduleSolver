@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, Session
 
 from .domain import State
-from .models import Workspace, Profile, Publication, AuditLog, Base
+from .models import Workspace
 
 _engine = None
 _last_db_url = None
@@ -59,7 +59,7 @@ def connect():
 
 @contextmanager
 def transaction(workspace_id: str | UUID, expected_revision: int | None = None):
-    wid = UUID(str(workspace_id)) if not isinstance(workspace_id, UUID) else workspace_id
+    wid = UUID(str(workspace_id))
     with get_session() as session:
         workspace = session.execute(
             select(Workspace).where(Workspace.id == wid).with_for_update()
@@ -77,7 +77,7 @@ def transaction(workspace_id: str | UUID, expected_revision: int | None = None):
 
 
 def read(workspace_id: str | UUID):
-    wid = UUID(str(workspace_id)) if not isinstance(workspace_id, UUID) else workspace_id
+    wid = UUID(str(workspace_id))
     with get_session() as session:
         workspace = session.execute(
             select(Workspace).where(Workspace.id == wid)

@@ -95,3 +95,204 @@ main{padding:0 32px 28px;width:100%;min-width:0;max-width:1800px;margin:0 auto}.
 .workload-list::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ==========================================================================
+   ISS-01: Evaluating / Loading indicator for tab switching
+   ========================================================================== */
+.evaluating-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 500;
+}
+.spinner-border {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #bae6fd;
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.nav-spinner {
+  margin-left: auto;
+  font-size: 12px;
+  animation: spin 1.2s linear infinite;
+}
+
+/* ==========================================================================
+   ISS-02: Skeleton & Shimmer loading for sidebar and user profile
+   ========================================================================== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.14) 37%,
+    rgba(255, 255, 255, 0.04) 63%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: shimmer 1.6s infinite ease-in-out !important;
+}
+.skeleton-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+.skeleton-item {
+  height: 38px;
+  border-radius: 7px;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.skeleton-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+.skeleton-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.skeleton-line {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.skeleton-badge-pill {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+/* ==========================================================================
+   ISS-04: Matrix Cell Expand button
+   ========================================================================== */
+.cell-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 5px 8px;
+  background: #f0f7ff;
+  border: 1px dashed #38bdf8;
+  border-radius: 6px;
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 2px;
+}
+.cell-expand-btn:hover {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+}
+
+/* ==========================================================================
+   ISS-05: Responsive Collapsible Filters for Mobile & Tablet (<= 768px)
+   ========================================================================== */
+.mobile-filter-toggle {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .assignment-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+  }
+  .assignment-filters .search-field {
+    flex: 1;
+  }
+  .filter-group {
+    display: flex !important;
+    align-items: flex-end;
+    gap: 12px;
+  }
+  .term-filters-group {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .assignment-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    width: 100%;
+  }
+  .filter-group {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .filter-group.open {
+    display: flex;
+  }
+  .term-filters-group {
+    display: none;
+  }
+  .term-filters-group.open {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .filter-badge {
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    background: #e0f2fe;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+}

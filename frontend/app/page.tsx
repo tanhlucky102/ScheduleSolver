@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useMemo, memo, type FormEvent } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { CatalogEditor, ConfigEditor, type Dept, type Teacher } from "./editors";
 import { TermCalendar } from "./term-calendar";
@@ -195,6 +195,71 @@ function PlanImportCard({
   );
 }
 
+type DraftRowProps = {
+  session: Session;
+  placement?: Placement;
+  slotOptions?: React.ReactNode;
+  roomOptions?: React.ReactNode;
+  busy: boolean;
+  hasRooms: boolean;
+  hasSlots: boolean;
+  firstRoomId?: string;
+  onSlotChange: (sessionId: string, slot: number, roomId?: string) => void;
+  onRoomChange: (sessionId: string, slot: number, roomId: string) => void;
+};
+
+const DraftRow = memo(function DraftRow({
+  session,
+  placement,
+  slotOptions,
+  roomOptions,
+  busy,
+  hasRooms,
+  hasSlots,
+  firstRoomId,
+  onSlotChange,
+  onRoomChange,
+}: DraftRowProps) {
+  return (
+    <tr>
+      <td>
+        <b>{session.course}</b>
+        <small>{session.id}</small>
+      </td>
+      <td>
+        <select
+          aria-label={"Khung giờ cho " + session.id}
+          disabled={busy || !hasRooms}
+          value={placement?.slot ?? ""}
+          onChange={(e) =>
+            onSlotChange(session.id, Number(e.target.value), placement?.room_id ?? firstRoomId)
+          }
+        >
+          <option value="" disabled>
+            Chưa xếp
+          </option>
+          {slotOptions}
+        </select>
+      </td>
+      <td>
+        <select
+          aria-label={"Phòng cho " + session.id}
+          disabled={busy || !hasSlots}
+          value={placement?.room_id ?? ""}
+          onChange={(e) =>
+            onRoomChange(session.id, placement?.slot ?? 0, e.target.value)
+          }
+        >
+          <option value="" disabled>
+            Chọn phòng
+          </option>
+          {roomOptions}
+        </select>
+      </td>
+    </tr>
+  );
+});
+
 export default function Home() {
   const [auth, setAuth] = useState<SupabaseClient | null>(null);
   const [token, setToken] = useState("");
@@ -206,6 +271,8 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState("overview");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [draftLimit, setDraftLimit] = useState(60);
 
   // Login form quick-fill state
   const [loginEmail, setLoginEmail] = useState("");
@@ -359,6 +426,64 @@ export default function Home() {
     });
   }
 
+  function switchTab(newTab: string) {
+    if (newTab === "draft" && tab !== "draft") {
+      setIsEvaluating(true);
+      setTab("draft");
+      setMessage("");
+      setTimeout(() => {
+        setIsEvaluating(false);
+      }, 60);
+    } else {
+      setTab(newTab);
+      setMessage("");
+    }
+  }
+
+  const state = workspace?.state;
+  const staff = profile?.role === "STAFF";
+  const head = profile?.role === "HEAD";
+  const sessions = state?.sessions ?? [];
+  const departments = state?.departments ?? [];
+  const remaining = sessions.filter((s) => !s.teacher).length;
+  const unsent = departments.some((d) => d.status === "UNSENT" && sessions.some((s) => s.department === d.id));
+  const ready = !!sessions.length && !!departments.length && departments.every((d) => d.status === "SUBMITTED");
+
+  const draftMap = useMemo(
+    () => new Map((state?.draft ?? []).map((p) => [p.session, p])),
+    [state?.draft]
+  );
+
+  const slotOptions = useMemo(
+    () =>
+      state?.config?.slots?.map((slot, i) => (
+        <option value={i} key={i}>
+          {slot.day === 8 ? "Chủ nhật" : "Thứ " + slot.day} · bắt đầu {clock(slot.start)} (khung đến {clock(slot.end)})
+        </option>
+      )),
+    [state?.config?.slots]
+  );
+
+  const roomOptions = useMemo(
+    () =>
+      state?.rooms?.map((r) => (
+        <option key={r.id} value={r.id}>
+          {r.id} · {r.capacity} chỗ ({r.room_type})
+        </option>
+      )),
+    [state?.rooms]
+  );
+
+  const filteredDraftSessions = useMemo(() => {
+    if (!draftQuery) return sessions;
+    const q = draftQuery.toLowerCase();
+    return sessions.filter((s) => (s.id + " " + s.course).toLowerCase().includes(q));
+  }, [sessions, draftQuery]);
+
+  const visibleDraftSessions = draftQuery
+    ? filteredDraftSessions
+    : filteredDraftSessions.slice(0, draftLimit);
+
   // Render Login View if not authenticated
   if (!token) {
     return (
@@ -499,9 +624,6 @@ export default function Home() {
     );
   }
 
-  const state = workspace?.state;
-  const staff = profile?.role === "STAFF";
-  const head = profile?.role === "HEAD";
   const tabs = profile
     ? [
         ["overview", "Tổng quan"],
@@ -535,12 +657,6 @@ export default function Home() {
     personal: "Lịch khoa chính thức và lịch ngoài trong cùng một không gian.",
   };
 
-  const sessions = state?.sessions ?? [];
-  const departments = state?.departments ?? [];
-  const remaining = sessions.filter((s) => !s.teacher).length;
-  const unsent = departments.some((d) => d.status === "UNSENT" && sessions.some((s) => s.department === d.id));
-  const ready = !!sessions.length && !!departments.length && departments.every((d) => d.status === "SUBMITTED");
-
   return (
     <div className="shell">
       <a className="skip-link" href="#main-content">
@@ -561,26 +677,42 @@ export default function Home() {
 
         <p className="nav-label">KHÔNG GIAN LÀM VIỆC</p>
         <nav aria-label="Điều hướng chính">
-          {tabs.map(([id, label]) => (
-            <button
-              key={id}
-              aria-current={tab === id ? "page" : undefined}
-              className={tab === id ? "active" : ""}
-              onClick={() => {
-                setTab(id);
-                setMessage("");
-              }}
-            >
-              <Icon name={id} />
-              <span>{label}</span>
-              {id === "assign" && remaining > 0 && <span className="nav-count">{remaining}</span>}
-            </button>
-          ))}
+          {loading || !profile ? (
+            <div className="skeleton-nav" aria-label="Đang tải danh mục điều hướng">
+              <div className="skeleton-item shimmer" />
+              <div className="skeleton-item shimmer" />
+              <div className="skeleton-item shimmer" />
+              <div className="skeleton-item shimmer" />
+              <div className="skeleton-item shimmer" />
+            </div>
+          ) : (
+            tabs.map(([id, label]) => (
+              <button
+                key={id}
+                aria-current={tab === id ? "page" : undefined}
+                className={tab === id ? "active" : ""}
+                onClick={() => switchTab(id)}
+              >
+                <Icon name={id} />
+                <span>{label}</span>
+                {id === "assign" && remaining > 0 && <span className="nav-count">{remaining}</span>}
+                {id === "draft" && isEvaluating && <span className="nav-spinner">⏳</span>}
+              </button>
+            ))
+          )}
         </nav>
 
         {/* Sidebar Footer with Role Info and Settings Dropdown */}
         <div className="aside-foot">
-          {profile && (
+          {loading || !profile ? (
+            <div className="user-card skeleton-user shimmer" aria-label="Đang tải thông tin người dùng">
+              <span className="avatar skeleton-avatar" />
+              <div className="user-card-info skeleton-user-info">
+                <div className="skeleton-line" style={{ width: "90px", height: "13px", marginBottom: "4px" }} />
+                <div className="skeleton-badge-pill" style={{ width: "70px", height: "16px" }} />
+              </div>
+            </div>
+          ) : (
             <div className="user-card">
               <span className="avatar">{staff ? "GV" : head ? "BM" : "CN"}</span>
               <div className="user-card-info">
@@ -776,7 +908,7 @@ export default function Home() {
                       if (staff && unsent) {
                         void perform(() => command("send-all", {}));
                       } else {
-                        setTab(staff ? (sessions.length ? (ready ? "draft" : "assign") : "setup") : head ? "assign" : "personal");
+                        switchTab(staff ? (sessions.length ? (ready ? "draft" : "assign") : "setup") : head ? "assign" : "personal");
                       }
                     }}
                   >
@@ -801,7 +933,7 @@ export default function Home() {
                     sessions={sessions}
                     draftCount={state?.draft?.length ?? 0}
                     published={workspace.has_publication}
-                    navigate={setTab}
+                    navigate={switchTab}
                   />
                 )}
                 {(staff || head) && (
@@ -810,7 +942,7 @@ export default function Home() {
                     sessions={sessions}
                     staff={staff}
                     busy={busy}
-                    navigate={setTab}
+                    navigate={switchTab}
                     onCommand={(action, payload) => perform(() => command(action, payload))}
                   />
                 )}
@@ -949,6 +1081,12 @@ export default function Home() {
             {/* Tab: Scheduling / Draft */}
             {tab === "draft" && staff && (
               <>
+                {isEvaluating && (
+                  <div className="evaluating-indicator" role="status">
+                    <div className="spinner-border" />
+                    <span>Đang chuẩn bị dữ liệu và thẩm định 290 lớp học phần...</span>
+                  </div>
+                )}
                 <section className="card">
                   <h2>Thẩm định & xếp lịch học kỳ</h2>
                   <div className="readiness">
@@ -1074,71 +1212,64 @@ export default function Home() {
                         </tr>
                       </thead>
                       <tbody>
-                        {sessions
-                          .filter((s) => (s.id + " " + s.course).toLowerCase().includes(draftQuery.toLowerCase()))
-                          .map((s) => (
-                            <tr key={s.id}>
-                              <td>
-                                <b>{s.course}</b>
-                                <small>{s.id}</small>
-                              </td>
-                              <td>
-                                <select
-                                  aria-label={"Khung giờ cho " + s.id}
-                                  disabled={busy || !state?.rooms?.length}
-                                  value={state?.draft?.find((p) => p.session === s.id)?.slot ?? ""}
-                                  onChange={(e) =>
-                                    perform(() =>
-                                      command("placement", {
-                                        session: s.id,
-                                        slot: Number(e.target.value),
-                                        room_id:
-                                          state?.draft?.find((p) => p.session === s.id)?.room_id ??
-                                          state?.rooms?.[0]?.id,
-                                      })
-                                    )
-                                  }
-                                >
-                                  <option value="" disabled>
-                                    Chưa xếp
-                                  </option>
-                                  {state?.config?.slots.map((slot, i) => (
-                                    <option value={i} key={i}>
-                                      {slot.day === 8 ? "Chủ nhật" : "Thứ " + slot.day} · bắt đầu {clock(slot.start)} (khung đến {clock(slot.end)})
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td>
-                                <select
-                                  aria-label={"Phòng cho " + s.id}
-                                  disabled={busy || !state?.config?.slots.length}
-                                  value={state?.draft?.find((p) => p.session === s.id)?.room_id ?? ""}
-                                  onChange={(e) =>
-                                    perform(() =>
-                                      command("placement", {
-                                        session: s.id,
-                                        slot: state?.draft?.find((p) => p.session === s.id)?.slot ?? 0,
-                                        room_id: e.target.value,
-                                      })
-                                    )
-                                  }
-                                >
-                                  <option value="" disabled>
-                                    Chọn phòng
-                                  </option>
-                                  {state?.rooms?.map((r) => (
-                                    <option key={r.id} value={r.id}>
-                                      {r.id} · {r.capacity} chỗ ({r.room_type})
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                            </tr>
-                          ))}
+                        {visibleDraftSessions.map((s) => (
+                          <DraftRow
+                            key={s.id}
+                            session={s}
+                            placement={draftMap.get(s.id)}
+                            slotOptions={slotOptions}
+                            roomOptions={roomOptions}
+                            busy={busy}
+                            hasRooms={!!state?.rooms?.length}
+                            hasSlots={!!state?.config?.slots.length}
+                            firstRoomId={state?.rooms?.[0]?.id}
+                            onSlotChange={(sessionId, slot, roomId) =>
+                              perform(() =>
+                                command("placement", {
+                                  session: sessionId,
+                                  slot,
+                                  room_id: roomId,
+                                })
+                              )
+                            }
+                            onRoomChange={(sessionId, slot, roomId) =>
+                              perform(() =>
+                                command("placement", {
+                                  session: sessionId,
+                                  slot,
+                                  room_id: roomId,
+                                })
+                              )
+                            }
+                          />
+                        ))}
                       </tbody>
                     </table>
                   </div>
+                  {!draftQuery && filteredDraftSessions.length > draftLimit && (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "#f8fafc", borderTop: "1px solid var(--line)", fontSize: "12px", flexWrap: "wrap", gap: "8px" }}>
+                      <span style={{ color: "var(--muted)" }}>
+                        Đang hiển thị {visibleDraftSessions.length}/{filteredDraftSessions.length} lớp học phần
+                      </span>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          style={{ minHeight: "28px", padding: "3px 10px", fontSize: "11px" }}
+                          onClick={() => setDraftLimit((prev) => prev + 60)}
+                        >
+                          Xem thêm 60 lớp
+                        </button>
+                        <button
+                          type="button"
+                          className="primary"
+                          style={{ minHeight: "28px", padding: "3px 10px", fontSize: "11px" }}
+                          onClick={() => setDraftLimit(filteredDraftSessions.length)}
+                        >
+                          Hiển thị toàn bộ ({filteredDraftSessions.length} lớp)
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </section>
               </>
             )}
@@ -1194,6 +1325,30 @@ export default function Home() {
                         ))}
                       </select>
                     </label>
+                    <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", margin: "4px 0 8px" }}>
+                      <span style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>Chọn nhanh ca học:</span>
+                      <button
+                        type="button"
+                        style={{ minHeight: "28px", padding: "3px 10px", fontSize: "11px", background: "#f1f5f9", border: "1px solid var(--line)", borderRadius: "6px" }}
+                        onClick={() => setExternal({ ...external, start: "07:00", end: "11:30" })}
+                      >
+                        Ca sáng (07:00 – 11:30)
+                      </button>
+                      <button
+                        type="button"
+                        style={{ minHeight: "28px", padding: "3px 10px", fontSize: "11px", background: "#f1f5f9", border: "1px solid var(--line)", borderRadius: "6px" }}
+                        onClick={() => setExternal({ ...external, start: "12:30", end: "17:00" })}
+                      >
+                        Ca chiều (12:30 – 17:00)
+                      </button>
+                      <button
+                        type="button"
+                        style={{ minHeight: "28px", padding: "3px 10px", fontSize: "11px", background: "#f1f5f9", border: "1px solid var(--line)", borderRadius: "6px" }}
+                        onClick={() => setExternal({ ...external, start: "18:00", end: "20:30" })}
+                      >
+                        Ca tối (18:00 – 20:30)
+                      </button>
+                    </div>
                     {(["start", "end"] as const).map((k) => (
                       <label key={k}>
                         {k === "start" ? "Bắt đầu" : "Kết thúc"}

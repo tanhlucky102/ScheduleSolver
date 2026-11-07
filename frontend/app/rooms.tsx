@@ -132,6 +132,10 @@ export function RoomManager({
   const [courseStr, setCourseStr] = useState("");
   const [booking, setBooking] = useState({ id: "", room_id: "", day: 2, start: "07:00", end: "09:00", reason: "" });
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const isCapacityValid = Number.isInteger(room.capacity) && room.capacity > 0;
+  const isFormValid = Boolean(room.id.trim() && room.name.trim() && isCapacityValid);
 
   const filtered = initial.filter((r) => {
     const matchType =
@@ -177,6 +181,7 @@ export function RoomManager({
     setDeptStr("");
     setCourseStr("");
     setEditing(false);
+    setErrorMsg("");
     setFormOpen(true);
   };
 
@@ -186,11 +191,24 @@ export function RoomManager({
     setDeptStr(r.allowed_departments.join(", "));
     setCourseStr(r.allowed_courses.join(", "));
     setEditing(true);
+    setErrorMsg("");
     setFormOpen(true);
   };
 
   const handleSubmitRoom = async () => {
-    if (!room.id.trim() || !room.name.trim() || room.capacity <= 0) return;
+    if (!room.id.trim()) {
+      setErrorMsg("Mã phòng không được để trống.");
+      return;
+    }
+    if (!room.name.trim()) {
+      setErrorMsg("Tên phòng không được để trống.");
+      return;
+    }
+    if (!isCapacityValid) {
+      setErrorMsg("Sức chứa chỗ ngồi phải là số nguyên dương lớn hơn 0.");
+      return;
+    }
+    setErrorMsg("");
     const finalRoom: Room = {
       ...room,
       id: room.id.trim(),
@@ -467,6 +485,23 @@ export function RoomManager({
                 void handleSubmitRoom();
               }}
             >
+              {errorMsg && (
+                <div
+                  className="notice error"
+                  role="alert"
+                  style={{
+                    marginBottom: "14px",
+                    padding: "10px 14px",
+                    fontSize: "13px",
+                    borderRadius: "6px",
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    color: "#991b1b",
+                  }}
+                >
+                  <b>Lỗi nhập liệu:</b> <span>{errorMsg}</span>
+                </div>
+              )}
               {!editing && (
                 <div style={{ display: "flex", gap: "10px", marginBottom: "14px", background: "#f8fafc", padding: "10px", borderRadius: "8px" }}>
                   <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--muted)", alignSelf: "center" }}>Mẫu phòng:</span>
@@ -526,7 +561,15 @@ export function RoomManager({
                     min={1}
                     max={10000}
                     value={room.capacity || ""}
-                    onChange={(e) => setRoom({ ...room, capacity: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setRoom({ ...room, capacity: val });
+                      if (val <= 0) {
+                        setErrorMsg("Sức chứa chỗ ngồi phải là số nguyên dương lớn hơn 0.");
+                      } else if (errorMsg === "Sức chứa chỗ ngồi phải là số nguyên dương lớn hơn 0.") {
+                        setErrorMsg("");
+                      }
+                    }}
                   />
                 </label>
                 <label>
@@ -585,7 +628,7 @@ export function RoomManager({
                 <button type="button" onClick={() => setFormOpen(false)}>
                   Hủy
                 </button>
-                <button className="primary" type="submit">
+                <button className="primary" type="submit" disabled={!isFormValid}>
                   {editing ? "Lưu thay đổi phòng" : "Thêm phòng"}
                 </button>
               </div>

@@ -50,6 +50,88 @@ export function getProgramType(e: Event): "CLC" | "MME" | "STANDARD" {
   return "STANDARD";
 }
 
+function ClassCard({ event: e }: { event: Event }) {
+  const pType = getProgramType(e);
+  const isCLC = pType === "CLC";
+  const isMME = pType === "MME";
+
+  const cardBg = isCLC ? "#dbeafe" : isMME ? "#ffedd5" : "#ffffff";
+  const cardBorder = isCLC ? "#93c5fd" : isMME ? "#fed7aa" : "#cbd5e1";
+  const cardText = isCLC ? "#1e3a8a" : isMME ? "#7c2d12" : "#0f172a";
+  const badgeBg = isCLC ? "#bfdbfe" : isMME ? "#ffedd5" : "#f1f5f9";
+
+  return (
+    <div
+      key={e.id}
+      style={{
+        background: cardBg,
+        border: `1px solid ${cardBorder}`,
+        borderRadius: "6px",
+        padding: "6px 8px",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        fontSize: "11px",
+        lineHeight: 1.35,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: "4px",
+        }}
+      >
+        <b style={{ color: cardText, fontSize: "11.5px" }}>
+          {e.course || e.id}
+          {e.section ? ` - ${e.section}` : ""}
+        </b>
+        <span
+          style={{
+            fontSize: "9px",
+            fontWeight: 700,
+            padding: "1px 4px",
+            borderRadius: "3px",
+            background: badgeBg,
+            color: cardText,
+          }}
+        >
+          {pType}
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "3px",
+          color: "#334155",
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>{e.teacher || "Chưa gán"}</span>
+        <span
+          style={{
+            background: "rgba(0,0,0,0.06)",
+            padding: "1px 5px",
+            borderRadius: "4px",
+            fontWeight: 700,
+            fontSize: "11px",
+            color: "#1e293b",
+          }}
+        >
+          {e.room_id || e.room || "Chưa có phòng"}
+        </span>
+      </div>
+
+      {e.cohort && (
+        <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "2px" }}>
+          {e.cohort} · {clock(e.start)}–{clock(e.end)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TermCalendar({ events, rooms }: { events: Event[]; rooms: Room[] }) {
   const [viewMode, setViewMode] = useState<"matrix" | "room">("matrix");
   const [cohort, setCohort] = useState("");
@@ -57,6 +139,12 @@ export function TermCalendar({ events, rooms }: { events: Event[]; rooms: Room[]
   const [teacher, setTeacher] = useState("");
   const [roomFilter, setRoomFilter] = useState("");
   const [dayFilter, setDayFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [cellModal, setCellModal] = useState<{
+    day: number;
+    slot: (typeof TIME_SLOTS)[0];
+    classes: Event[];
+  } | null>(null);
 
   const selected = events.filter((e) => {
     const matchCohort = !cohort || e.cohort === cohort;
@@ -192,84 +280,98 @@ export function TermCalendar({ events, rooms }: { events: Event[]; rooms: Room[]
         </div>
 
         {/* Filters */}
-        <div className="filters" style={{ flexWrap: "wrap", gap: "10px" }}>
-          <label>
-            Chương trình
-            <select
-              aria-label="Lọc theo chương trình"
-              value={programFilter}
-              onChange={(e) => setProgramFilter(e.target.value)}
-            >
-              <option value="all">Tất cả chương trình ({events.length})</option>
-              <option value="CLC">Lớp CLC ({clcCount})</option>
-              <option value="MME">Lớp MME ({mmeCount})</option>
-              <option value="STANDARD">Lớp Đại trà ({stdCount})</option>
-            </select>
-          </label>
-          <label>
-            Khóa học
-            <select
-              aria-label="Khóa học"
-              value={cohort}
-              onChange={(e) => setCohort(e.target.value)}
-            >
-              <option value="">Tất cả khóa học</option>
-              {Array.from(new Set(events.map((e) => e.cohort).filter(Boolean)))
-                .sort()
-                .map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+        <div className="term-filters-wrapper">
+          <button
+            type="button"
+            className="mobile-filter-toggle"
+            onClick={() => setShowFilters((prev) => !prev)}
+            aria-expanded={showFilters}
+            style={{ marginBottom: "10px" }}
+          >
+            <span>Bộ lọc TKB ⚙️</span>
+            {(programFilter !== "all" || cohort || teacher || roomFilter || dayFilter) && (
+              <span className="filter-badge">● Đang lọc</span>
+            )}
+          </button>
+          <div className={`filters term-filters-group ${showFilters ? "open" : ""}`} style={{ flexWrap: "wrap", gap: "10px" }}>
+            <label>
+              Chương trình
+              <select
+                aria-label="Lọc theo chương trình"
+                value={programFilter}
+                onChange={(e) => setProgramFilter(e.target.value)}
+              >
+                <option value="all">Tất cả chương trình ({events.length})</option>
+                <option value="CLC">Lớp CLC ({clcCount})</option>
+                <option value="MME">Lớp MME ({mmeCount})</option>
+                <option value="STANDARD">Lớp Đại trà ({stdCount})</option>
+              </select>
+            </label>
+            <label>
+              Khóa học
+              <select
+                aria-label="Khóa học"
+                value={cohort}
+                onChange={(e) => setCohort(e.target.value)}
+              >
+                <option value="">Tất cả khóa học</option>
+                {Array.from(new Set(events.map((e) => e.cohort).filter(Boolean)))
+                  .sort()
+                  .map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label>
+              Giảng viên
+              <select
+                aria-label="Giảng viên trong học kỳ"
+                value={teacher}
+                onChange={(e) => setTeacher(e.target.value)}
+              >
+                <option value="">Tất cả giảng viên</option>
+                {Array.from(new Set(events.map((e) => e.teacher).filter(Boolean)))
+                  .sort()
+                  .map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label>
+              Phòng học
+              <select
+                aria-label="Phòng học"
+                value={roomFilter}
+                onChange={(e) => setRoomFilter(e.target.value)}
+              >
+                <option value="">Tất cả phòng ({rooms.length})</option>
+                {rooms.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.id} ({r.name || r.id})
                   </option>
                 ))}
-            </select>
-          </label>
-          <label>
-            Giảng viên
-            <select
-              aria-label="Giảng viên trong học kỳ"
-              value={teacher}
-              onChange={(e) => setTeacher(e.target.value)}
-            >
-              <option value="">Tất cả giảng viên</option>
-              {Array.from(new Set(events.map((e) => e.teacher).filter(Boolean)))
-                .sort()
-                .map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+              </select>
+            </label>
+            <label>
+              Thứ
+              <select
+                aria-label="Thứ trong tuần"
+                value={dayFilter}
+                onChange={(e) => setDayFilter(e.target.value)}
+              >
+                <option value="">Cả tuần (Thứ 2 – Thứ 7)</option>
+                {[2, 3, 4, 5, 6, 7].map((d) => (
+                  <option key={d} value={d}>
+                    Thứ {d}
                   </option>
                 ))}
-            </select>
-          </label>
-          <label>
-            Phòng học
-            <select
-              aria-label="Phòng học"
-              value={roomFilter}
-              onChange={(e) => setRoomFilter(e.target.value)}
-            >
-              <option value="">Tất cả phòng ({rooms.length})</option>
-              {rooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.id} ({r.name || r.id})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Thứ
-            <select
-              aria-label="Thứ trong tuần"
-              value={dayFilter}
-              onChange={(e) => setDayFilter(e.target.value)}
-            >
-              <option value="">Cả tuần (Thứ 2 – Thứ 7)</option>
-              {[2, 3, 4, 5, 6, 7].map((d) => (
-                <option key={d} value={d}>
-                  Thứ {d}
-                </option>
-              ))}
-            </select>
-          </label>
+              </select>
+            </label>
+          </div>
         </div>
 
         {!events.length ? (
@@ -393,106 +495,19 @@ export function TermCalendar({ events, rooms }: { events: Event[]; rooms: Room[]
                               </div>
                             ) : (
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                                {cellClasses.map((e) => {
-                                  const pType = getProgramType(e);
-                                  const isCLC = pType === "CLC";
-                                  const isMME = pType === "MME";
-
-                                  const cardBg = isCLC
-                                    ? "#dbeafe"
-                                    : isMME
-                                    ? "#ffedd5"
-                                    : "#ffffff";
-
-                                  const cardBorder = isCLC
-                                    ? "#93c5fd"
-                                    : isMME
-                                    ? "#fed7aa"
-                                    : "#cbd5e1";
-
-                                  const cardText = isCLC
-                                    ? "#1e3a8a"
-                                    : isMME
-                                    ? "#7c2d12"
-                                    : "#0f172a";
-
-                                  const badgeBg = isCLC
-                                    ? "#bfdbfe"
-                                    : isMME
-                                    ? "#ffedd5"
-                                    : "#f1f5f9";
-
-                                  return (
-                                    <div
-                                      key={e.id}
-                                      style={{
-                                        background: cardBg,
-                                        border: `1px solid ${cardBorder}`,
-                                        borderRadius: "6px",
-                                        padding: "6px 8px",
-                                        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                                        fontSize: "11px",
-                                        lineHeight: 1.35,
-                                      }}
-                                    >
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "space-between",
-                                          alignItems: "flex-start",
-                                          gap: "4px",
-                                        }}
-                                      >
-                                        <b style={{ color: cardText, fontSize: "11.5px" }}>
-                                          {e.course || e.id}
-                                          {e.section ? ` - ${e.section}` : ""}
-                                        </b>
-                                        <span
-                                          style={{
-                                            fontSize: "9px",
-                                            fontWeight: 700,
-                                            padding: "1px 4px",
-                                            borderRadius: "3px",
-                                            background: badgeBg,
-                                            color: cardText,
-                                          }}
-                                        >
-                                          {pType}
-                                        </span>
-                                      </div>
-
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "space-between",
-                                          alignItems: "center",
-                                          marginTop: "3px",
-                                          color: "#334155",
-                                        }}
-                                      >
-                                        <span style={{ fontWeight: 600 }}>{e.teacher || "Chưa gán"}</span>
-                                        <span
-                                          style={{
-                                            background: "rgba(0,0,0,0.06)",
-                                            padding: "1px 5px",
-                                            borderRadius: "4px",
-                                            fontWeight: 700,
-                                            fontSize: "11px",
-                                            color: "#1e293b",
-                                          }}
-                                        >
-                                          {e.room_id || e.room || "Chưa có phòng"}
-                                        </span>
-                                      </div>
-
-                                      {e.cohort && (
-                                        <div style={{ fontSize: "10px", color: "var(--muted)", marginTop: "2px" }}>
-                                          {e.cohort} · {clock(e.start)}–{clock(e.end)}
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
+                                {cellClasses.slice(0, 4).map((e) => (
+                                  <ClassCard key={e.id} event={e} />
+                                ))}
+                                {cellClasses.length > 4 && (
+                                  <button
+                                    type="button"
+                                    className="cell-expand-btn"
+                                    onClick={() => setCellModal({ day: d, slot, classes: cellClasses })}
+                                    title={`Xem toàn bộ ${cellClasses.length} lớp học phần`}
+                                  >
+                                    + {cellClasses.length - 4} lớp khác...
+                                  </button>
+                                )}
                               </div>
                             )}
                           </td>
@@ -571,6 +586,47 @@ export function TermCalendar({ events, rooms }: { events: Event[]; rooms: Room[]
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {cellModal && (
+          <div className="modal-overlay" onClick={() => setCellModal(null)}>
+            <div
+              className="modal-card"
+              style={{ maxWidth: "680px", maxHeight: "85vh", display: "flex", flexDirection: "column" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <div>
+                  <h3 style={{ margin: 0 }}>
+                    Thứ {cellModal.day} · {cellModal.slot.session} ({cellModal.slot.label})
+                  </h3>
+                  <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--muted)" }}>
+                    Khung giờ: {cellModal.slot.time} · Có {cellModal.classes.length} lớp học phần được bố trí
+                  </p>
+                </div>
+                <button className="modal-close" onClick={() => setCellModal(null)} aria-label="Đóng">
+                  ×
+                </button>
+              </div>
+              <div
+                style={{
+                  overflowY: "auto",
+                  padding: "12px 2px",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                  gap: "10px",
+                }}
+              >
+                {cellModal.classes.map((e) => (
+                  <ClassCard key={e.id} event={e} />
+                ))}
+              </div>
+              <div className="actions" style={{ justifyContent: "flex-end", marginTop: "14px" }}>
+                <button type="button" className="primary" onClick={() => setCellModal(null)}>
+                  Đóng cửa sổ
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </section>

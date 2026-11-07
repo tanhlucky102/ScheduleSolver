@@ -1,11 +1,10 @@
-from copy import deepcopy
 from io import BytesIO
 import json
 import os
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import Field, ValidationError
@@ -85,12 +84,29 @@ def me(p: Principal = Depends(principal)):
     return p.model_dump()
 
 
+_eval_cache: dict[tuple[str, int], dict] = {}
+
+
+def get_cached_evaluation(workspace_id: str, revision: int, state):
+    cache_key = (str(workspace_id), revision)
+    if cache_key not in _eval_cache:
+        if len(_eval_cache) > 200:
+            _eval_cache.clear()
+        _eval_cache[cache_key] = evaluate(state, state.draft)
+    return _eval_cache[cache_key]
+
+
 def visible(state, revision, p):
     identity_valid(p, state)
     if p.role == "STAFF":
         body = state.model_dump()
         body.pop("external")
-        return {"has_publication": bool(state.published), "revision": revision, "state": body, "evaluation": evaluate(state, state.draft)}
+        return {
+            "has_publication": bool(state.published),
+            "revision": revision,
+            "state": body,
+            "evaluation": get_cached_evaluation(str(p.workspace_id), revision, state),
+        }
     if p.role == "HEAD":
         body = state.model_dump()
         for key in ("departments", "teachers"):
