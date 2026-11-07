@@ -1,0 +1,39 @@
+{
+  "input_sha256": "a6684ae800701745aff76e27ffc0002d3243b7f05ada94a623b7ac63ceeeb644",
+  "final_domain_sha256": "d00cae0a2bfb173edd50d0db18a5879a9f7028883fbe430b755eeb3b32f87666",
+  "python": "3.10.21",
+  "machine": "x86_64",
+  "logical_cpus": 8,
+  "protocol": {
+    "offerings": 67,
+    "sessions": 290,
+    "rooms": {
+      "PROJECTOR": 6,
+      "COMPUTER": 11
+    },
+    "iterations_per_algorithm": 500,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "repeats": 1
+  },
+  "baseline": {
+    "status": "SEARCH_EXHAUSTED",
+    "seconds": 169.035741,
+    "hard": 52
+  },
+  "optimized": {
+    "status": "SOLVED",
+    "seconds": 106.905804,
+    "hard": 0,
+    "soft_total": 1705
+  },
+  "browser_run": {
+    "seconds": 152.533,
+    "hard": 0,
+    "soft_total": 1705
+  },
+  "interpretation": "One simulated input, one seed configuration; not a multi-seed benchmark. Browser wall time includes UI/API/Auth and concurrent checks; do not compare directly to Python."
+}

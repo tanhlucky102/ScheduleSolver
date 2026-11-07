@@ -1,0 +1,43 @@
+{
+  "auth": "Supabase hosted real",
+  "database": "Supabase PostgreSQL real",
+  "accounts": [
+    {
+      "role": "STAFF",
+      "department": null,
+      "login": true,
+      "scope": true
+    },
+    {
+      "role": "HEAD",
+      "department": "KHMT",
+      "login": true,
+      "scope": true
+    },
+    {
+      "role": "HEAD",
+      "department": "CNPM",
+      "login": true,
+      "scope": true
+    },
+    {
+      "role": "HEAD",
+      "department": "HTTT",
+      "login": true,
+      "scope": true
+    },
+    {
+      "role": "HEAD",
+      "department": "TTDPT",
+      "login": true,
+      "scope": true
+    },
+    {
+      "role": "TEACHER",
+      "department": null,
+      "login": true,
+      "scope": true
+    }
+  ],
+  "browser": true
+}

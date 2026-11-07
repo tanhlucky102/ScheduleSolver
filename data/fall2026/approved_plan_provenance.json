@@ -1,0 +1,806 @@
+[
+  {
+    "id": "61FIT2AIN-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 2,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT2CAL-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 3,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT2DMA-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 4,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT2PCO-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 5,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT2POP-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 6,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT2PR1-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 7,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT2RES-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 8,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3CGR-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 9,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3DBS-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 10,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3DSY-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 11,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3EBU-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 12,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3JSD-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 13,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3MUL-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 14,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3NPR-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 15,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3SAD-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 16,
+    "custom_counts_in_source": [
+      2.0,
+      5.0
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3SE1-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 17,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT3SS1-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 18,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": "x"
+  },
+  {
+    "id": "61FIT3WPR-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 19,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT4ATI-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 20,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT4EIS-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 21,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT4MLA-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 22,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61FIT4SPM-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 23,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2COT-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 24,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2DMA-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 25,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2EIS-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 26,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2MRE-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 27,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2PR1-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 28,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2PRC-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 29,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2PRE-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 30,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2PRM-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 31,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME2RES-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 32,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3CCO-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 33,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3CG2-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 34,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3DBS-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 35,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3DIM-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 36,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3EBU-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 37,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3MUL-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 38,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME3SM1A-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 39,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": "x"
+  },
+  {
+    "id": "61MME3WDE-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 40,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME4ADC-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 41,
+    "custom_counts_in_source": [
+      2.0,
+      5.0
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME4B2B-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 42,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "61MME4CCMA-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 43,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT2POP-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 44,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT2PR1-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 45,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT2RES-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 46,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT3DBS-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 47,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT3SAD-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 48,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT3SEN-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 49,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT3SS1-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 50,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": "x"
+  },
+  {
+    "id": "62FIT3WPR-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 51,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT4ATI-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 52,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT4EBU-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 53,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT4EIS-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 54,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT4MLA-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 55,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "62FIT4NAD-2023",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 56,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT2CAL-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 57,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT2DMA-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 58,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT2PCO-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 59,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT2POP-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 60,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT2PR1-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 61,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT2RES-2025",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 62,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT3AIN-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 63,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT3DBS-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 64,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT3SAD-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 65,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT3SEN-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 66,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  },
+  {
+    "id": "66FIT3SS1-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 67,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": "x"
+  },
+  {
+    "id": "66FIT3WPR-2024",
+    "source_sheet": "Kế hoạch mở lớp",
+    "source_row": 68,
+    "custom_counts_in_source": [
+      null,
+      null
+    ],
+    "count_policy": "explicit source counts take precedence; advanced default 40 per original Program.java; standard uses existing Python defaults",
+    "program_evidence": "ScheduleSolver_main/model/Program.java",
+    "combined_source": ""
+  }
+]

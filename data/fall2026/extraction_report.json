@@ -1,0 +1,15 @@
+{
+  "plan_rows": 290,
+  "course_cohort_groups": 69,
+  "reference_rows_by_sheet": {
+    "Đại trà": 189,
+    "Update 23.07": 13,
+    "Update 04.08": 12,
+    "Update 05.08 ": 7,
+    "Update 07.08": 4,
+    "CLC": 48,
+    "TT": 82
+  },
+  "room_inventory": "Requires staff declaration; source capacity/equipment/availability not inferred",
+  "accounts": "Original CSV preserved only; no legacy password import"
+}

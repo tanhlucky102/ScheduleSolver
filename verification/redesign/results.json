@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "auth": "mock",
+  "api": "mock",
+  "browser": "Chromium",
+  "roles": [
+    "STAFF",
+    "HEAD",
+    "TEACHER"
+  ],
+  "viewport": [
+    1440,
+    390
+  ],
+  "commands": 11,
+  "page_errors": [],
+  "checks": [
+    "send",
+    "eligible assignment",
+    "search empty",
+    "workload",
+    "submit lock",
+    "return/resubmit",
+    "solver error/retry",
+    "publish",
+    "role navigation",
+    "calendar/list/source",
+    "external validation",
+    "publication conflict",
+    "external deletion",
+    "mobile overflow",
+    "keyboard skip link"
+  ]
+}

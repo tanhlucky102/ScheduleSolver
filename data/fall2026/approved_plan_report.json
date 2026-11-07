@@ -1,0 +1,13 @@
+{
+  "offerings": 67,
+  "sessions": 290,
+  "combined_offerings": 4,
+  "programs": {
+    "TT": 12,
+    "STANDARD": 42,
+    "CLC": 13
+  },
+  "rooms_declared": 0,
+  "source": "ke_hoach_mo_lop_HK1_2026.xlsx",
+  "approved_by_user": true
+}

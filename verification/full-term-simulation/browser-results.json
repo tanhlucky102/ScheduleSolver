@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "auth": "Real Supabase Auth, existing demo accounts",
+  "api": "Real local FastAPI",
+  "database": "Real isolated PostgreSQL 17 Docker",
+  "data": "SIMULATED rooms/availability/capability additions; approved plan 67 offerings",
+  "sessions": 290,
+  "placed_sessions": 290,
+  "published_sessions": 290,
+  "hard": 0,
+  "soft_total": 1705,
+  "soft": {
+    "restricted": 25,
+    "single_class": 75,
+    "overload": 0,
+    "gaps_minutes": 1380
+  },
+  "rooms": 17,
+  "room_counts": {
+    "PROJECTOR": 6,
+    "COMPUTER": 11
+  },
+  "teacher": "QuyenNV",
+  "teacher_sessions": 11,
+  "teacher_profile": "Existing demo Auth user mapped to QuyenNV only in isolated local DB",
+  "roles": [
+    "STAFF",
+    "HEAD",
+    "TEACHER"
+  ],
+  "page_errors": [],
+  "http_errors": [],
+  "room_edit_capacity_roundtrip": true,
+  "independent_pairwise_checks": true,
+  "all_290_events_in_staff_calendar": true,
+  "head_return_resubmit": true,
+  "rbac_denied_room_edits": [
+    "HEAD",
+    "TEACHER"
+  ],
+  "solver_ui_seconds": 152.533,
+  "revision": 6,
+  "workspace_id": "64af50b6-c034-4873-b77c-fbe532a9d2a3",
+  "frontend_url": "http://127.0.0.1:3399",
+  "hosted_database_mutated": false,
+  "teacher_expanded_week_all_11_visible": true
+}

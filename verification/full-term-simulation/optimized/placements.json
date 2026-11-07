@@ -1,0 +1,1452 @@
+[
+  {
+    "session": "61FIT2AIN-2025-LEC-0",
+    "slot": 51,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT2AIN-2025-TUT-0-0",
+    "slot": 12,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT2AIN-2025-TUT-0-1",
+    "slot": 22,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT2AIN-2025-TUT-0-2",
+    "slot": 3,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61FIT2CAL-2025-LEC-0",
+    "slot": 15,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61FIT2CAL-2025-TUT-0-0",
+    "slot": 29,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT2CAL-2025-TUT-0-1",
+    "slot": 6,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT2CAL-2025-TUT-0-2",
+    "slot": 46,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61FIT2CAL-2025-TUT-0-3",
+    "slot": 45,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT2CAL-2025-TUT-0-4",
+    "slot": 39,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61FIT2CAL-2025-TUT-0-5",
+    "slot": 23,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT2DMA-2025-LEC-0",
+    "slot": 2,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT2DMA-2025-TUT-0-0",
+    "slot": 45,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT2DMA-2025-TUT-0-1",
+    "slot": 11,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT2DMA-2025-TUT-0-2",
+    "slot": 37,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT2DMA-2025-TUT-0-3",
+    "slot": 0,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT2DMA-2025-TUT-0-4",
+    "slot": 25,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT2DMA-2025-TUT-0-5",
+    "slot": 23,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT2PCO-2025-LEC-0",
+    "slot": 15,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT2PCO-2025-TUT-0-0",
+    "slot": 19,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT2PCO-2025-TUT-0-1",
+    "slot": 34,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61FIT2PCO-2025-TUT-0-2",
+    "slot": 3,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT2PCO-2025-TUT-0-3",
+    "slot": 5,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT2PCO-2025-TUT-0-4",
+    "slot": 19,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT2POP-2025-LEC-0",
+    "slot": 46,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT2POP-2025-TUT-0-0",
+    "slot": 59,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT2POP-2025-TUT-0-1",
+    "slot": 35,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT2POP-2025-TUT-0-2",
+    "slot": 14,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61FIT2POP-2025-TUT-0-3",
+    "slot": 7,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT2POP-2025-TUT-0-4",
+    "slot": 61,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT2PR1-2025-LEC-0",
+    "slot": 6,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT2PR1-2025-TUT-0-0",
+    "slot": 14,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT2PR1-2025-TUT-0-1",
+    "slot": 36,
+    "room_id": "MT01"
+  },
+  {
+    "session": "61FIT2PR1-2025-TUT-0-2",
+    "slot": 28,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61FIT2PR1-2025-TUT-0-3",
+    "slot": 25,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61FIT2PR1-2025-TUT-0-4",
+    "slot": 47,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT2RES-2025-LEC-0",
+    "slot": 16,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT3CGR-2024-LEC-0",
+    "slot": 24,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT3CGR-2024-TUT-0-0",
+    "slot": 44,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT3CGR-2024-TUT-0-1",
+    "slot": 41,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT3CGR-2024-TUT-0-2",
+    "slot": 2,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT3CGR-2024-TUT-0-3",
+    "slot": 14,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT3DBS-2024-LEC-0",
+    "slot": 44,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT3DBS-2024-TUT-0-0",
+    "slot": 5,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61FIT3DBS-2024-TUT-0-1",
+    "slot": 24,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3DBS-2024-TUT-0-2",
+    "slot": 28,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT3DBS-2024-TUT-0-3",
+    "slot": 22,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61FIT3DBS-2024-TUT-0-4",
+    "slot": 14,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT3DBS-2024-TUT-0-5",
+    "slot": 16,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3DSY-2024-LEC-0",
+    "slot": 1,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT3DSY-2024-TUT-0-0",
+    "slot": 17,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT3DSY-2024-TUT-0-1",
+    "slot": 51,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT3DSY-2024-TUT-0-2",
+    "slot": 30,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT3EBU-2024-LEC-0",
+    "slot": 34,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT3EBU-2024-TUT-0-0",
+    "slot": 57,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3EBU-2024-TUT-0-1",
+    "slot": 9,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT3EBU-2024-TUT-0-2",
+    "slot": 55,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT3JSD-2024-LEC-0",
+    "slot": 34,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT3JSD-2024-TUT-0-0",
+    "slot": 2,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3JSD-2024-TUT-0-1",
+    "slot": 40,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3JSD-2024-TUT-0-2",
+    "slot": 38,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT3MUL-2024-LEC-0",
+    "slot": 36,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61FIT3MUL-2024-TUT-0-0",
+    "slot": 11,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT3MUL-2024-TUT-0-1",
+    "slot": 15,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61FIT3MUL-2024-TUT-0-2",
+    "slot": 49,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3NPR-2024-LEC-0",
+    "slot": 28,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT3NPR-2024-TUT-0-0",
+    "slot": 39,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61FIT3NPR-2024-TUT-0-1",
+    "slot": 57,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT3NPR-2024-TUT-0-2",
+    "slot": 41,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT3SAD-2024-LEC-0",
+    "slot": 25,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT3SAD-2024-TUT-0-0",
+    "slot": 18,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT3SAD-2024-TUT-0-1",
+    "slot": 16,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61FIT3SAD-2024-TUT-0-2",
+    "slot": 39,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61FIT3SAD-2024-LEC-1",
+    "slot": 50,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT3SAD-2024-TUT-1-0",
+    "slot": 26,
+    "room_id": "MT01"
+  },
+  {
+    "session": "61FIT3SAD-2024-TUT-1-1",
+    "slot": 41,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61FIT3SE1-2024-LEC-0",
+    "slot": 13,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT3SE1-2024-TUT-0-0",
+    "slot": 39,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61FIT3SE1-2024-TUT-0-1",
+    "slot": 4,
+    "room_id": "MT01"
+  },
+  {
+    "session": "61FIT3SE1-2024-TUT-0-2",
+    "slot": 6,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3SS1-2024-COMBINED-0",
+    "slot": 37,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT3SS1-2024-COMBINED-1",
+    "slot": 18,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61FIT3SS1-2024-COMBINED-2",
+    "slot": 41,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT3SS1-2024-COMBINED-3",
+    "slot": 6,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61FIT3SS1-2024-COMBINED-4",
+    "slot": 45,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT3WPR-2024-LEC-0",
+    "slot": 19,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT3WPR-2024-TUT-0-0",
+    "slot": 44,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61FIT3WPR-2024-TUT-0-1",
+    "slot": 30,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61FIT3WPR-2024-TUT-0-2",
+    "slot": 46,
+    "room_id": "MT01"
+  },
+  {
+    "session": "61FIT4ATI-2023-LEC-0",
+    "slot": 24,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT4ATI-2023-TUT-0-0",
+    "slot": 0,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61FIT4ATI-2023-TUT-0-1",
+    "slot": 11,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT4ATI-2023-TUT-0-2",
+    "slot": 47,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61FIT4ATI-2023-TUT-0-3",
+    "slot": 41,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61FIT4ATI-2023-TUT-0-4",
+    "slot": 0,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61FIT4EIS-2023-LEC-0",
+    "slot": 19,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61FIT4EIS-2023-TUT-0-0",
+    "slot": 46,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT4EIS-2023-TUT-0-1",
+    "slot": 30,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT4EIS-2023-TUT-0-2",
+    "slot": 28,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT4MLA-2023-LEC-0",
+    "slot": 38,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61FIT4MLA-2023-TUT-0-0",
+    "slot": 30,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT4MLA-2023-TUT-0-1",
+    "slot": 51,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61FIT4MLA-2023-TUT-0-2",
+    "slot": 12,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61FIT4MLA-2023-TUT-0-3",
+    "slot": 3,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT4MLA-2023-TUT-0-4",
+    "slot": 58,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT4SPM-2023-LEC-0",
+    "slot": 38,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61FIT4SPM-2023-TUT-0-0",
+    "slot": 25,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61FIT4SPM-2023-TUT-0-1",
+    "slot": 5,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61FIT4SPM-2023-TUT-0-2",
+    "slot": 48,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61FIT4SPM-2023-TUT-0-3",
+    "slot": 14,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME2COT-2025-LEC-0",
+    "slot": 7,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME2COT-2025-TUT-0-0",
+    "slot": 41,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61MME2COT-2025-TUT-0-1",
+    "slot": 49,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61MME2DMA-2025-LEC-0",
+    "slot": 41,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61MME2DMA-2025-TUT-0-0",
+    "slot": 18,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61MME2DMA-2025-TUT-0-1",
+    "slot": 2,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME2EIS-2025-LEC-0",
+    "slot": 8,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61MME2EIS-2025-TUT-0-0",
+    "slot": 36,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME2EIS-2025-TUT-0-1",
+    "slot": 34,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61MME2EIS-2025-TUT-0-2",
+    "slot": 45,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61MME2MRE-2024-LEC-0",
+    "slot": 38,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61MME2MRE-2024-TUT-0-0",
+    "slot": 28,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61MME2PR1-2025-LEC-0",
+    "slot": 51,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61MME2PR1-2025-TUT-0-0",
+    "slot": 25,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61MME2PR1-2025-TUT-0-1",
+    "slot": 19,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61MME2PRC-2025-LEC-0",
+    "slot": 30,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61MME2PRC-2025-TUT-0-0",
+    "slot": 36,
+    "room_id": "MT05"
+  },
+  {
+    "session": "61MME2PRC-2025-TUT-0-1",
+    "slot": 7,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61MME2PRE-2025-LEC-0",
+    "slot": 4,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61MME2PRE-2025-TUT-0-0",
+    "slot": 6,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME2PRE-2025-TUT-0-1",
+    "slot": 13,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61MME2PRM-2024-LEC-0",
+    "slot": 0,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME2PRM-2024-TUT-0-0",
+    "slot": 15,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61MME2RES-2025-LEC-0",
+    "slot": 34,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61MME3CCO-2024-LEC-0",
+    "slot": 22,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61MME3CCO-2024-TUT-0-0",
+    "slot": 37,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME3CCO-2024-TUT-0-1",
+    "slot": 33,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61MME3CG2-2024-LEC-0",
+    "slot": 15,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61MME3CG2-2024-TUT-0-0",
+    "slot": 17,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME3CG2-2024-TUT-0-1",
+    "slot": 48,
+    "room_id": "MC02"
+  },
+  {
+    "session": "61MME3DBS-2024-LEC-0",
+    "slot": 6,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61MME3DBS-2024-TUT-0-0",
+    "slot": 52,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61MME3DBS-2024-TUT-0-1",
+    "slot": 18,
+    "room_id": "MT01"
+  },
+  {
+    "session": "61MME3DIM-2024-LEC-0",
+    "slot": 3,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61MME3DIM-2024-TUT-0-0",
+    "slot": 44,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61MME3DIM-2024-TUT-0-1",
+    "slot": 17,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61MME3EBU-2024-LEC-0",
+    "slot": 7,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61MME3EBU-2024-TUT-0-0",
+    "slot": 54,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME3EBU-2024-TUT-0-1",
+    "slot": 48,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61MME3MUL-2024-LEC-0",
+    "slot": 28,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61MME3MUL-2024-TUT-0-0",
+    "slot": 1,
+    "room_id": "MT04"
+  },
+  {
+    "session": "61MME3MUL-2024-TUT-0-1",
+    "slot": 46,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61MME3MUL-2024-TUT-0-2",
+    "slot": 35,
+    "room_id": "MT07"
+  },
+  {
+    "session": "61MME3MUL-2024-TUT-0-3",
+    "slot": 33,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61MME3MUL-2024-TUT-0-4",
+    "slot": 22,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61MME3SM1A-2024-COMBINED-0",
+    "slot": 49,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME3SM1A-2024-COMBINED-1",
+    "slot": 29,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME3SM1A-2024-COMBINED-2",
+    "slot": 34,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61MME3SM1A-2024-COMBINED-3",
+    "slot": 5,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61MME3WDE-2024-LEC-0",
+    "slot": 26,
+    "room_id": "MC05"
+  },
+  {
+    "session": "61MME3WDE-2024-TUT-0-0",
+    "slot": 48,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME4ADC-2023-LEC-0",
+    "slot": 49,
+    "room_id": "MC03"
+  },
+  {
+    "session": "61MME4ADC-2023-TUT-0-0",
+    "slot": 35,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61MME4ADC-2023-TUT-0-1",
+    "slot": 11,
+    "room_id": "MT06"
+  },
+  {
+    "session": "61MME4ADC-2023-TUT-0-2",
+    "slot": 15,
+    "room_id": "MT08"
+  },
+  {
+    "session": "61MME4ADC-2023-LEC-1",
+    "slot": 13,
+    "room_id": "MC01"
+  },
+  {
+    "session": "61MME4ADC-2023-TUT-1-0",
+    "slot": 24,
+    "room_id": "MT02"
+  },
+  {
+    "session": "61MME4ADC-2023-TUT-1-1",
+    "slot": 1,
+    "room_id": "MT01"
+  },
+  {
+    "session": "61MME4B2B-2023-LEC-0",
+    "slot": 17,
+    "room_id": "MC06"
+  },
+  {
+    "session": "61MME4B2B-2023-TUT-0-0",
+    "slot": 3,
+    "room_id": "MT09"
+  },
+  {
+    "session": "61MME4B2B-2023-TUT-0-1",
+    "slot": 26,
+    "room_id": "MT03"
+  },
+  {
+    "session": "61MME4CCMA-2023-LEC-0",
+    "slot": 26,
+    "room_id": "MC04"
+  },
+  {
+    "session": "61MME4CCMA-2023-TUT-0-0",
+    "slot": 8,
+    "room_id": "MT10"
+  },
+  {
+    "session": "61MME4CCMA-2023-TUT-0-1",
+    "slot": 46,
+    "room_id": "MT06"
+  },
+  {
+    "session": "62FIT2POP-2025-LEC-0",
+    "slot": 37,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT2POP-2025-TUT-0-0",
+    "slot": 49,
+    "room_id": "MT03"
+  },
+  {
+    "session": "62FIT2PR1-2025-LEC-0",
+    "slot": 24,
+    "room_id": "MT10"
+  },
+  {
+    "session": "62FIT2PR1-2025-TUT-0-0",
+    "slot": 35,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT2RES-2025-TUT-0",
+    "slot": 3,
+    "room_id": "MT03"
+  },
+  {
+    "session": "62FIT3DBS-2024-LEC-0",
+    "slot": 50,
+    "room_id": "MT04"
+  },
+  {
+    "session": "62FIT3DBS-2024-TUT-0-0",
+    "slot": 36,
+    "room_id": "MT11"
+  },
+  {
+    "session": "62FIT3SAD-2024-LEC-0",
+    "slot": 52,
+    "room_id": "MT07"
+  },
+  {
+    "session": "62FIT3SAD-2024-TUT-0-0",
+    "slot": 23,
+    "room_id": "MT06"
+  },
+  {
+    "session": "62FIT3SEN-2024-LEC-0",
+    "slot": 30,
+    "room_id": "MT09"
+  },
+  {
+    "session": "62FIT3SEN-2024-TUT-0-0",
+    "slot": 47,
+    "room_id": "MT07"
+  },
+  {
+    "session": "62FIT3SS1-2024-COMBINED-0",
+    "slot": 26,
+    "room_id": "MT09"
+  },
+  {
+    "session": "62FIT3WPR-2024-LEC-0",
+    "slot": 7,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT3WPR-2024-TUT-0-0",
+    "slot": 40,
+    "room_id": "MT03"
+  },
+  {
+    "session": "62FIT3WPR-2024-LEC-1",
+    "slot": 12,
+    "room_id": "MT07"
+  },
+  {
+    "session": "62FIT3WPR-2024-TUT-1-0",
+    "slot": 52,
+    "room_id": "MT04"
+  },
+  {
+    "session": "62FIT3WPR-2024-LEC-2",
+    "slot": 50,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT3WPR-2024-TUT-2-0",
+    "slot": 23,
+    "room_id": "MT07"
+  },
+  {
+    "session": "62FIT4ATI-2023-LEC-0",
+    "slot": 28,
+    "room_id": "MT06"
+  },
+  {
+    "session": "62FIT4ATI-2023-TUT-0-0",
+    "slot": 30,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT4ATI-2023-LEC-1",
+    "slot": 18,
+    "room_id": "MT08"
+  },
+  {
+    "session": "62FIT4ATI-2023-TUT-1-0",
+    "slot": 1,
+    "room_id": "MT07"
+  },
+  {
+    "session": "62FIT4ATI-2023-LEC-2",
+    "slot": 36,
+    "room_id": "MT04"
+  },
+  {
+    "session": "62FIT4ATI-2023-TUT-2-0",
+    "slot": 46,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT4EBU-2024-LEC-0",
+    "slot": 38,
+    "room_id": "MT05"
+  },
+  {
+    "session": "62FIT4EBU-2024-TUT-0-0",
+    "slot": 17,
+    "room_id": "MT11"
+  },
+  {
+    "session": "62FIT4EBU-2024-LEC-1",
+    "slot": 6,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT4EBU-2024-TUT-1-0",
+    "slot": 48,
+    "room_id": "MT09"
+  },
+  {
+    "session": "62FIT4EBU-2024-LEC-2",
+    "slot": 4,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT4EBU-2024-TUT-2-0",
+    "slot": 15,
+    "room_id": "MT06"
+  },
+  {
+    "session": "62FIT4EIS-2023-LEC-0",
+    "slot": 3,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT4EIS-2023-TUT-0-0",
+    "slot": 8,
+    "room_id": "MT03"
+  },
+  {
+    "session": "62FIT4EIS-2023-LEC-1",
+    "slot": 13,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT4EIS-2023-TUT-1-0",
+    "slot": 47,
+    "room_id": "MT08"
+  },
+  {
+    "session": "62FIT4EIS-2023-LEC-2",
+    "slot": 44,
+    "room_id": "MT10"
+  },
+  {
+    "session": "62FIT4EIS-2023-TUT-2-0",
+    "slot": 37,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT4MLA-2023-LEC-0",
+    "slot": 14,
+    "room_id": "MT05"
+  },
+  {
+    "session": "62FIT4MLA-2023-TUT-0-0",
+    "slot": 49,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT4MLA-2023-LEC-1",
+    "slot": 28,
+    "room_id": "MT10"
+  },
+  {
+    "session": "62FIT4MLA-2023-TUT-1-0",
+    "slot": 26,
+    "room_id": "MT07"
+  },
+  {
+    "session": "62FIT4MLA-2023-LEC-2",
+    "slot": 1,
+    "room_id": "MT09"
+  },
+  {
+    "session": "62FIT4MLA-2023-TUT-2-0",
+    "slot": 40,
+    "room_id": "MT04"
+  },
+  {
+    "session": "62FIT4NAD-2023-LEC-0",
+    "slot": 44,
+    "room_id": "MT09"
+  },
+  {
+    "session": "62FIT4NAD-2023-TUT-0-0",
+    "slot": 33,
+    "room_id": "MT02"
+  },
+  {
+    "session": "62FIT4NAD-2023-LEC-1",
+    "slot": 5,
+    "room_id": "MT11"
+  },
+  {
+    "session": "62FIT4NAD-2023-TUT-1-0",
+    "slot": 25,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT4NAD-2023-LEC-2",
+    "slot": 12,
+    "room_id": "MT01"
+  },
+  {
+    "session": "62FIT4NAD-2023-TUT-2-0",
+    "slot": 23,
+    "room_id": "MT08"
+  },
+  {
+    "session": "66FIT2CAL-2025-LEC-0",
+    "slot": 36,
+    "room_id": "MC01"
+  },
+  {
+    "session": "66FIT2CAL-2025-TUT-0-0",
+    "slot": 25,
+    "room_id": "MC06"
+  },
+  {
+    "session": "66FIT2CAL-2025-LEC-1",
+    "slot": 17,
+    "room_id": "MC01"
+  },
+  {
+    "session": "66FIT2CAL-2025-TUT-1-0",
+    "slot": 8,
+    "room_id": "MC02"
+  },
+  {
+    "session": "66FIT2CAL-2025-LEC-2",
+    "slot": 4,
+    "room_id": "MC02"
+  },
+  {
+    "session": "66FIT2CAL-2025-TUT-2-0",
+    "slot": 34,
+    "room_id": "MC02"
+  },
+  {
+    "session": "66FIT2DMA-2025-LEC-0",
+    "slot": 63,
+    "room_id": "MT01"
+  },
+  {
+    "session": "66FIT2DMA-2025-TUT-0-0",
+    "slot": 39,
+    "room_id": "MT09"
+  },
+  {
+    "session": "66FIT2DMA-2025-LEC-1",
+    "slot": 47,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT2DMA-2025-TUT-1-0",
+    "slot": 61,
+    "room_id": "MT08"
+  },
+  {
+    "session": "66FIT2DMA-2025-LEC-2",
+    "slot": 41,
+    "room_id": "MT01"
+  },
+  {
+    "session": "66FIT2DMA-2025-TUT-2-0",
+    "slot": 13,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT2PCO-2025-LEC-0",
+    "slot": 50,
+    "room_id": "MT09"
+  },
+  {
+    "session": "66FIT2PCO-2025-TUT-0-0",
+    "slot": 52,
+    "room_id": "MT01"
+  },
+  {
+    "session": "66FIT2PCO-2025-LEC-1",
+    "slot": 26,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT2PCO-2025-TUT-1-0",
+    "slot": 62,
+    "room_id": "MT09"
+  },
+  {
+    "session": "66FIT2PCO-2025-LEC-2",
+    "slot": 28,
+    "room_id": "MT01"
+  },
+  {
+    "session": "66FIT2PCO-2025-TUT-2-0",
+    "slot": 26,
+    "room_id": "MT04"
+  },
+  {
+    "session": "66FIT2POP-2025-LEC-0",
+    "slot": 53,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT2POP-2025-TUT-0-0",
+    "slot": 4,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT2POP-2025-LEC-1",
+    "slot": 32,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT2POP-2025-TUT-1-0",
+    "slot": 43,
+    "room_id": "MT07"
+  },
+  {
+    "session": "66FIT2POP-2025-LEC-2",
+    "slot": 21,
+    "room_id": "MT07"
+  },
+  {
+    "session": "66FIT2POP-2025-TUT-2-0",
+    "slot": 55,
+    "room_id": "MT09"
+  },
+  {
+    "session": "66FIT2PR1-2025-LEC-0",
+    "slot": 8,
+    "room_id": "MT08"
+  },
+  {
+    "session": "66FIT2PR1-2025-TUT-0-0",
+    "slot": 19,
+    "room_id": "MT07"
+  },
+  {
+    "session": "66FIT2PR1-2025-LEC-1",
+    "slot": 23,
+    "room_id": "MT01"
+  },
+  {
+    "session": "66FIT2PR1-2025-TUT-1-0",
+    "slot": 51,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT2PR1-2025-LEC-2",
+    "slot": 15,
+    "room_id": "MT10"
+  },
+  {
+    "session": "66FIT2PR1-2025-TUT-2-0",
+    "slot": 17,
+    "room_id": "MT10"
+  },
+  {
+    "session": "66FIT2PR1-2025-LEC-3",
+    "slot": 36,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT2PR1-2025-TUT-3-0",
+    "slot": 49,
+    "room_id": "MT07"
+  },
+  {
+    "session": "66FIT2RES-2025-LEC-0",
+    "slot": 56,
+    "room_id": "MC03"
+  },
+  {
+    "session": "66FIT2RES-2025-LEC-1",
+    "slot": 58,
+    "room_id": "MC06"
+  },
+  {
+    "session": "66FIT2RES-2025-LEC-2",
+    "slot": 40,
+    "room_id": "MC05"
+  },
+  {
+    "session": "66FIT3AIN-2024-LEC-0",
+    "slot": 37,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT3AIN-2024-TUT-0-0",
+    "slot": 0,
+    "room_id": "MT08"
+  },
+  {
+    "session": "66FIT3AIN-2024-LEC-1",
+    "slot": 2,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT3AIN-2024-TUT-1-0",
+    "slot": 18,
+    "room_id": "MT05"
+  },
+  {
+    "session": "66FIT3AIN-2024-LEC-2",
+    "slot": 22,
+    "room_id": "MT02"
+  },
+  {
+    "session": "66FIT3AIN-2024-TUT-2-0",
+    "slot": 24,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT3DBS-2024-LEC-0",
+    "slot": 40,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT3DBS-2024-TUT-0-0",
+    "slot": 26,
+    "room_id": "MT02"
+  },
+  {
+    "session": "66FIT3DBS-2024-LEC-1",
+    "slot": 8,
+    "room_id": "MT05"
+  },
+  {
+    "session": "66FIT3DBS-2024-TUT-1-0",
+    "slot": 4,
+    "room_id": "MT05"
+  },
+  {
+    "session": "66FIT3DBS-2024-LEC-2",
+    "slot": 12,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT3DBS-2024-TUT-2-0",
+    "slot": 30,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT3SAD-2024-LEC-0",
+    "slot": 54,
+    "room_id": "MT03"
+  },
+  {
+    "session": "66FIT3SAD-2024-TUT-0-0",
+    "slot": 42,
+    "room_id": "MT11"
+  },
+  {
+    "session": "66FIT3SAD-2024-LEC-1",
+    "slot": 10,
+    "room_id": "MT07"
+  },
+  {
+    "session": "66FIT3SAD-2024-TUT-1-0",
+    "slot": 21,
+    "room_id": "MT02"
+  },
+  {
+    "session": "66FIT3SAD-2024-LEC-2",
+    "slot": 28,
+    "room_id": "MT05"
+  },
+  {
+    "session": "66FIT3SAD-2024-TUT-2-0",
+    "slot": 26,
+    "room_id": "MT05"
+  },
+  {
+    "session": "66FIT3SEN-2024-LEC-0",
+    "slot": 8,
+    "room_id": "MT09"
+  },
+  {
+    "session": "66FIT3SEN-2024-TUT-0-0",
+    "slot": 11,
+    "room_id": "MT03"
+  },
+  {
+    "session": "66FIT3SEN-2024-LEC-1",
+    "slot": 37,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT3SEN-2024-TUT-1-0",
+    "slot": 41,
+    "room_id": "MT06"
+  },
+  {
+    "session": "66FIT3SEN-2024-LEC-2",
+    "slot": 28,
+    "room_id": "MT07"
+  },
+  {
+    "session": "66FIT3SEN-2024-TUT-2-0",
+    "slot": 26,
+    "room_id": "MT10"
+  },
+  {
+    "session": "66FIT3SS1-2024-COMBINED-0",
+    "slot": 9,
+    "room_id": "MT02"
+  },
+  {
+    "session": "66FIT3SS1-2024-COMBINED-1",
+    "slot": 61,
+    "room_id": "MT04"
+  },
+  {
+    "session": "66FIT3SS1-2024-COMBINED-2",
+    "slot": 42,
+    "room_id": "MT05"
+  },
+  {
+    "session": "66FIT3WPR-2024-LEC-0",
+    "slot": 0,
+    "room_id": "MT03"
+  },
+  {
+    "session": "66FIT3WPR-2024-TUT-0-0",
+    "slot": 2,
+    "room_id": "MT10"
+  },
+  {
+    "session": "66FIT3WPR-2024-LEC-1",
+    "slot": 15,
+    "room_id": "MT03"
+  },
+  {
+    "session": "66FIT3WPR-2024-TUT-1-0",
+    "slot": 33,
+    "room_id": "MT04"
+  },
+  {
+    "session": "66FIT3WPR-2024-LEC-2",
+    "slot": 22,
+    "room_id": "MT03"
+  },
+  {
+    "session": "66FIT3WPR-2024-TUT-2-0",
+    "slot": 17,
+    "room_id": "MT02"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "missing_eligible_teachers": [
+    [
+      "61FIT3DSY",
+      "KHMT",
+      "LEC"
+    ],
+    [
+      "61FIT3DSY",
+      "KHMT",
+      "TUT"
+    ],
+    [
+      "61MME3WDE",
+      "TTDPT",
+      "LEC"
+    ],
+    [
+      "62FIT4EBU",
+      "HTTT",
+      "LEC"
+    ],
+    [
+      "62FIT4EBU",
+      "HTTT",
+      "TUT"
+    ],
+    [
+      "66FIT2RES",
+      "HTTT",
+      "LEC"
+    ],
+    [
+      "66FIT3SS1",
+      "CNPM",
+      "COMBINED"
+    ]
+  ],
+  "rooms": 0,
+  "requires_staff_rooms": true
+}

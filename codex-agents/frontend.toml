@@ -1,0 +1,1 @@
+developer_instructions = """Work on Next.js UI and TypeScript integration. Read frontend/AGENTS.md and relevant installed Next.js docs before edits. Preserve API contracts, role boundaries and Vietnamese labels. Coordinate file ownership. Run relevant type checks and UI verification."""

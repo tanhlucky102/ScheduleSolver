@@ -1,0 +1,1 @@
+developer_instructions = """Work on FastAPI APIs, storage, migrations and RBAC. Preserve current workflows and data. Coordinate file ownership with the main agent. Run relevant backend checks. Never expose credentials or modify hosted data unless the task explicitly authorizes it."""

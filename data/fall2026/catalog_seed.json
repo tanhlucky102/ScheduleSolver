@@ -1,0 +1,703 @@
+{
+  "departments": [
+    {
+      "id": "KHMT",
+      "name": "Bộ môn Khoa học máy tính"
+    },
+    {
+      "id": "CNPM",
+      "name": "Bộ môn Công nghệ phần mềm"
+    },
+    {
+      "id": "HTTT",
+      "name": "Bộ môn Hệ thống thông tin"
+    },
+    {
+      "id": "TTDPT",
+      "name": "Bộ môn Truyền thông đa phương tiện"
+    }
+  ],
+  "teachers": [
+    {
+      "id": "AnhNP",
+      "name": "AnhNP",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61MME3SM1": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME3SM1A": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "AnhNQ",
+      "name": "AnhNQ",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61MME3MUL": [
+          "TUT"
+        ],
+        "61MME4ADC": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "AnhNT",
+      "name": "AnhNT",
+      "department": "HTTT",
+      "assistant": true,
+      "capabilities": {
+        "61FIT4ATI": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "AnhVQ",
+      "name": "AnhVQ",
+      "department": "CNPM",
+      "assistant": true,
+      "capabilities": {
+        "61FIT2PR1": [
+          "TUT"
+        ],
+        "61FIT3JSD": [
+          "TUT"
+        ],
+        "61FIT3WPR": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "BachNG",
+      "name": "BachNG",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3CGR": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "BachNN",
+      "name": "BachNN",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61MME3DIM": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "ChauNTB",
+      "name": "ChauNTB",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61MME3CCO": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME4ADC": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "DucBM",
+      "name": "DucBM",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT4ATI": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "Dung",
+      "name": "Dung",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT4SPM": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME3CCO": [
+          "TUT"
+        ],
+        "61MME4CCM": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME4CCMA": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT3WPR": [
+          "TUT"
+        ],
+        "66FIT2PR1": [
+          "TUT"
+        ],
+        "66FIT3WPR": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "DungVT",
+      "name": "DungVT",
+      "department": "CNPM",
+      "assistant": false,
+      "capabilities": {
+        "61FIT4SPM": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT3WPR": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2PR1": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT3WPR": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "HuongNT",
+      "name": "HuongNT",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2DMA": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2DMA": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "HuyVQ",
+      "name": "HuyVQ",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2POP": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT4NAD": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "KhanhBQ",
+      "name": "KhanhBQ",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT4MLA": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT4MLA": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "KhanhNQ",
+      "name": "KhanhNQ",
+      "department": "CNPM",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3DSY": [
+          "LEC",
+          "TUT"
+        ],
+        "61FIT3SS1": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT3SS1": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "KhoaTN",
+      "name": "KhoaTN",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2PCO": [
+          "TUT"
+        ],
+        "61MME2PRC": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME2PRE": [
+          "TUT"
+        ],
+        "61MME3CG2": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2PCO": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "LinhTTT",
+      "name": "LinhTTT",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61MME4B2B": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "LySTP",
+      "name": "LySTP",
+      "department": "TTDPT",
+      "assistant": true,
+      "capabilities": {
+        "61MME3WDE": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "NamTT",
+      "name": "NamTT",
+      "department": "CNPM",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3SE1": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT3SEN": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT3SEN": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "NgaNT",
+      "name": "NgaNT",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3DBS": [
+          "TUT"
+        ],
+        "61FIT3EBU": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME3DBS": [
+          "TUT"
+        ],
+        "61MME3EBU": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT3DBS": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "NgocTB",
+      "name": "NgocTB",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3SAD": [
+          "LEC"
+        ],
+        "61FIT4EIS": [
+          "LEC"
+        ],
+        "61MME2EIS": [
+          "LEC"
+        ],
+        "62FIT3SAD": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT4EIS": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT3SAD": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "NguyetDTM",
+      "name": "NguyetDTM",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3DBS": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME3DBS": [
+          "LEC"
+        ],
+        "66FIT3DBS": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "PhuongTM",
+      "name": "PhuongTM",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3MUL": [
+          "TUT"
+        ],
+        "61MME2MRE": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME2PRE": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "QuanDD",
+      "name": "QuanDD",
+      "department": "CNPM",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3WPR": [
+          "LEC"
+        ],
+        "61MME2PR1": [
+          "LEC"
+        ],
+        "62FIT2PR1": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT3WPR": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "QuyenNV",
+      "name": "QuyenNV",
+      "department": "CNPM",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2PR1": [
+          "LEC",
+          "TUT"
+        ],
+        "61FIT3JSD": [
+          "LEC"
+        ],
+        "61FIT3SE1": [
+          "TUT"
+        ],
+        "66FIT2PR1": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "SonNTK",
+      "name": "SonNTK",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2CAL": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2CAL": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "ThaiTT",
+      "name": "ThaiTT",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3SAD": [
+          "TUT"
+        ],
+        "61FIT4EIS": [
+          "TUT"
+        ],
+        "61MME2EIS": [
+          "TUT"
+        ],
+        "62FIT4EIS": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "ThangNX",
+      "name": "ThangNX",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2AIN": [
+          "LEC"
+        ],
+        "61FIT3AIN": [
+          "LEC"
+        ],
+        "62FIT3SS1": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT4ATI": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2RES": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT3AIN": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT3SS1": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "ThaoDTP",
+      "name": "ThaoDTP",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2PCO": [
+          "LEC",
+          "TUT"
+        ],
+        "61FIT3NPR": [
+          "LEC",
+          "TUT"
+        ],
+        "61FIT3SS1": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT2POP": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT3SS1": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2PCO": [
+          "LEC",
+          "TUT"
+        ],
+        "66FIT2POP": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "ToanLM",
+      "name": "ToanLM",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT4EIS": [
+          "TUT"
+        ],
+        "61MME2EIS": [
+          "TUT"
+        ],
+        "62FIT4EIS": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "TuanVM",
+      "name": "TuanVM",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3MUL": [
+          "LEC"
+        ],
+        "61FIT3SS1": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME2PRM": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME3MUL": [
+          "LEC"
+        ],
+        "62FIT3SS1": [
+          "LEC",
+          "TUT"
+        ],
+        "62FIT4EBU": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "TungVNS",
+      "name": "TungVNS",
+      "department": "KHMT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2CAL": [
+          "TUT"
+        ],
+        "61MME2DMA": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "VanHT",
+      "name": "VanHT",
+      "department": "TTDPT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT3MUL": [
+          "TUT"
+        ],
+        "61MME2COT": [
+          "LEC",
+          "TUT"
+        ],
+        "61MME3MUL": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "VinhNT",
+      "name": "VinhNT",
+      "department": "KHMT",
+      "assistant": true,
+      "capabilities": {
+        "61FIT2AIN": [
+          "TUT"
+        ],
+        "61FIT3AIN": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "VinhTT",
+      "name": "VinhTT",
+      "department": "CNPM",
+      "assistant": true,
+      "capabilities": {
+        "61FIT2PR1": [
+          "TUT"
+        ],
+        "61MME2PR1": [
+          "TUT"
+        ]
+      }
+    },
+    {
+      "id": "VuNTM",
+      "name": "VuNTM",
+      "department": "HTTT",
+      "assistant": false,
+      "capabilities": {
+        "61FIT2RES": [
+          "LEC"
+        ],
+        "61MME2RES": [
+          "LEC"
+        ],
+        "61MME3WDE": [
+          "LEC"
+        ],
+        "62FIT2RES": [
+          "TUT"
+        ],
+        "62FIT4ATI": [
+          "LEC",
+          "TUT"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+INFO:     Started server process [21767]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:5198 (Press CTRL+C to quit)
+INFO:     127.0.0.1:43658 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50808 - "OPTIONS /api/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50808 - "OPTIONS /api/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50810 - "GET /api/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50822 - "GET /api/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50826 - "OPTIONS /api/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50826 - "OPTIONS /api/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50830 - "GET /api/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50834 - "GET /api/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51932 - "OPTIONS /api/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51932 - "OPTIONS /api/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51944 - "GET /api/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51950 - "GET /api/workspace HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [21767]

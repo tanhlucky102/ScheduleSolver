@@ -1,0 +1,115 @@
+{
+  "mode": "SIMULATED_FULL_TERM",
+  "source_plan": "data/fall2026/approved_plan.json",
+  "offerings": 67,
+  "sessions": 290,
+  "room_source": "resources/so_phong.csv",
+  "room_counts": {
+    "PROJECTOR": 6,
+    "COMPUTER": 11
+  },
+  "simulated_fields": [
+    "room IDs, capacities, availability, room type",
+    "time windows and reservations",
+    "7 missing course/kind capabilities on department heads",
+    "balanced assignments and submission workflow"
+  ],
+  "capability_changes": [
+    {
+      "teacher": "ThaoDTP",
+      "department": "KHMT",
+      "course": "61FIT3DSY",
+      "kind": "LEC",
+      "before": [],
+      "after": [
+        "LEC"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    },
+    {
+      "teacher": "ThaoDTP",
+      "department": "KHMT",
+      "course": "61FIT3DSY",
+      "kind": "TUT",
+      "before": [
+        "LEC"
+      ],
+      "after": [
+        "LEC",
+        "TUT"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    },
+    {
+      "teacher": "DungVT",
+      "department": "CNPM",
+      "course": "66FIT3SS1",
+      "kind": "COMBINED",
+      "before": [],
+      "after": [
+        "LEC",
+        "TUT"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    },
+    {
+      "teacher": "NgocTB",
+      "department": "HTTT",
+      "course": "62FIT4EBU",
+      "kind": "LEC",
+      "before": [],
+      "after": [
+        "LEC"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    },
+    {
+      "teacher": "NgocTB",
+      "department": "HTTT",
+      "course": "62FIT4EBU",
+      "kind": "TUT",
+      "before": [
+        "LEC"
+      ],
+      "after": [
+        "LEC",
+        "TUT"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    },
+    {
+      "teacher": "NgocTB",
+      "department": "HTTT",
+      "course": "66FIT2RES",
+      "kind": "LEC",
+      "before": [],
+      "after": [
+        "LEC"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    },
+    {
+      "teacher": "PhuongTM",
+      "department": "TTDPT",
+      "course": "61MME3WDE",
+      "kind": "LEC",
+      "before": [],
+      "after": [
+        "LEC"
+      ],
+      "source": "SIMULATED for isolated full-term test; not confirmed teacher qualification"
+    }
+  ],
+  "teacher": "QuyenNV",
+  "teacher_sessions": 11,
+  "room_capacity_by_type": {
+    "PROJECTOR": [
+      200
+    ],
+    "COMPUTER": [
+      40,
+      48
+    ]
+  },
+  "hosted_data_mutations": false
+}

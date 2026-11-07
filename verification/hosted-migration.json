@@ -1,0 +1,6 @@
+{
+  "migration": "002_room_constraints.sql",
+  "existing_workspaces": 0,
+  "applied": true,
+  "backup": "/tmp/schedule-room-upgrade-backup.json"
+}

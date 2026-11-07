@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-11-06T00:13:40.300207+00:00",
+  "source": "verification/full-term-simulation/input-state.json",
+  "scope": "Full term, all sessions; read-only input; no database writes or publication",
+  "offerings": 67,
+  "sessions": 290,
+  "teachers": 35,
+  "rooms": 17,
+  "slots": 66,
+  "assigned": 290,
+  "invalid_assignments": 0,
+  "departments": [
+    {
+      "id": "KHMT",
+      "status": "SUBMITTED"
+    },
+    {
+      "id": "CNPM",
+      "status": "SUBMITTED"
+    },
+    {
+      "id": "HTTT",
+      "status": "SUBMITTED"
+    },
+    {
+      "id": "TTDPT",
+      "status": "SUBMITTED"
+    }
+  ],
+  "missing_capabilities": [],
+  "empty_placement_domains": 0,
+  "placement_diagnostics": [],
+  "iterations_per_algorithm": 500,
+  "seed": 42,
+  "status": "SOLVED",
+  "evaluation": {
+    "hard": 0,
+    "violations": [],
+    "soft": {
+      "restricted": 25,
+      "single_class": 75,
+      "overload": 0,
+      "gaps_minutes": 1380
+    },
+    "soft_total": 1705
+  },
+  "workers": [
+    {
+      "algorithm": "HC",
+      "seed": 42,
+      "score": [
+        0,
+        1865
+      ]
+    },
+    {
+      "algorithm": "SA",
+      "seed": 43,
+      "score": [
+        0,
+        1705
+      ]
+    },
+    {
+      "algorithm": "TABU",
+      "seed": 44,
+      "score": [
+        0,
+        1813
+      ]
+    }
+  ],
+  "placed_sessions": 290,
+  "elapsed_seconds": 106.905804
+}

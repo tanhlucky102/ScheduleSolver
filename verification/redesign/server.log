@@ -1,0 +1,17 @@
+
+> dev
+> next dev --hostname 127.0.0.1 --port 3299
+
+▲ Next.js 16.4.5 (Turbopack)
+- Local:         http://127.0.0.1:3299
+- Network:       http://127.0.0.1:3299
+- Environments: .env.local
+✓ Ready in 1252ms
+✓ Running next.config.ts took 117ms
+
+ GET / 200 in 1501ms (next.js: 719ms, application-code: 781ms)
+ GET / 200 in 200ms (next.js: 5ms, application-code: 195ms)
+ GET / 200 in 149ms (next.js: 5ms, application-code: 145ms)
+ GET / 200 in 122ms (next.js: 3ms, application-code: 119ms)
+ GET / 200 in 131ms (next.js: 5ms, application-code: 126ms)
+[?25h

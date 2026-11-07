@@ -1,0 +1,11 @@
+{
+  "hard": 0,
+  "violations": [],
+  "soft": {
+    "restricted": 25,
+    "single_class": 75,
+    "overload": 0,
+    "gaps_minutes": 1380
+  },
+  "soft_total": 1705
+}

@@ -1,0 +1,20 @@
+
+> dev
+> next dev --hostname 127.0.0.1 --port 3199
+
+▲ Next.js 16.4.5 (Turbopack)
+- Local:         http://127.0.0.1:3199
+- Network:       http://127.0.0.1:3199
+- Environments: .env.local
+✓ Ready in 1500ms
+✓ Running next.config.ts took 136ms
+
+ GET / 200 in 1495ms (next.js: 763ms, application-code: 732ms)
+ GET / 200 in 165ms (next.js: 5ms, application-code: 160ms)
+ GET / 200 in 150ms (next.js: 8ms, application-code: 142ms)
+[browser] GoTrueClient@sb-gvayisxfntatkhmgffte-auth-token:1 (2.119.0) 2026-11-05T16:20:10.969Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key. (app/page.tsx:38:30)
+ GET / 200 in 104ms (next.js: 3ms, application-code: 101ms)
+[browser] GoTrueClient@sb-gvayisxfntatkhmgffte-auth-token:1 (2.119.0) 2026-11-05T16:20:18.412Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key. (app/page.tsx:38:30)
+ GET / 200 in 182ms (next.js: 7ms, application-code: 175ms)
+[browser] GoTrueClient@sb-gvayisxfntatkhmgffte-auth-token:1 (2.119.0) 2026-11-05T16:20:22.881Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key. (app/page.tsx:38:30)
+[?25h
