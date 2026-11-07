@@ -2,7 +2,8 @@
 from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from .domain import State, events, evaluate
+from .domain_models import State
+from .domain_rules import events, evaluate
 
 
 def safe(value):

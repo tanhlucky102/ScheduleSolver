@@ -3,6 +3,7 @@
 .venv/
 node_modules/
 .next/
+.next-actor-smoke/
 __pycache__/
 .pytest_cache/
 *.pyc

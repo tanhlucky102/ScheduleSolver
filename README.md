@@ -2,6 +2,8 @@
 
 Ứng dụng độc lập: FastAPI/Python + Next.js/TypeScript + Supabase Auth/PostgreSQL. Source gốc không bị sửa. SoT là tài liệu BA bên ngoài repo; xem MIGRATION_PLAN.md và AUDIT.md.
 
+Kiến trúc module hiện tại, trách nhiệm từng phần và báo cáo kiểm chứng: [docs/REFACTOR_AUDIT.md](docs/REFACTOR_AUDIT.md).
+
 ## Chạy với Supabase
 
 Yêu cầu Python 3.10+, Node 20.9+ và một project Supabase.

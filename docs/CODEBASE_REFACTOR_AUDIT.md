@@ -1,5 +1,7 @@
 # Codebase audit — 2026-11-08
 
+> Báo cáo lịch sử trước khi tách module. Xem [REFACTOR_AUDIT.md](REFACTOR_AUDIT.md) để biết kiến trúc và kết quả kiểm chứng hiện tại.
+
 ## Kiến trúc và luồng chính
 
 - `frontend/app` là giao diện Next.js; trình duyệt dùng Supabase Auth và gọi FastAPI.

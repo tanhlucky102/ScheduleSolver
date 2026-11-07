@@ -36,7 +36,9 @@
     ".next-fullterm/types/**/*.ts",
     ".next-fullterm/dev/types/**/*.ts",
     ".next-fullterm-build/types/**/*.ts",
-    ".next-fullterm-build/dev/types/**/*.ts"
+    ".next-fullterm-build/dev/types/**/*.ts",
+    ".next-actor-smoke/types/**/*.ts",
+    ".next-actor-smoke/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

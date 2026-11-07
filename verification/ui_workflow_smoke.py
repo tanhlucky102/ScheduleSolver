@@ -1,5 +1,6 @@
 """Role UX regression with deterministic Auth/API fixtures; no hosted data mutations."""
 from pathlib import Path
+from tempfile import gettempdir
 import copy
 import json
 import os
@@ -10,9 +11,9 @@ import urllib.request
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
-ART = ROOT / "verification" / "redesign"
+ART = Path(os.environ.get("SMOKE_ARTIFACT_DIR", str(Path(gettempdir()) / "actor-workflow-smoke")))
 ART.mkdir(exist_ok=True)
-env = dict(os.environ, SCHEDULE_NEXT_DIST_DIR=".next-ux", NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:5299",
+env = dict(os.environ, SCHEDULE_NEXT_DIST_DIR=".next-actor-smoke", NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:5299",
            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="public-test-key", NEXT_PUBLIC_API_URL="http://127.0.0.1:5298",
            NEXT_TELEMETRY_DISABLED="1")
 room = dict(id="A101", name="Phòng học A101", capacity=100, room_type="CLASSROOM", equipment=["PROJECTOR"],
@@ -86,9 +87,9 @@ def login(browser, role):
     page.route("http://127.0.0.1:5299/**", auth)
     page.route("http://127.0.0.1:5298/**", lambda route: route_api(route, role))
     page.goto("http://127.0.0.1:3299")
-    page.get_by_label("Email", exact=True).fill("test@example.com")
+    page.get_by_label("Email công tác", exact=True).fill("test@example.com")
     page.get_by_label("Mật khẩu", exact=True).fill("fixture-password")
-    page.get_by_role("button", name="Đăng nhập", exact=True).click()
+    page.get_by_role("button", name="Đăng nhập vào hệ thống", exact=True).click()
     expect(page.locator("nav button").first).to_be_visible()
     return page
 
@@ -154,10 +155,10 @@ try:
         expect(staff.locator(".notice.error")).to_contain_text("Xung đột phòng A101")
         screenshot(staff,"staff-error")
         staff.get_by_role("button",name="Thẩm định & chạy bộ giải").click()
-        expect(staff.get_by_text("Đã tìm được lịch hợp lệ với phòng cụ thể.",exact=True)).to_be_visible()
+        expect(staff.get_by_text("Đã tìm được phương án xếp lịch hợp lệ với phòng cụ thể.",exact=True)).to_be_visible()
         screenshot(staff,"staff-draft")
-        staff.get_by_role("button",name="Công bố lịch",exact=True).click()
-        expect(staff.get_by_text("Đã công bố lịch giảng dạy.",exact=True)).to_be_visible()
+        staff.get_by_role("button",name="Công bố lịch chính thức",exact=True).click()
+        expect(staff.get_by_text("Đã công bố thời khóa biểu chính thức.",exact=True)).to_be_visible()
         teacher = login(browser,"TEACHER")
         assert teacher.get_by_role("button",name="Phân công",exact=False).count()==0
         teacher.locator("nav").get_by_role("button",name="Lịch của tôi",exact=True).click()
@@ -178,7 +179,7 @@ try:
         expect(teacher.get_by_role("button",name="Lưu lịch ngoài")).to_be_disabled()
         teacher.get_by_label("Kết thúc",exact=True).fill("16:00")
         teacher.get_by_role("button",name="Lưu lịch ngoài").click()
-        expect(teacher.get_by_text("Đã lưu lịch ngoài.",exact=True)).to_be_visible()
+        expect(teacher.get_by_text("Đã lưu lịch công tác ngoài.",exact=True)).to_be_visible()
         # A newer publication can collide with an existing outside event.
         state["external"][0].update(start=450,end=550)
         teacher.get_by_role("button",name="Làm mới",exact=False).click()
@@ -187,11 +188,34 @@ try:
         teacher.on("dialog",lambda dialog:dialog.accept())
         teacher.get_by_role("button",name="Xóa buổi",exact=True).click()
         expect(teacher.locator(".calendar-event.conflict-event")).to_have_count(0)
+        # Staff catalog and room forms must still send the expected commands after feature extraction.
+        staff.get_by_role("button", name="Làm mới", exact=False).click()
+        staff.locator("nav").get_by_role("button", name="Giảng viên & Bộ môn", exact=True).click()
+        staff.get_by_role("button", name="+ Thêm bộ môn mới", exact=True).click()
+        staff.get_by_label("Mã bộ môn (VD: KHMT, CNPM)").fill("QA")
+        staff.get_by_label("Tên đầy đủ của bộ môn").fill("Bộ môn kiểm thử")
+        staff.get_by_role("button", name="Thêm bộ môn", exact=True).click()
+        expect(staff.get_by_text("Đã lưu thông tin bộ môn.", exact=True)).to_be_visible()
+        assert captured[-1][1:] == ("department-save", {"id": "QA", "name": "Bộ môn kiểm thử"})
+        staff.locator("nav").get_by_role("button", name="Phòng học", exact=True).click()
+        staff.get_by_role("button", name="+ Nhập phòng mới", exact=True).click()
+        staff.get_by_label("Mã phòng", exact=True).fill("R2")
+        staff.get_by_label("Tên phòng", exact=True).fill("Phòng kiểm thử R2")
+        staff.get_by_label("Sức chứa chỗ ngồi", exact=True).fill("60")
+        staff.get_by_role("button", name="Thêm phòng", exact=True).click()
+        assert captured[-1][1] == "rooms"
+        assert any(room["id"] == "R2" and room["capacity"] == 60 for room in captured[-1][2]["rooms"])
+        staff.get_by_text("+ Thêm lịch chiếm dụng mới", exact=True).click()
+        staff.get_by_label("Mã đặt phòng").fill("QA-EVENT")
+        staff.locator(".reservation-panel select").first.select_option("A101")
+        staff.get_by_label("Lý do chiếm dụng").fill("Bảo trì")
+        staff.get_by_role("button", name="Xác nhận chiếm dụng").click()
+        assert captured[-1][1] == "reservation" and captured[-1][2]["room_id"] == "A101"
         # Keyboard access and initial narrow layout.
         narrow=browser.new_page(viewport=dict(width=390,height=844))
         narrow.goto("http://127.0.0.1:3299")
         narrow.keyboard.press("Tab")
-        expect(narrow.get_by_role("link",name="Đến nội dung chính")).to_be_focused()
+        expect(narrow.get_by_label("Email công tác",exact=True)).to_be_focused()
         screenshot(narrow,"login-mobile")
         assert not errors, errors
         browser.close()
@@ -199,7 +223,7 @@ try:
                 viewport=[1440,390],commands=len(captured),page_errors=errors,
                 checks=["send","eligible assignment","search empty","workload","submit lock","return/resubmit",
                         "solver error/retry","publish","role navigation","calendar/list/source","external validation",
-                        "publication conflict","external deletion","mobile overflow","keyboard skip link"])
+                        "publication conflict","external deletion","catalog save","room save","reservation save","mobile overflow","keyboard login focus"])
     (ART/"results.json").write_text(json.dumps(result,indent=2,ensure_ascii=False))
     print(json.dumps(result,ensure_ascii=False))
 finally:

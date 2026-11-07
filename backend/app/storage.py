@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, Session
 
-from .domain import State
+from .domain_models import State
 from .models import Workspace
 
 _engine = None
