@@ -6,14 +6,14 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import ValidationError
 
 from .auth import Principal, principal, staff
-from .domain_rules import SchedulingConflict
+from .timetable.rules import SchedulingConflict
 from .models import AuditLog, Publication
-from .schemas import Command
-from .visibility import visible
-from .policies import RequestError
-from .commands import apply
+from .workspace.schemas import Command
+from .workspace.visibility import visible
+from .identity.policies import RequestError
+from .workspace.commands import apply
 from . import storage
-from .import_preview import router as import_router
+from .planning.api import router as import_router
 
 app = FastAPI(title="ScheduleSolver Web API", version="1.0.0")
 app.add_middleware(CORSMiddleware,
@@ -88,7 +88,7 @@ def export(source: str, p: Principal = Depends(principal)):
     staff(p)
     if source not in ("draft", "published"):
         raise HTTPException(422, "Use draft or published")
-    from .exporter import workbook
+    from .timetable.exporter import workbook
     state, revision = storage.read(p.workspace_id)
     return Response(workbook(state, source), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename=Timetable-{source}-r{revision}.xlsx"})

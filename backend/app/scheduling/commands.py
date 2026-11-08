@@ -1,9 +1,9 @@
 from uuid import uuid4
-from .policies import RequestError
-from .domain_models import Placement, External
-from .domain_rules import evaluate
-from .solver import solve
-from .publication import publish, add_external
+from ..identity.policies import RequestError
+from ..timetable.models import Placement, External
+from ..timetable.rules import evaluate
+from ..timetable.solver import solve
+from ..timetable.publication import publish, add_external
 from .schemas import Run
 
 

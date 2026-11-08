@@ -26,21 +26,19 @@ Các điểm coupling chính: `main.py` chứa toàn bộ command và route; `do
 
 ```text
 backend/app/
-  main.py                 FastAPI routes, exception mapping, transaction/audit
-  schemas.py              schema request và payload command
-  auth.py                 Supabase token và profile từ Postgres
-  policies.py             kiểm tra phạm vi vai trò độc lập FastAPI
-  commands.py             dispatch command, kiểm tra quyền chung
-  *_commands.py           danh mục, phòng, kế hoạch, phân công, xếp lịch
-  domain_models.py        model aggregate và validation tham chiếu
-  domain_rules.py         quy tắc phân công, phòng và đánh giá lịch
-  solver.py               thuật toán tìm phương án lịch
-  publication.py          công bố và lịch ngoài
-  plan_import.py          parse và preview workbook
-  import_preview.py       route upload, giới hạn dung lượng, lỗi HTTP
-  seed_catalog.py         adapter đọc năng lực từ dữ liệu seed
-  storage.py              repository aggregate Postgres/SQLAlchemy
-  domain.py               export tương thích cho code/test cũ
+  main.py                   FastAPI entrypoint, transaction/audit, exception mapping
+  auth.py                   xác thực Supabase và profile; giữ điểm patch cũ
+  storage.py                repository aggregate Postgres; giữ điểm patch cũ
+  models.py                 SQLAlchemy ORM
+  domain.py, exporter.py    export tương thích cho script/test cũ
+  catalog/                  danh mục bộ môn/GV, schema và seed năng lực
+  rooms/                    quản lý phòng, đặt phòng, yêu cầu phòng
+  planning/                 kế hoạch mở lớp, API và parser preview Excel
+  assignments/              phân công, cân bằng, nộp/trả lại và schema
+  scheduling/               command giải lịch, chỉnh nháp, công bố, lịch ngoài
+  timetable/                model aggregate, quy tắc, solver, publication, export
+  workspace/                command dispatcher, schema revision, hiển thị theo vai trò
+  identity/                 chính sách quyền dùng bởi các command
 frontend/
   app/page.tsx            shell, điều hướng và ghép các feature
   features/catalog/      danh mục, kiểu dữ liệu, import CSV/JSON
@@ -53,7 +51,7 @@ verification/
   refactor_browser_smoke.py  Chromium smoke với Auth/API giả lập
 ```
 
-Hướng phụ thuộc backend: route → command/application → domain models/rules/solver; route → storage. Command không import FastAPI hoặc SQLAlchemy. `storage.py` là điểm truy cập Postgres duy nhất cho aggregate. `domain.py` chỉ là facade tương thích; module mới import trực tiếp thành phần cần dùng. Frontend: page → feature → shared; API calls ở `features/workspace/api-client.ts` và trạng thái phiên ở `use-workspace-session.ts`.
+Hướng phụ thuộc backend: `main.py` → `workspace/commands.py` hoặc `planning/api.py` → package nghiệp vụ → `timetable/models.py`, `timetable/rules.py`, `timetable/solver.py`. Route dùng `storage.py` để giữ transaction/revision và audit. Command không import FastAPI hoặc SQLAlchemy. `domain.py` và `exporter.py` ở root chỉ là facade tương thích; code mới import trực tiếp package sở hữu chức năng. Frontend: page → feature → shared; API calls ở `features/workspace/api-client.ts` và trạng thái phiên ở `use-workspace-session.ts`.
 
 ## Kiểm chứng
 

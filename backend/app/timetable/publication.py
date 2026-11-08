@@ -1,7 +1,7 @@
 """Publish validated drafts and register external teaching sessions."""
 from copy import deepcopy
-from .domain_models import State, External
-from .domain_rules import require_ready, evaluate, events, overlap
+from .models import State, External
+from .rules import require_ready, evaluate, events, overlap
 
 def publish(state: State):
     require_ready(state)

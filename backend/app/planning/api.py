@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from .auth import Principal, principal, staff
-from .plan_import import preview_workbook
+from ..auth import Principal, principal, staff
+from .importer import preview_workbook
 
 router = APIRouter()
 

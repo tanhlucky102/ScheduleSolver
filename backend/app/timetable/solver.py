@@ -4,8 +4,8 @@ from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from math import exp
 import random
-from .domain_models import State
-from .domain_rules import duration, overlap, placement_domains, evaluate, require_ready, SchedulingConflict
+from .models import State
+from .rules import duration, overlap, placement_domains, evaluate, require_ready, SchedulingConflict
 
 def constructive_initial(state: State, domains, rng):
     """Seed search with constrained greedy placements; independent evaluation remains authoritative."""

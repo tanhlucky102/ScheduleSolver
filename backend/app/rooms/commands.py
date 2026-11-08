@@ -1,8 +1,8 @@
 import csv
 from pathlib import Path
 from typing import Literal
-from .domain_models import Model, State, Room, Reservation, Slot, Session
-from .domain_rules import room_errors, overlap
+from ..timetable.models import Model, State, Room, Reservation, Slot, Session
+from ..timetable.rules import room_errors, overlap
 
 
 def apply(state, action, data, p):
@@ -10,7 +10,7 @@ def apply(state, action, data, p):
         default_avail = [
             Slot(day=d, start=420, end=1080, evening=False) for d in range(2, 8)
         ]
-        csv_path = Path(__file__).resolve().parents[2] / "resources" / "so_phong.csv"
+        csv_path = Path(__file__).resolve().parents[3] / "resources" / "so_phong.csv"
         preset_rooms = []
         if csv_path.exists():
             with open(csv_path, encoding="utf-8-sig") as f:

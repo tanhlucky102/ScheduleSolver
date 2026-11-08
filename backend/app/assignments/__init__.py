@@ -1,0 +1,1 @@
+"""Department teaching assignment workflow."""

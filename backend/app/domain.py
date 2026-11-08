@@ -1,6 +1,6 @@
 """Compatibility exports for existing callers; new modules import direct dependencies."""
 
-from .domain_models import (
+from .timetable.models import (
     Model as Model,
     Department as Department,
     Teacher as Teacher,
@@ -15,7 +15,7 @@ from .domain_models import (
     State as State,
 )
 
-from .domain_rules import (
+from .timetable.rules import (
     split as split,
     eligible as eligible,
     assignment_errors as assignment_errors,
@@ -30,13 +30,13 @@ from .domain_rules import (
     evaluate as evaluate,
 )
 
-from .solver import (
+from .timetable.solver import (
     constructive_initial as constructive_initial,
     solve_worker as solve_worker,
     solve as solve,
 )
 
-from .publication import (
+from .timetable.publication import (
     publish as publish,
     add_external as add_external,
 )

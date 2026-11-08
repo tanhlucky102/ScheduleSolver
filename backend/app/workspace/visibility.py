@@ -1,5 +1,5 @@
-from .policies import require_teacher_profile
-from .domain_rules import evaluate
+from ..identity.policies import require_teacher_profile
+from ..timetable.rules import evaluate
 
 _eval_cache: dict[tuple[str, int], dict] = {}
 

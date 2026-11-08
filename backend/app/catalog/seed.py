@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-SEED_PATH = Path(__file__).resolve().parents[2] / "data/fall2026/catalog_seed.json"
+SEED_PATH = Path(__file__).resolve().parents[3] / "data/fall2026/catalog_seed.json"
 
 
 def teacher_capabilities(required: bool = False):

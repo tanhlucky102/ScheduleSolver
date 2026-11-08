@@ -1,7 +1,7 @@
-from .seed_catalog import teacher_capabilities
-from .policies import RequestError, require_head
-from .domain_models import Teacher
-from .domain_rules import eligible, assignment_errors
+from ..catalog.seed import teacher_capabilities
+from ..identity.policies import RequestError, require_head
+from ..timetable.models import Teacher
+from ..timetable.rules import eligible, assignment_errors
 from .schemas import Assign, TeacherUpdate, Return
 
 

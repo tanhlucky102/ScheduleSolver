@@ -1,5 +1,9 @@
-from .policies import RequestError, require_staff, require_teacher_profile
-from . import catalog_commands, room_commands, plan_commands, assignment_commands, schedule_commands
+from ..identity.policies import RequestError, require_staff, require_teacher_profile
+from ..catalog import commands as catalog_commands
+from ..rooms import commands as room_commands
+from ..planning import commands as plan_commands
+from ..assignments import commands as assignment_commands
+from ..scheduling import commands as schedule_commands
 
 STAFF_ACTIONS = {
     "catalog", "config", "offerings", "plan-reset", "send", "send-all", "return", "solve", "placement", "publish",

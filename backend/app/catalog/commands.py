@@ -1,5 +1,5 @@
-from .seed_catalog import teacher_capabilities
-from .domain_models import Department, Teacher
+from .seed import teacher_capabilities
+from ..timetable.models import Department, Teacher
 from .schemas import Catalog
 
 

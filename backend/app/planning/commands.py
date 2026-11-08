@@ -1,5 +1,5 @@
-from .domain_models import Config, Offering
-from .domain_rules import split
+from ..timetable.models import Config, Offering
+from ..timetable.rules import split
 
 
 def apply(state, action, data, p):

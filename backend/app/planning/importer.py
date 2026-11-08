@@ -2,7 +2,7 @@
 from io import BytesIO
 from zipfile import ZipFile
 from openpyxl import load_workbook
-from .domain_models import Offering
+from ..timetable.models import Offering
 
 
 def preview_workbook(raw: bytes):

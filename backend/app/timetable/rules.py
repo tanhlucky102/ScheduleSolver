@@ -1,7 +1,7 @@
 """Pure timetable, room, and assignment validation rules."""
 from collections import Counter, defaultdict
 from math import ceil
-from .domain_models import State, Config, Session, Teacher, Offering, Room, Placement
+from .models import State, Config, Session, Teacher, Offering, Room, Placement
 
 def split(offering: Offering) -> list[Session]:
     o = offering
