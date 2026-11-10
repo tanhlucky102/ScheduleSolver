@@ -7,6 +7,8 @@ export function CatalogEditor({
   disabled,
   initialDepartments,
   initialTeachers,
+  onlineTeacherIds,
+  realtimeConnected,
   onSaveCatalog,
   onSaveDept,
   onDeleteDept,
@@ -16,6 +18,8 @@ export function CatalogEditor({
   disabled: boolean;
   initialDepartments: Dept[];
   initialTeachers: Teacher[];
+  onlineTeacherIds: string[];
+  realtimeConnected: boolean;
   onSaveCatalog: (data: { departments: Dept[]; teachers: Teacher[] }) => Promise<void>;
   onSaveDept?: (data: { id: string; name: string }) => Promise<void>;
   onDeleteDept?: (id: string) => Promise<void>;
@@ -281,13 +285,14 @@ export function CatalogEditor({
                   <th>Họ và tên</th>
                   <th style={{ width: "120px" }}>Bộ môn</th>
                   <th style={{ width: "120px" }}>Vai trò</th>
+                  <th style={{ width: "130px" }}>Trạng thái</th>
                   <th style={{ width: "150px", textAlign: "right" }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTeachers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: "center", padding: "24px", color: "var(--muted)" }}>
+                    <td colSpan={6} style={{ textAlign: "center", padding: "24px", color: "var(--muted)" }}>
                       Không tìm thấy giảng viên nào.
                     </td>
                   </tr>
@@ -304,6 +309,14 @@ export function CatalogEditor({
                       <td>
                         <span className={"badge " + (t.assistant ? "warning" : "success")}>
                           {t.assistant ? "Trợ giảng" : "Giảng viên"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={"presence-status " + (
+                          !realtimeConnected ? "unknown" : onlineTeacherIds.includes(t.id) ? "online" : "offline"
+                        )}>
+                          <span className="presence-dot" />
+                          {!realtimeConnected ? "Đang kết nối" : onlineTeacherIds.includes(t.id) ? "Online" : "Offline"}
                         </span>
                       </td>
                       <td style={{ textAlign: "right" }}>

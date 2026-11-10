@@ -77,8 +77,9 @@ Xem verification/RESULTS.md để biết kết quả thực tế. Đã dùng c�
 
 ## Giới hạn triển khai hiện tại
 
-- Solver chạy HC/SA/Tabu bằng ba thread, seed tái lập và chọn điểm (hard, soft) theo thứ tự ưu tiên. Python GIL giới hạn tăng tốc CPU; chưa port delta scoring, chưa benchmark tương đương Java trên dữ liệu 290 lớp.
-- API chạy solver đồng bộ và khóa workspace trong transaction. Phù hợp thử nghiệm; job queue/cancel và kiểm thử tải chưa triển khai.
+- Solver chạy HC/SA/Tabu trong worker process riêng, nhận/gửi JSON qua TCP loopback port 9009 (khung 4-byte length prefix). Tiến độ và hiện diện đi qua WebSocket `/ws`; WebSocket dùng access token xác thực, và chỉ các profile cùng workspace nhận sự kiện. Tiến độ có thể xem theo từng thuật toán.
+- Solver đọc snapshot trước khi chạy, không giữ khóa DB trong thời gian tìm kiếm; chỉ ghi bản nháp với revision điều kiện sau khi hoàn tất. Nếu dữ liệu thay đổi giữa chừng, kết quả bị từ chối để tránh ghi đè. Worker được khởi chạy tự động khi có yêu cầu solve. Chưa có hàng đợi bền vững, hủy job hoặc kiểm thử tải; tiến độ/hiện diện trong bộ nhớ của một backend process, nên muốn chạy nhiều backend instance cần bổ sung message broker và sticky routing hoặc adapter phù hợp.
+- Các bộ giải vẫn dùng ba thread trong process worker, seed tái lập và chọn điểm (hard, soft) theo thứ tự ưu tiên. Python GIL giới hạn tăng tốc CPU; chưa port delta scoring, chưa benchmark tương đương Java trên dữ liệu 290 lớp.
 - Các thành phần phạt mềm dùng tổng đơn vị minh bạch trong báo cáo; SoT không cho trọng số nên chưa tuyên bố tương đương điểm Java.
 - Đã có phân phòng cụ thể và hard constraints, xem ROOM_IMPLEMENTATION.md.
 - Catalog/plan nhập ban đầu và khóa để tránh thay dữ liệu phá snapshot. Chưa có giao diện sửa kế hoạch và quản trị tài khoản/học kỳ.

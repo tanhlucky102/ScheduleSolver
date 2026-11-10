@@ -20,7 +20,8 @@ const roleName = { STAFF: "Giáo vụ", HEAD: "Trưởng bộ môn", TEACHER: "G
 
 export default function Home() {
   const { auth, token, profile, workspace, message, setMessage, failed, loading, busy,
-    config, setConfig, apiUrl, refresh, perform, command, download, loginWithPassword } = useWorkspaceSession();
+    config, setConfig, apiUrl, refresh, perform, command, download, loginWithPassword,
+    solverProgress, solverRunning, onlineTeachers, realtimeConnected } = useWorkspaceSession();
   const [tab, setTab] = useState("overview");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -398,6 +399,8 @@ export default function Home() {
                   key={"catalog" + workspace.revision}
                   initialDepartments={state?.departments ?? []}
                   initialTeachers={state?.teachers ?? []}
+                  onlineTeacherIds={onlineTeachers}
+                  realtimeConnected={realtimeConnected}
                   disabled={busy}
                   onSaveCatalog={(data) => perform(() => command("catalog", data))}
                   onSaveDept={(data) => perform(() => command("department-save", data))}
@@ -521,6 +524,7 @@ export default function Home() {
 
             {tab === "draft" && staff && (
               <DraftSchedule workspace={workspace} busy={busy} ready={ready} isEvaluating={isEvaluating}
+                solverProgress={solverProgress} solverRunning={solverRunning}
                 perform={perform} command={command} download={download} onAssignClick={() => setTab("assign")}
                 draftLimit={draftLimit} setDraftLimit={setDraftLimit} draftQuery={draftQuery} setDraftQuery={setDraftQuery} />
             )}

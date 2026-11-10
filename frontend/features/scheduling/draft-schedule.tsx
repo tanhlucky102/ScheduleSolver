@@ -3,13 +3,15 @@ import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { Metrics } from "../shared/ui";
 import { clock } from "../shared/time";
 import { DraftRow } from "./draft-row";
-import type { Workspace } from "../workspace/types";
+import type { SolverProgress, Workspace } from "../workspace/types";
 
-export function DraftSchedule({ workspace, busy, ready, isEvaluating, perform, command, download, onAssignClick, draftLimit, setDraftLimit, draftQuery, setDraftQuery }: {
+export function DraftSchedule({ workspace, busy, ready, isEvaluating, solverProgress, solverRunning, perform, command, download, onAssignClick, draftLimit, setDraftLimit, draftQuery, setDraftQuery }: {
   workspace: Workspace;
   busy: boolean;
   ready: boolean;
   isEvaluating: boolean;
+  solverProgress: Record<string, SolverProgress>;
+  solverRunning: boolean;
   perform: (action: () => Promise<void>) => Promise<void>;
   command: (action: string, payload?: unknown) => Promise<void>;
   download: (source: string) => Promise<void>;
@@ -65,6 +67,25 @@ export function DraftSchedule({ workspace, busy, ready, isEvaluating, perform, c
                       Xuất Excel đã công bố
                     </button>
                   </div>
+                  {Object.keys(solverProgress).length > 0 && (
+                    <section className="solver-progress" aria-live="polite">
+                      <strong>{solverRunning ? "Đang tìm thời khóa biểu..." : "Đã hoàn tất bộ giải"}</strong>
+                      {Object.values(solverProgress).map((progress) => {
+                        const percent = solverRunning
+                          ? Math.min(100, Math.round((progress.step / Math.max(progress.iterations, 1)) * 100))
+                          : 100;
+                        return (
+                          <div className="solver-progress-row" key={progress.algorithm}>
+                            <div className="solver-progress-heading">
+                              <span>{progress.algorithm}</span>
+                              <span>{solverRunning ? `${percent}%` : "Hoàn thành"} · Lỗi bắt buộc {progress.hard} · Điểm mềm {progress.soft}</span>
+                            </div>
+                            <progress max={100} value={percent} aria-label={`Tiến độ ${progress.algorithm}`} />
+                          </div>
+                        );
+                      })}
+                    </section>
+                  )}
                   <p>
                     Kiểm tra phân công, sức chứa, thiết bị, điều kiện dùng phòng, toàn bộ khung khả dụng và lịch chiếm dụng. Nếu hết lượt tìm kiếm, hệ thống báo xung đột và giữ nguyên bản nháp; điều đó chưa chứng minh bài toán vô nghiệm.
                   </p>

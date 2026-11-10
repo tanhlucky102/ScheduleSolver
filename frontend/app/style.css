@@ -128,6 +128,51 @@ main{padding:0 32px 28px;width:100%;min-width:0;max-width:1800px;margin:0 auto}.
 }
 .nav-spinner {
   margin-left: auto;
+}
+.presence-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+.presence-status.online .presence-dot {
+  background: #16a34a;
+}
+.presence-status.offline .presence-dot {
+  background: #94a3b8;
+}
+.presence-status.unknown {
+  color: var(--muted);
+}
+.solver-progress {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 16px;
+  padding: 12px;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  background: #f0f9ff;
+}
+.solver-progress-row {
+  display: grid;
+  gap: 4px;
+}
+.solver-progress-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.solver-progress-row progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #0284c7;
   font-size: 12px;
   animation: spin 1.2s linear infinite;
 }

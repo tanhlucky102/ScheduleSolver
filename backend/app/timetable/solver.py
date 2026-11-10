@@ -54,7 +54,14 @@ def constructive_initial(state: State, domains, rng):
     return [deepcopy(placed[s.id][0]) for s in state.sessions if s.id in placed]
 
 
-def solve_worker(state: State, algorithm: str, seed: int, iterations: int, domains: dict | None = None):
+def solve_worker(
+    state: State,
+    algorithm: str,
+    seed: int,
+    iterations: int,
+    domains: dict | None = None,
+    on_progress=None,
+):
     rng = random.Random(seed)
     if domains is None:
         domains, _ = placement_domains(state)
@@ -75,7 +82,23 @@ def solve_worker(state: State, algorithm: str, seed: int, iterations: int, domai
     best, best_score = deepcopy(current), current_score
     tabu = []
     stagnant_steps = 0
+    completed_steps = 0
+    last_progress_step = 0
+
+    def report_progress(step):
+        nonlocal last_progress_step
+        if on_progress and (step % 20 == 0 or step == iterations):
+            on_progress({
+                "algorithm": algorithm,
+                "step": step,
+                "iterations": iterations,
+                "hard": best_score[0],
+                "soft": best_score[1],
+            })
+            last_progress_step = step
+
     for step in range(iterations):
+        completed_steps = step + 1
         if not current:
             break
         if best_score[0] == 0 and stagnant_steps >= 25:
@@ -89,6 +112,7 @@ def solve_worker(state: State, algorithm: str, seed: int, iterations: int, domai
         next_score = score(candidate)
         move = (idx, new)
         if algorithm == "TABU" and move in tabu and next_score >= best_score:
+            report_progress(completed_steps)
             continue
         accept = next_score < current_score
         if algorithm == "SA":
@@ -106,10 +130,19 @@ def solve_worker(state: State, algorithm: str, seed: int, iterations: int, domai
                 stagnant_steps = 0
             else:
                 stagnant_steps += 1
+        report_progress(completed_steps)
+    if on_progress and completed_steps != last_progress_step:
+        on_progress({
+            "algorithm": algorithm,
+            "step": completed_steps,
+            "iterations": iterations,
+            "hard": best_score[0],
+            "soft": best_score[1],
+        })
     return best, {"algorithm": algorithm, "seed": seed, "score": best_score, "initial_score": initial_score, "initialization": "constrained_greedy"}
 
 
-def solve(state: State, iterations: int = 150, seed: int = 42):
+def solve(state: State, iterations: int = 150, seed: int = 42, on_progress=None):
     require_ready(state)
     if any(not r.get("room_id") for r in state.published):
         raise SchedulingConflict("ROOM_REVIEW_REQUIRED", ["Confirm room assignments for legacy published occupancy before solving"])
@@ -117,7 +150,7 @@ def solve(state: State, iterations: int = 150, seed: int = 42):
     if diagnostics:
         raise SchedulingConflict("INFEASIBLE_INPUT", diagnostics)
     with ThreadPoolExecutor(max_workers=3) as pool:
-        futures = [pool.submit(solve_worker, state, a, seed+i, iterations, domains)
+        futures = [pool.submit(solve_worker, state, a, seed+i, iterations, domains, on_progress)
                    for i, a in enumerate(("HC", "SA", "TABU"))]
         results = [f.result() for f in futures]
     best = min(results, key=lambda item: tuple(item[1]["score"]))
