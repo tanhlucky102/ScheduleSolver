@@ -3,6 +3,9 @@
 from .timetable.models import (
     Model as Model,
     Department as Department,
+    ShiftRule as ShiftRule,
+    ColorRule as ColorRule,
+    HolidayRule as HolidayRule,
     Teacher as Teacher,
     Offering as Offering,
     Session as Session,
@@ -44,6 +47,9 @@ from .timetable.publication import (
 __all__ = [
     "Model",
     "Department",
+    "ShiftRule",
+    "ColorRule",
+    "HolidayRule",
     "Teacher",
     "Offering",
     "Session",

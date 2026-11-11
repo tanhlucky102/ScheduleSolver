@@ -11,11 +11,11 @@ STAFF_ACTIONS = {
     "department-save", "department-delete", "teacher-save", "teacher-delete", "rooms-preset",
 }
 HANDLERS = {
-    **dict.fromkeys(("catalog", "department-save", "department-delete", "teacher-save", "teacher-delete"), catalog_commands.apply),
+    **dict.fromkeys(("catalog", "department-save", "department-delete", "teacher-save", "teacher-delete", "color-rules"), catalog_commands.apply),
     **dict.fromkeys(("rooms-preset", "rooms", "rooms-delete", "published-room", "reservation", "reservation-delete", "requirements"), room_commands.apply),
     **dict.fromkeys(("config", "offerings", "plan-reset", "send", "send-all"), plan_commands.apply),
     **dict.fromkeys(("assign", "balance", "teacher", "submit", "capabilities-preset", "return"), assignment_commands.apply),
-    **dict.fromkeys(("solve", "placement", "publish", "external-delete", "external"), schedule_commands.apply),
+    **dict.fromkeys(("solve", "placement", "publish", "external-delete", "external", "external-import"), schedule_commands.apply),
 }
 
 

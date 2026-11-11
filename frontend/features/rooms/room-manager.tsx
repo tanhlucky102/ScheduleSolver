@@ -6,11 +6,11 @@ import { parseRoomsCsv } from "./room-import";
 import { clock, minutes } from "../shared/time";
 import { commaValues as values } from "../shared/text";
 
-// Default availability: Monday to Saturday from 07:00 (420) to 18:00 (1080)
+// Default availability: Monday to Saturday from 07:00 (420) to 22:00 (1320)
 const defaultWeeklyAvailability: Window[] = Array.from({ length: 6 }, (_, i) => ({
   day: i + 2,
   start: 420,
-  end: 1080,
+  end: 1320,
   evening: false,
 }));
 
@@ -76,7 +76,7 @@ function Windows({ items, onChange }: { items: Window[]; onChange: (v: Window[])
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
         <button
           type="button"
-          onClick={() => onChange([...items, { day: 2, start: 420, end: 1080 }])}
+          onClick={() => onChange([...items, { day: 2, start: 420, end: 1320 }])}
         >
           + Thêm khung giờ
         </button>
@@ -84,7 +84,7 @@ function Windows({ items, onChange }: { items: Window[]; onChange: (v: Window[])
           type="button"
           onClick={() => onChange(structuredClone(defaultWeeklyAvailability))}
         >
-          Đặt lại khung chuẩn (T2–T7 07:00–18:00)
+          Đặt lại khung chuẩn (T2–T7 07:00–22:00)
         </button>
       </div>
     </fieldset>
@@ -284,6 +284,26 @@ export function RoomManager({
               ⚡ Nạp 25 phòng chuẩn TKB (từ so_phong.csv)
             </button>
           )}
+          <a
+            href="/templates/phong-hoc-mau.csv"
+            download="Mau_Danh_Sach_Phong_Hoc.csv"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "36px",
+              padding: "0 12px",
+              fontSize: "12px",
+              background: "#eff6ff",
+              border: "1px solid #93c5fd",
+              color: "#1d4ed8",
+              borderRadius: "6px",
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            📥 Tải File Mẫu (.csv)
+          </a>
           <label
             className="button"
             style={{

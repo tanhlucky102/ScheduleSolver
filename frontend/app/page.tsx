@@ -1,41 +1,70 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CatalogEditor } from "../features/catalog/catalog-editor";
 import { ConfigEditor } from "../features/scheduling/config-editor";
 import { TermCalendar } from "../features/scheduling/term-calendar";
+import { buildDraftEvents } from "../features/scheduling/term-calendar-model";
 import { RoomManager } from "../features/rooms/room-manager";
 import { RequirementsEditor } from "../features/rooms/requirements-editor";
 import { Icon, Metrics, EmptyState } from "../features/shared/ui";
 import { Workflow, DepartmentProgress } from "../features/workspace/overview-panels";
 import { AssignmentPanel } from "../features/assignments/assignment-panel";
-import { PersonalCalendar } from "../features/scheduling/personal-calendar";
+import { PersonnelMatrix } from "../features/assignments/personnel-matrix";
 import { clock } from "../features/shared/time";
 import { PlanImportCard } from "../features/workspace/plan-import-card";
 import { DraftSchedule } from "../features/scheduling/draft-schedule";
-import { PersonalSchedule } from "../features/scheduling/personal-schedule";
+import { PersonalSchedule, type ExternalDraft } from "../features/scheduling/personal-schedule";
 import { useWorkspaceSession } from "../features/workspace/use-workspace-session";
 import { LoginScreen } from "../features/workspace/login-screen";
 
 const roleName = { STAFF: "Giáo vụ", HEAD: "Trưởng bộ môn", TEACHER: "Giảng viên" };
 
 export default function Home() {
-  const { auth, token, profile, workspace, message, setMessage, failed, loading, busy,
-    config, setConfig, apiUrl, refresh, perform, command, download, loginWithPassword } = useWorkspaceSession();
+  const {
+    auth,
+    token,
+    profile,
+    workspace,
+    message,
+    setMessage,
+    failed,
+    loading,
+    busy,
+    config,
+    setConfig,
+    apiUrl,
+    refresh,
+    perform,
+    command,
+    download,
+    loginWithPassword,
+  } = useWorkspaceSession();
+
   const [tab, setTab] = useState("overview");
+  const [termSource, setTermSource] = useState<"draft" | "published" | undefined>(undefined);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [draftLimit, setDraftLimit] = useState(60);
   const [draftQuery, setDraftQuery] = useState("");
-  const [external, setExternal] = useState({
-    institution: "", course: "", class_name: "", room: "", day: 2,
-    start: "07:00", end: "09:30",
+  const [external, setExternal] = useState<ExternalDraft>({
+    institution: "",
+    course: "",
+    class_name: "",
+    room: "",
+    day: 2,
+    start: "07:10",
+    end: "09:15",
+    activity_type: "EXTERNAL_TEACHING",
+    color: "#fef3c7",
+    note: "",
   });
 
   useEffect(() => {
     if (!token) setTab("overview");
   }, [token]);
+
   function switchTab(newTab: string) {
     if (newTab === "draft" && tab !== "draft") {
       setIsEvaluating(true);
@@ -45,6 +74,9 @@ export default function Home() {
         setIsEvaluating(false);
       }, 60);
     } else {
+      if (newTab === "term" && tab !== "draft") {
+        setTermSource(undefined);
+      }
       setTab(newTab);
       setMessage("");
     }
@@ -56,20 +88,36 @@ export default function Home() {
   const sessions = state?.sessions ?? [];
   const departments = state?.departments ?? [];
   const remaining = sessions.filter((s) => !s.teacher).length;
-  const unsent = departments.some((d) => d.status === "UNSENT" && sessions.some((s) => s.department === d.id));
   const ready = !!sessions.length && !!departments.length && departments.every((d) => d.status === "SUBMITTED");
 
+  const draftEvents = useMemo(() => buildDraftEvents(state), [state]);
+  const personalColorRules = workspace?.color_rules ?? state?.config?.color_rules ?? [];
+  const systemColorRules = state?.config?.color_rules ?? [];
+  const activeShiftRules = state?.config?.shift_rules ?? workspace?.shift_rules ?? [];
+  const onlineTeachers = workspace?.online_teachers ?? [];
+
   if (!token) {
-    return <LoginScreen busy={busy} authReady={Boolean(auth)} message={message} failed={failed}
-      onDismiss={() => setMessage("")} onLogin={loginWithPassword}
-      loginEmail={loginEmail} loginPassword={loginPassword} setLoginEmail={setLoginEmail} setLoginPassword={setLoginPassword} />;
+    return (
+      <LoginScreen
+        busy={busy}
+        authReady={Boolean(auth)}
+        message={message}
+        failed={failed}
+        onDismiss={() => setMessage("")}
+        onLogin={loginWithPassword}
+        loginEmail={loginEmail}
+        loginPassword={loginPassword}
+        setLoginEmail={setLoginEmail}
+        setLoginPassword={setLoginPassword}
+      />
+    );
   }
 
   const tabs = profile
     ? [
         ["overview", "Tổng quan"],
-        ...(staff ? [["setup", "Giảng viên & Bộ môn"], ["rooms", "Phòng học"]] : []),
-        ...(staff || head ? [["assign", "Phân công"]] : []),
+        ...(staff ? [["setup", "Kế hoạch & Khung giờ"], ["rooms", "Phòng học"]] : []),
+        ...(staff || head ? [["personnel", "Nhân Sự"], ["assign", "Phân công"]] : []),
         ...(staff ? [["draft", "Xếp lịch & công bố"], ["term", "Lịch học kỳ"]] : []),
         ...(!staff ? [["personal", "Lịch của tôi"]] : []),
       ]
@@ -77,25 +125,28 @@ export default function Home() {
 
   const pageTitles: Record<string, string> = {
     overview: "Tổng quan điều phối",
-    setup: "Giảng viên & Bộ môn",
+    setup: "Kế hoạch mở lớp, Bộ môn & Quy chuẩn Ca/Tiết",
     rooms: "Quản lý phòng học",
-    assign: "Phân công giảng dạy",
-    draft: "Xếp lịch & công bố",
-    term: "Thời khóa biểu toàn học kỳ",
-    personal: "Lịch giảng dạy cá nhân",
+    personnel: "Nhân Sự & Hồ sơ Năng lực Giảng viên",
+    assign: "Phân công giảng dạy (LEC / TUT)",
+    draft: "Xếp lịch & Công bố học kỳ",
+    term: "Thời khóa biểu Cả Tuần",
+    personal: "Lịch giảng dạy, Đi học & Mã màu cá nhân",
   };
+
   const descriptions: Record<string, string> = {
     overview: staff
       ? "Theo dõi tiến độ học kỳ và phối hợp cùng các bộ môn."
       : head
-      ? "Điều phối giảng viên và theo dõi kế hoạch của bộ môn."
-      : "Theo dõi các lớp và lịch giảng dạy đã được công bố.",
-    setup: "Quản lý danh mục bộ môn, giảng viên, cấu hình khung giờ và nhập kế hoạch đào tạo.",
-    rooms: "Quản lý sức chứa, thiết bị máy chiếu/máy tính và lịch chiếm dụng.",
-    assign: "Đúng giảng viên, đúng năng lực, phân bố đều khối lượng phụ trách.",
-    draft: "Kiểm tra ràng buộc phòng/giờ và hoàn thiện thời khóa biểu trước khi công bố.",
-    term: "Theo dõi lịch của tất cả khóa học, giảng viên và phòng trong học kỳ.",
-    personal: "Lịch khoa chính thức và lịch ngoài trong cùng một không gian.",
+      ? "Điều phối nhân sự, năng lực LEC/TUT và kế hoạch của bộ môn."
+      : "Tổng hợp khối lượng giảng dạy tại khoa, lịch đi học và lịch dạy trường ngoài.",
+    setup: "Nhập kế hoạch đào tạo Excel, cấu hình khung ca/tiết đồng nhất T2–T7 (chuẩn HANU Tiết 3–14) và danh mục Bộ môn.",
+    rooms: "Quản lý sức chứa, thiết bị máy chiếu/máy tính, file mẫu CSV và lịch chiếm dụng.",
+    personnel: "Quản lý tập trung toàn bộ nhân sự, trạng thái hoạt động tại khoa, Online và môn phụ trách LEC/TUT.",
+    assign: "Gán giảng viên đủ năng lực LEC/TUT vào từng lớp học phần và cân đối tải.",
+    draft: "Chạy bộ giải xếp lịch, kiểm tra ràng buộc và hiệu chỉnh từng lớp trước khi công bố.",
+    term: "Đối chiếu TKB cả tuần (Bản nháp & Chính thức) theo Ma trận Thứ×Ca, Danh sách môn và Phòng học.",
+    personal: "Xem lịch tuần, import lịch trường ngoài / lịch đi học và tự đánh dấu mã màu / ghi chú theo sở thích.",
   };
 
   return (
@@ -143,7 +194,6 @@ export default function Home() {
           )}
         </nav>
 
-        {/* Sidebar Footer with Role Info and Settings Dropdown */}
         <div className="aside-foot">
           {loading || !profile ? (
             <div className="user-card skeleton-user shimmer" aria-label="Đang tải thông tin người dùng">
@@ -202,7 +252,6 @@ export default function Home() {
 
       {/* Main Content Area */}
       <main id="main-content">
-        {/* Streamlined Topbar */}
         <div className="topbar">
           <span>
             Quản lý đào tạo <span aria-hidden="true">/</span> {profile ? roleName[profile.role] : "Không gian"}
@@ -219,7 +268,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Compact Page Header */}
         <header>
           <div>
             <span className="eyebrow">{profile ? roleName[profile.role] : "SCHEDULE SOLVER"}</span>
@@ -235,7 +283,6 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Global Alert / Notice */}
         {message && (
           <div className={"notice " + (failed ? "error" : "success")} role={failed ? "alert" : "status"}>
             <b>{failed ? "Không thể hoàn tất thao tác" : "Thông báo"}</b>
@@ -246,7 +293,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading Spinner Indicator */}
         {busy && (
           <div className="working" role="status">
             <span className="spinner" />
@@ -288,16 +334,16 @@ export default function Home() {
                             detail: "Phân công sẵn sàng để xếp lịch",
                           },
                           {
-                            label: "Buổi đã công bố",
-                            value: state?.published.length ?? 0,
-                            detail: "Lịch giảng dạy chính thức",
+                            label: "Buổi đã xếp (Nháp / Công bố)",
+                            value: `${draftEvents.length} / ${state?.published.length ?? 0}`,
+                            detail: "Xem ngay trên Lịch học kỳ",
                             tone: "text-success",
                           },
                         ]
                       : head
                       ? [
                           { label: "Lớp thuộc bộ môn", value: sessions.length, detail: remaining + " lớp chưa phân công" },
-                          { label: "Giảng viên bộ môn", value: state?.teachers?.length ?? 0, detail: "Theo danh mục được cấp" },
+                          { label: "Nhân sự bộ môn", value: state?.teachers?.length ?? 0, detail: "Xem đầy đủ tại mục Nhân Sự" },
                           {
                             label: "Khối lượng bộ môn",
                             value: sessions.reduce((n, s) => n + (s.periods ?? 0), 0),
@@ -305,15 +351,15 @@ export default function Home() {
                           },
                         ]
                       : [
-                          { label: "Buổi giảng dạy", value: state?.published.length ?? 0, detail: "Đã được giáo vụ công bố" },
+                          { label: "Buổi giảng dạy tại khoa", value: state?.published.length ?? 0, detail: "Đã được giáo vụ công bố" },
                           {
-                            label: "Khối lượng giảng dạy",
+                            label: "Khối lượng tại khoa",
                             value: state?.published.some((s) => s.periods === undefined)
                               ? "—"
                               : state?.published.reduce((n, s) => n + (s.periods ?? 0), 0) ?? 0,
                             detail: "Tiết/tuần theo lịch công bố",
                           },
-                          { label: "Buổi lịch ngoài", value: state?.external?.length ?? 0, detail: "Lịch cá nhân đã khai báo" },
+                          { label: "Lịch ngoài & Đi học", value: state?.external?.length ?? 0, detail: "Đã khai báo / Import" },
                         ]
                   }
                 />
@@ -329,41 +375,37 @@ export default function Home() {
                             : "Tiếp tục phối hợp phân công"
                           : "Bắt đầu từ kế hoạch mở lớp"
                         : head
-                        ? "Không gian phân công của bộ môn"
-                        : "Lịch giảng dạy của bạn"}
+                        ? "Không gian Nhân Sự & Phân công của bộ môn"
+                        : "Lịch giảng dạy, Đi học & Mã màu cá nhân"}
                     </b>
                     <p>
                       {staff
                         ? ready
-                          ? "Các bộ môn đã nộp. Kiểm tra phòng và ràng buộc trước khi chạy xếp lịch."
-                          : "Gửi kế hoạch, theo dõi phân công và phản hồi những lớp cần điều chỉnh."
+                          ? "Các bộ môn đã nộp. Kiểm tra phòng và chạy xếp lịch để xem ngay TKB cả tuần."
+                          : "Theo dõi tiến độ bộ môn bên dưới và phản hồi những lớp cần điều chỉnh."
                         : head
-                        ? "Xem kế hoạch, cân đối khối lượng và nộp phân công cho giáo vụ."
-                        : "Lịch chỉ hiển thị khi đã được công bố; lịch ngoài được quản lý riêng cho bạn."}
+                        ? "Cập nhật môn phụ trách LEC / TUT tại mục Nhân Sự, sau đó gán lớp và nộp phân công."
+                        : "Mở mục Lịch của tôi để xem TKB tuần, import lịch trường ngoài/đi học và tùy chỉnh mã màu theo sở thích."}
                     </p>
                   </div>
                   <button
                     className="primary"
                     disabled={busy}
-                    onClick={() => {
-                      if (staff && unsent) {
-                        void perform(() => command("send-all", {}));
-                      } else {
-                        switchTab(staff ? (sessions.length ? (ready ? "draft" : "assign") : "setup") : head ? "assign" : "personal");
-                      }
-                    }}
+                    onClick={() =>
+                      switchTab(
+                        staff ? (sessions.length ? (ready ? "draft" : "assign") : "setup") : head ? "personnel" : "personal"
+                      )
+                    }
                   >
                     {staff
-                      ? unsent
-                        ? "⚡ Gửi kế hoạch đồng loạt cho các bộ môn"
-                        : sessions.length
+                      ? sessions.length
                         ? ready
                           ? "Đến xếp lịch"
                           : "Xem phân công"
-                        : "Nhập kế hoạch"
+                        : "Nhập kế hoạch mở lớp"
                       : head
-                      ? "Phân công giảng viên"
-                      : "Mở lịch cá nhân"}{" "}
+                      ? "Mở bảng Nhân Sự"
+                      : "Mở Lịch của tôi"}{" "}
                     →
                   </button>
                 </section>
@@ -387,23 +429,19 @@ export default function Home() {
                     onCommand={(action, payload) => perform(() => command(action, payload))}
                   />
                 )}
-                {!staff && !head && <PersonalCalendar published={state?.published ?? []} external={state?.external ?? []} />}
               </>
             )}
 
-            {/* Tab: Setup (Catalogs & Configurations) */}
+            {/* Tab: Setup (Kế hoạch, Khung giờ & Bộ môn — không lặp Giảng viên) */}
             {tab === "setup" && staff && (
               <>
-                <CatalogEditor
-                  key={"catalog" + workspace.revision}
-                  initialDepartments={state?.departments ?? []}
-                  initialTeachers={state?.teachers ?? []}
-                  disabled={busy}
-                  onSaveCatalog={(data) => perform(() => command("catalog", data))}
-                  onSaveDept={(data) => perform(() => command("department-save", data))}
-                  onDeleteDept={(id) => perform(() => command("department-delete", { id }))}
-                  onSaveTeacher={(t) => perform(() => command("teacher-save", t))}
-                  onDeleteTeacher={(id) => perform(() => command("teacher-delete", { id }))}
+                <PlanImportCard
+                  apiUrl={apiUrl}
+                  token={token}
+                  busy={busy}
+                  sessionsCount={sessions.length}
+                  perform={perform}
+                  command={command}
                 />
 
                 <ConfigEditor
@@ -413,7 +451,32 @@ export default function Home() {
                   hasPublished={Boolean(state?.published.length)}
                   onSave={(data) => perform(() => command("config", data))}
                 />
+
+                <CatalogEditor
+                  key={"catalog" + workspace.revision}
+                  initialDepartments={state?.departments ?? []}
+                  initialTeachers={state?.teachers ?? []}
+                  disabled={busy}
+                  onSaveCatalog={(data) => perform(() => command("catalog", data))}
+                  onSaveDept={(data) => perform(() => command("department-save", data))}
+                  onDeleteDept={(id) => perform(() => command("department-delete", { id }))}
+                />
               </>
+            )}
+
+            {/* Tab: Personnel ("Nhân Sự" — nơi duy nhất quản lý Giảng viên & Năng lực LEC/TUT) */}
+            {tab === "personnel" && (staff || head) && (
+              <PersonnelMatrix
+                teachers={state?.teachers ?? []}
+                departments={state?.departments ?? []}
+                sessions={state?.sessions ?? []}
+                offerings={state?.offerings ?? []}
+                onlineTeachers={onlineTeachers}
+                currentTeacher={profile?.teacher}
+                role={profile?.role ?? "STAFF"}
+                busy={busy}
+                onCommand={(action, payload) => perform(() => command(action, payload))}
+              />
             )}
 
             {/* Tab: Rooms */}
@@ -423,7 +486,7 @@ export default function Home() {
                   <section className="card">
                     <h2>Xác nhận phòng cho lịch công bố cũ</h2>
                     <p>
-                      Cần đối chiếu phòng thực tế để bảo vệ chiếm dụng trước khi chạy bộ giải. Không tự suy đoán mã phòng.
+                      Cần đối chiếu phòng thực tế để bảo vệ chiếm dụng trước khi chạy bộ giải.
                     </p>
                     {state?.published
                       .filter((r) => !r.room_id)
@@ -466,45 +529,18 @@ export default function Home() {
               </>
             )}
 
-            {/* Tab: Assignments */}
+            {/* Tab: Assignments (Chỉ phân công lớp, không lặp lại PlanImportCard hay PersonnelMatrix) */}
             {tab === "assign" && (staff || head) && (
               <>
                 {staff && sessions.length === 0 && (
-                  <PlanImportCard
-                    apiUrl={apiUrl}
-                    token={token}
-                    busy={busy}
-                    sessionsCount={sessions.length}
-                    perform={perform}
-                    command={command}
-                  />
-                )}
-                {staff && sessions.length > 0 && (
-                  <details className="card" style={{ marginBottom: "16px" }}>
-                    <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
-                      📂 Nhập lại kế hoạch đào tạo Excel (.xlsx) / Reset về 0 lớp
-                    </summary>
-                    <div style={{ marginTop: "14px" }}>
-                      <PlanImportCard
-                        apiUrl={apiUrl}
-                        token={token}
-                        busy={busy}
-                        sessionsCount={sessions.length}
-                        perform={perform}
-                        command={command}
-                      />
+                  <div className="context-banner subtle" style={{ marginBottom: "16px" }}>
+                    <Icon name="setup" />
+                    <div>
+                      <b>Chưa có kế hoạch mở lớp trong hệ thống</b>
+                      <p>Hãy chuyển sang mục Kế hoạch &amp; Khung giờ để tải lên file Excel kế hoạch đào tạo trước khi phân công.</p>
                     </div>
-                  </details>
-                )}
-                {staff && (
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => perform(() => command("capabilities-preset", {}))}
-                      style={{ fontSize: "12px", padding: "6px 12px" }}
-                    >
-                      ⚡ Cập nhật năng lực giảng viên theo TKB gốc
+                    <button type="button" className="primary" onClick={() => switchTab("setup")}>
+                      Đi tới Kế hoạch &amp; Khung giờ →
                     </button>
                   </div>
                 )}
@@ -515,22 +551,84 @@ export default function Home() {
                   head={head}
                   busy={busy}
                   onCommand={(action, payload) => perform(() => command(action, payload))}
+                  onOpenPersonnel={() => switchTab("personnel")}
                 />
               </>
             )}
 
+            {/* Tab: Draft & Solve */}
             {tab === "draft" && staff && (
-              <DraftSchedule workspace={workspace} busy={busy} ready={ready} isEvaluating={isEvaluating}
-                perform={perform} command={command} download={download} onAssignClick={() => setTab("assign")}
-                draftLimit={draftLimit} setDraftLimit={setDraftLimit} draftQuery={draftQuery} setDraftQuery={setDraftQuery} />
+              <DraftSchedule
+                workspace={workspace}
+                busy={busy}
+                ready={ready}
+                isEvaluating={isEvaluating}
+                perform={perform}
+                command={command}
+                download={download}
+                onAssignClick={() => switchTab("assign")}
+                onOpenTermDraft={() => {
+                  setTermSource("draft");
+                  setTab("term");
+                  setMessage("");
+                }}
+                draftLimit={draftLimit}
+                setDraftLimit={setDraftLimit}
+                draftQuery={draftQuery}
+                setDraftQuery={setDraftQuery}
+              />
             )}
 
             {/* Tab: Whole Term Calendar */}
-            {tab === "term" && staff && <TermCalendar events={state?.published ?? []} rooms={state?.rooms ?? []} />}
+            {tab === "term" && staff && (
+              <TermCalendar
+                events={state?.published ?? []}
+                draftEvents={draftEvents}
+                rooms={state?.rooms ?? []}
+                offerings={state?.offerings ?? []}
+                colorRules={systemColorRules}
+                shiftRules={activeShiftRules}
+                initialSource={termSource}
+                termConfig={
+                  state?.config
+                    ? {
+                        term_name: state.config.term_name,
+                        term_start_date: state.config.term_start_date,
+                        term_end_date: state.config.term_end_date,
+                        holidays: state.config.holidays,
+                      }
+                    : workspace.term_config
+                }
+                apiUrl={apiUrl}
+                token={token}
+              />
+            )}
 
+            {/* Tab: Personal Schedule (HEAD & TEACHER) */}
             {tab === "personal" && !staff && (
-              <PersonalSchedule state={state!} hasPublication={workspace.has_publication} busy={busy}
-                perform={perform} command={command} external={external} setExternal={setExternal} />
+              <PersonalSchedule
+                apiUrl={apiUrl}
+                token={token}
+                state={state!}
+                colorRules={personalColorRules}
+                termConfig={
+                  workspace.term_config ??
+                  (state?.config
+                    ? {
+                        term_name: state.config.term_name,
+                        term_start_date: state.config.term_start_date,
+                        term_end_date: state.config.term_end_date,
+                        holidays: state.config.holidays,
+                      }
+                    : undefined)
+                }
+                hasPublication={workspace.has_publication}
+                busy={busy}
+                perform={perform}
+                command={command}
+                external={external}
+                setExternal={setExternal}
+              />
             )}
           </>
         )}

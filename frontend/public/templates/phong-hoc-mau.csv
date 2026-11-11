@@ -1,0 +1,4 @@
+id,name,capacity,room_type,equipment,active,note
+801C,Phòng 801C,150,PROJECTOR,PROJECTOR,true,Phòng lý thuyết lớn tầng 8
+402C,Phòng máy 402C,45,COMPUTER,COMPUTER|PROJECTOR,true,Phòng thực hành Tut
+206A1,Phòng đa năng 206A1,100,COMPUTER,COMPUTER|PROJECTOR,true,Phòng gộp Lec+Tut

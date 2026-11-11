@@ -8,7 +8,7 @@ from ..timetable.rules import room_errors, overlap
 def apply(state, action, data, p):
     if action == "rooms-preset":
         default_avail = [
-            Slot(day=d, start=420, end=1080, evening=False) for d in range(2, 8)
+            Slot(day=d, start=420, end=1320, evening=False) for d in range(2, 8)
         ]
         csv_path = Path(__file__).resolve().parents[3] / "resources" / "so_phong.csv"
         preset_rooms = []

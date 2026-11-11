@@ -12,7 +12,8 @@ def split(offering: Offering) -> list[Session]:
         result.append(Session(id=f"{o.id}-{kind}-{group}", offering=o.id, course=o.course,
             cohort=o.cohort, department=o.department, section=section, kind=kind,
             students=students, periods=periods, room=(o.lecture_room or o.room) if kind=="LEC" else (o.tutorial_room or o.room), program=o.program,
-            required_equipment=o.required_equipment, required_room_type=o.required_room_type))
+            required_equipment=o.required_equipment, required_room_type=o.required_room_type,
+            start_date=o.start_date, end_date=o.end_date))
     if o.combined is True or (o.combined is None and o.lecture_periods + o.tutorial_periods == 4):
         for i, n in enumerate(sizes(o.students, o.tutorial_count or ceil(o.students / 30))):
             add("COMBINED", str(i), str(i), n, o.lecture_periods + o.tutorial_periods)
@@ -31,6 +32,8 @@ def split(offering: Offering) -> list[Session]:
 
 
 def eligible(s: Session, t: Teacher) -> bool:
+    if not t.active:
+        return False
     dept_ok = (s.department == t.department) or (s.course in t.capabilities)
     assistant_ok = (not t.assistant or s.kind == "TUT")
     kinds = t.capabilities.get(s.course, [])
@@ -55,16 +58,31 @@ def require_ready(state: State):
         raise ValueError("; ".join(errors))
 
 
+def shift_duration(periods: float, period_minutes: float, break_minutes: int = 0, include_break: bool = True) -> int:
+    base = round(periods * period_minutes)
+    if not include_break:
+        return base
+    return base + max(0, int(periods) - 1) * break_minutes
+
+
 def duration(s: Session, c: Config):
-    return s.periods * c.period_minutes + (s.periods - 1) * c.break_minutes
+    return shift_duration(s.periods, c.period_minutes, c.break_minutes, c.include_break)
 
 
 def legal_slots(s: Session, c: Config):
     return [i for i, slot in enumerate(c.slots) if slot.start + duration(s, c) <= slot.end]
 
 
+def dates_overlap(a_start: str = "", a_end: str = "", b_start: str = "", b_end: str = "") -> bool:
+    if not (a_start and a_end and b_start and b_end):
+        return True
+    return a_start <= b_end and b_start <= a_end
+
+
 def overlap(a, b):
-    return a["day"] == b["day"] and a["start"] < b["end"] and b["start"] < a["end"]
+    if a["day"] != b["day"] or not (a["start"] < b["end"] and b["start"] < a["end"]):
+        return False
+    return dates_overlap(a.get("start_date", ""), a.get("end_date", ""), b.get("start_date", ""), b.get("end_date", ""))
 
 
 def room_errors(state: State, s: Session, room: Room, event: dict, res_index=None, pub_index=None):
@@ -124,11 +142,20 @@ def placement_domains(state: State):
     for r in state.published:
         if r.get("room_id") and r["id"] not in session_ids:
             pub_index[r["room_id"], r["day"]].append({"id": r["id"], "start": r["start"], "end": r["end"]})
+    ext_index = defaultdict(list)
+    for e in state.external:
+        ext_index[e.teacher, e.day].append({"start": e.start, "end": e.end, "start_date": e.start_date, "end_date": e.end_date})
     for s in state.sessions:
         candidates, reasons = [], Counter()
         for i in legal_slots(s, state.config):
             slot = state.config.slots[i]
-            event = dict(day=slot.day, start=slot.start, end=slot.start + duration(s, state.config))
+            event = dict(day=slot.day, start=slot.start, end=slot.start + duration(s, state.config),
+                         start_date=s.start_date, end_date=s.end_date)
+            if s.teacher and any(ext["start"] < event["end"] and event["start"] < ext["end"]
+                                 and dates_overlap(ext["start_date"], ext["end_date"], s.start_date, s.end_date)
+                                 for ext in ext_index.get((s.teacher, slot.day), ())):
+                reasons["external schedule conflict"] += 1
+                continue
             for room in state.rooms:
                 errors = room_errors(state, s, room, event, res_index=res_index, pub_index=pub_index)
                 reasons.update(errors)
@@ -182,12 +209,19 @@ def evaluate(state: State, placements: list[Placement], res_index=None, pub_inde
         for r in state.published:
             if r.get("room_id") and r["id"] not in session_ids:
                 pub_index[r["room_id"], r["day"]].append({"id": r["id"], "start": r["start"], "end": r["end"]})
+    ext_by_teacher_day = defaultdict(list)
+    for e in state.external:
+        ext_by_teacher_day[e.teacher, e.day].append(e)
     for row in rows:
         room = rooms.get(row["room_id"])
         if room is None:
             hard.append(f"Missing or unknown room: {row['id']}")
         else:
             hard.extend(f"Room {room.id}: {error}: {row['id']}" for error in room_errors(state, sessions[row["id"]], room, row, res_index=res_index, pub_index=pub_index))
+        for e in ext_by_teacher_day.get((row["teacher"], row["day"]), ()):
+            if e.start < row["end"] and row["start"] < e.end and dates_overlap(e.start_date, e.end_date, row.get("start_date", ""), row.get("end_date", "")):
+                hard.append(f"External overlap: {row['id']} ({e.institution} - {e.course})")
+                break
     rows_by_day = defaultdict(list)
     for row in rows:
         rows_by_day[row["day"]].append(row)

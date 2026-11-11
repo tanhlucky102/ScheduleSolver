@@ -1,0 +1,5 @@
+id,name,department,assistant,active,capabilities
+GV01,Nguyễn Văn An,CNPM,false,true,61FIT3SS1:LEC|TUT;61FIT3SE1:LEC
+GV02,Trần Thị Bình,KHMT,false,true,66FIT3AI1:LEC|TUT
+TG01,Lê Minh Châu,CNPM,true,true,61FIT3SS1:TUT
+GV03,Phạm Quốc Dũng,HTTT,false,false,61FIT3OS1CLC:LEC

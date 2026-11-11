@@ -4,8 +4,20 @@ from ..timetable.rules import split
 
 def apply(state, action, data, p):
     if action == "config":
-        state.config = Config.model_validate(data)
-        state.draft = []
+        old = state.config
+        new_cfg = Config.model_validate(data)
+        solver_changed = (
+            old.period_minutes != new_cfg.period_minutes
+            or old.break_minutes != new_cfg.break_minutes
+            or old.include_break != new_cfg.include_break
+            or old.first_period_start != new_cfg.first_period_start
+            or old.max_periods != new_cfg.max_periods
+            or old.rooms != new_cfg.rooms
+            or old.slots != new_cfg.slots
+        )
+        state.config = new_cfg
+        if solver_changed:
+            state.draft = []
     elif action in ("offerings", "plan-reset"):
         if action == "plan-reset":
             state.offerings = []

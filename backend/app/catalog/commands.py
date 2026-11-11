@@ -1,5 +1,5 @@
 from .seed import teacher_capabilities
-from ..timetable.models import Department, Teacher
+from ..timetable.models import Department, Teacher, ColorRule
 from .schemas import Catalog
 
 
@@ -34,12 +34,14 @@ def apply(state, action, data, p):
                 raise ValueError("New departments must be unsent")
         seed_caps = teacher_capabilities()
         for t in catalog.teachers:
+            existing = next((et for et in state.teachers if et.id == t.id), None)
             if not t.capabilities:
-                existing = next((et for et in state.teachers if et.id == t.id), None)
                 if existing and existing.capabilities:
                     t.capabilities = existing.capabilities
                 elif t.id in seed_caps:
                     t.capabilities = seed_caps[t.id]
+            if not t.color_rules and existing and existing.color_rules:
+                t.color_rules = existing.color_rules
         state.departments, state.teachers = catalog.departments, catalog.teachers
     elif action == "department-save":
         dept_id = str(data.get("id", "")).strip()
@@ -72,11 +74,13 @@ def apply(state, action, data, p):
         if not department or not any(d.id == department for d in state.departments):
             raise ValueError(f"Bộ môn '{department}' không tồn tại")
         existing = next((t for t in state.teachers if t.id == teacher_id), None)
+        active = bool(data["active"]) if "active" in data and data["active"] is not None else (existing.active if existing else True)
         seed_caps = teacher_capabilities()
         if existing:
             existing.name = name or existing.name
             existing.department = department
             existing.assistant = assistant
+            existing.active = active
             if capabilities:
                 existing.capabilities = capabilities
             elif not existing.capabilities and teacher_id in seed_caps:
@@ -84,7 +88,8 @@ def apply(state, action, data, p):
         else:
             state.teachers.append(Teacher(
                 id=teacher_id, name=name or teacher_id, department=department,
-                assistant=assistant, capabilities=capabilities or seed_caps.get(teacher_id, {})
+                assistant=assistant, active=active,
+                capabilities=capabilities or seed_caps.get(teacher_id, {})
             ))
     elif action == "teacher-delete":
         teacher_id = str(data.get("id", "")).strip()
@@ -96,4 +101,27 @@ def apply(state, action, data, p):
         if any(ev.get("teacher") == teacher_id for ev in state.published):
             raise ValueError(f"Không thể xóa giảng viên '{teacher_id}' vì đang có lịch công bố")
         state.teachers = [t for t in state.teachers if t.id != teacher_id]
+    elif action == "color-rules":
+        target_owner = next((t for t in state.teachers if p.teacher and t.id == p.teacher), None)
+        target_list = target_owner.color_rules if target_owner is not None else state.config.color_rules
+        if "rules" in data:
+            new_rules = [ColorRule.model_validate(r) for r in data["rules"]]
+            target_list.clear()
+            target_list.extend(new_rules)
+        elif "rule" in data:
+            rule = ColorRule.model_validate(data["rule"])
+            idx = next(
+                (i for i, r in enumerate(target_list)
+                 if r.id == rule.id or (r.category == rule.category and r.key.upper() == rule.key.upper())),
+                None,
+            )
+            if idx is not None:
+                target_list[idx] = rule
+            else:
+                target_list.append(rule)
+        elif "delete_id" in data:
+            del_id = str(data["delete_id"])
+            kept = [r for r in target_list if r.id != del_id]
+            target_list.clear()
+            target_list.extend(kept)
     return {}

@@ -10,18 +10,29 @@ def apply(state, action, data, p):
         department = data["department"]
         require_head(p, department)
         dep = next(d for d in state.departments if d.id == department)
-        if dep.status != "SENT":
+        if action != "teacher" and dep.status != "SENT":
             raise ValueError("Assignment editing requires a sent or returned department")
         sessions = [s for s in state.sessions if s.department == department]
-        dept_courses = {s.course for s in sessions}
+        dept_courses = {s.course for s in sessions} | {o.course for o in state.offerings if o.department == department}
         teachers = [t for t in state.teachers if t.department == department or any(c in t.capabilities for c in dept_courses)]
         if action == "teacher":
             update = TeacherUpdate.model_validate({k:v for k,v in data.items() if k != "department"})
             t = next((t for t in state.teachers if t.id == update.teacher), None)
             if not t:
                 raise ValueError(f"Không tìm thấy giảng viên {update.teacher}")
-            candidate = Teacher.model_validate(dict(t.model_dump(), assistant=update.assistant, capabilities=update.capabilities))
-            state.teachers[state.teachers.index(t)] = candidate
+            next_active = t.active if update.active is None else update.active
+            candidate = Teacher.model_validate(dict(
+                t.model_dump(),
+                assistant=update.assistant,
+                active=next_active,
+                capabilities=update.capabilities,
+            ))
+            idx = state.teachers.index(t)
+            state.teachers[idx] = candidate
+            if dep.status == "SUBMITTED" and assignment_errors(state, department):
+                state.teachers[idx] = t
+                raise ValueError("Không thể xóa năng lực hoặc tạm ngưng giảng viên đang phụ trách lớp của bộ môn đã nộp")
+            return {}
         elif action == "assign":
             item = Assign.model_validate({k:v for k,v in data.items() if k != "department"})
             s = next(s for s in sessions if s.id == item.session)

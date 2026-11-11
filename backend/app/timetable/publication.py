@@ -12,8 +12,6 @@ def publish(state: State):
 
 
 def add_external(state: State, external: External):
-    if not state.published:
-        raise ValueError("Published faculty timetable required")
     if any(r["teacher"] == external.teacher and overlap(r, external.model_dump()) for r in state.published):
         raise ValueError("Faculty timetable has priority; external session conflicts")
     if any(e.teacher == external.teacher and overlap(e.model_dump(), external.model_dump()) for e in state.external):

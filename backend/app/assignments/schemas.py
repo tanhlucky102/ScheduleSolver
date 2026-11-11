@@ -10,6 +10,7 @@ class Assign(Model):
 class TeacherUpdate(Model):
     teacher: str
     assistant: bool
+    active: bool | None = None
     capabilities: dict[str, list[str]]
 
 
