@@ -67,6 +67,13 @@ export type Event = {
 
 export type Placement = { session: string; slot: number; room_id?: string | null };
 export type Report = { hard: number; soft_total: number; violations: string[]; soft: Record<string, number> };
+export type SolverProgress = {
+  algorithm: string;
+  step: number;
+  iterations: number;
+  hard: number;
+  soft: number;
+};
 
 export type Workspace = {
   has_publication: boolean;

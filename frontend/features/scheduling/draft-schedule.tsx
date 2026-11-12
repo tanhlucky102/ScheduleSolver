@@ -4,13 +4,15 @@ import { Metrics } from "../shared/ui";
 import { clock } from "../shared/time";
 import { DraftRow } from "./draft-row";
 import { buildDraftEvents } from "./term-calendar-model";
-import type { Workspace } from "../workspace/types";
+import type { SolverProgress, Workspace } from "../workspace/types";
 
 export function DraftSchedule({
   workspace,
   busy,
   ready,
   isEvaluating,
+  solverProgress = {},
+  solverRunning = false,
   perform,
   command,
   download,
@@ -25,6 +27,8 @@ export function DraftSchedule({
   busy: boolean;
   ready: boolean;
   isEvaluating: boolean;
+  solverProgress?: Record<string, SolverProgress>;
+  solverRunning?: boolean;
   perform: (action: () => Promise<void>) => Promise<void>;
   command: (action: string, payload?: unknown) => Promise<void>;
   download: (source: string) => Promise<void>;
@@ -115,6 +119,26 @@ export function DraftSchedule({
             </button>
           )}
         </div>
+
+        {Object.keys(solverProgress).length > 0 && (
+          <section className="solver-progress" aria-live="polite">
+            <strong>{solverRunning ? "Đang tìm thời khóa biểu..." : "Đã hoàn tất bộ giải"}</strong>
+            {Object.values(solverProgress).map((progress) => {
+              const percent = solverRunning
+                ? Math.min(100, Math.round((progress.step / Math.max(progress.iterations, 1)) * 100))
+                : 100;
+              return (
+                <div className="solver-progress-row" key={progress.algorithm}>
+                  <div className="solver-progress-heading">
+                    <span>{progress.algorithm}</span>
+                    <span>{solverRunning ? `${percent}%` : "Hoàn thành"} · Lỗi bắt buộc {progress.hard} · Điểm mềm {progress.soft}</span>
+                  </div>
+                  <progress max={100} value={percent} aria-label={`Tiến độ ${progress.algorithm}`} />
+                </div>
+              );
+            })}
+          </section>
+        )}
 
         <p>
           Kiểm tra phân công, sức chứa, thiết bị, lịch ngoài trường/lịch đi học của giảng viên, toàn bộ khung khả dụng và lịch chiếm dụng trước khi công bố.

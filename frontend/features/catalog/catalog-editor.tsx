@@ -7,6 +7,8 @@ export function CatalogEditor({
   disabled,
   initialDepartments,
   initialTeachers,
+  onlineTeacherIds,
+  realtimeConnected,
   onSaveCatalog,
   onSaveDept,
   onDeleteDept,
@@ -14,6 +16,8 @@ export function CatalogEditor({
   disabled: boolean;
   initialDepartments: Dept[];
   initialTeachers: Teacher[];
+  onlineTeacherIds?: string[];
+  realtimeConnected?: boolean;
   onSaveCatalog: (data: { departments: Dept[]; teachers: Teacher[] }) => Promise<void>;
   onSaveDept?: (data: { id: string; name: string }) => Promise<void>;
   onDeleteDept?: (id: string) => Promise<void>;
@@ -161,6 +165,7 @@ export function CatalogEditor({
           </div>
         </>
       )}
+
 
       {activeTab === "import" && (
         <CatalogImport

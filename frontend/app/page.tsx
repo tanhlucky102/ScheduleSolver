@@ -38,8 +38,11 @@ export default function Home() {
     command,
     download,
     loginWithPassword,
+    solverProgress,
+    solverRunning,
+    onlineTeachers,
+    realtimeConnected,
   } = useWorkspaceSession();
-
   const [tab, setTab] = useState("overview");
   const [termSource, setTermSource] = useState<"draft" | "published" | undefined>(undefined);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -456,6 +459,8 @@ export default function Home() {
                   key={"catalog" + workspace.revision}
                   initialDepartments={state?.departments ?? []}
                   initialTeachers={state?.teachers ?? []}
+                  onlineTeacherIds={onlineTeachers}
+                  realtimeConnected={realtimeConnected}
                   disabled={busy}
                   onSaveCatalog={(data) => perform(() => command("catalog", data))}
                   onSaveDept={(data) => perform(() => command("department-save", data))}
@@ -563,6 +568,8 @@ export default function Home() {
                 busy={busy}
                 ready={ready}
                 isEvaluating={isEvaluating}
+                solverProgress={solverProgress}
+                solverRunning={solverRunning}
                 perform={perform}
                 command={command}
                 download={download}
