@@ -84,7 +84,7 @@ def test_solve_runs_before_opening_workspace_transaction(api,monkeypatch):
         order.append("transaction")
         with original_transaction(*args,**kwargs) as result:
             yield result
-    async def fake_solver(state,iterations,seed,on_progress):
+    async def fake_solver(state,iterations,seed,on_progress,*args,**kwargs):
         assert order==[]
         order.append("worker")
         await on_progress({"type":"SOLVE_PROGRESS","algorithm":"HC","step":20,"iterations":100,"hard":0,"soft":2})

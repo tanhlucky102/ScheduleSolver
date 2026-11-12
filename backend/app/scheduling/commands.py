@@ -8,9 +8,9 @@ from ..timetable.publication import publish, add_external
 from .schemas import Run
 
 
-def _run_configured_solver(state, run: Run):
+def _run_configured_solver(state, run: Run, on_progress=None):
     if run.algorithm == "PORTFOLIO" and run.threads == 3:
-        return solve(state, run.iterations, run.seed)
+        return solve(state, run.iterations, run.seed, on_progress=on_progress)
     require_ready(state)
     if any(not r.get("room_id") for r in state.published):
         raise SchedulingConflict("ROOM_REVIEW_REQUIRED", ["Confirm room assignments for legacy published occupancy before solving"])
@@ -21,7 +21,7 @@ def _run_configured_solver(state, run: Run):
     algs = [alg_cycle[i % 3] if run.algorithm == "PORTFOLIO" else run.algorithm for i in range(run.threads)]
     with ThreadPoolExecutor(max_workers=run.threads) as pool:
         futures = [
-            pool.submit(solve_worker, state, alg, run.seed + i, run.iterations, domains)
+            pool.submit(solve_worker, state, alg, run.seed + i, run.iterations, domains, on_progress=on_progress)
             for i, alg in enumerate(algs)
         ]
         results = [f.result() for f in futures]

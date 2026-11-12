@@ -136,12 +136,22 @@ async def solve_command(request: Command, p: Principal = Depends(principal)):
                 "type": "solver:progress",
             })
 
-        placements, runs, evaluation, job_id = await solve_over_tcp(
-            state,
-            run.iterations,
-            run.seed,
-            report_progress,
-        )
+        try:
+            placements, runs, evaluation, job_id = await solve_over_tcp(
+                state,
+                run.iterations,
+                run.seed,
+                report_progress,
+                algorithm=run.algorithm,
+                threads=run.threads,
+            )
+        except TypeError:
+            placements, runs, evaluation, job_id = await solve_over_tcp(
+                state,
+                run.iterations,
+                run.seed,
+                report_progress,
+            )
 
         def persist_result():
             with storage.transaction(p.workspace_id, request.revision) as (state, revision, session):

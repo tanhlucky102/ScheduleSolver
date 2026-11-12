@@ -15,7 +15,8 @@ from uuid import uuid4
 
 from .timetable.models import Placement, State
 from .timetable.rules import SchedulingConflict, evaluate
-from .timetable.solver import solve
+from .scheduling.schemas import Run
+from .scheduling.commands import _run_configured_solver
 
 logger = logging.getLogger(__name__)
 _HOST = "127.0.0.1"
@@ -70,11 +71,16 @@ async def _handle_connection(reader: asyncio.StreamReader, writer: asyncio.Strea
 
         async def run_solver():
             state = State.model_validate(request["state"])
+            run = Run(
+                iterations=request.get("iterations", 500),
+                seed=request.get("seed", 42),
+                algorithm=request.get("algorithm", "PORTFOLIO"),
+                threads=request.get("threads", 3),
+            )
             placements, runs = await asyncio.to_thread(
-                solve,
+                _run_configured_solver,
                 state,
-                request["iterations"],
-                request["seed"],
+                run,
                 report_progress,
             )
             state.draft = placements
@@ -212,7 +218,14 @@ async def _ensure_worker_ready():
     raise RuntimeError("Solver worker did not listen on TCP port 9009")
 
 
-async def solve_over_tcp(state: State, iterations: int, seed: int, on_progress):
+async def solve_over_tcp(
+    state: State,
+    iterations: int,
+    seed: int,
+    on_progress,
+    algorithm: str = "PORTFOLIO",
+    threads: int = 3,
+):
     try:
         await _ensure_worker_ready()
         reader, writer = await asyncio.wait_for(
@@ -231,6 +244,8 @@ async def solve_over_tcp(state: State, iterations: int, seed: int, on_progress):
             "state": state.model_dump(mode="json"),
             "iterations": iterations,
             "seed": seed,
+            "algorithm": algorithm,
+            "threads": threads,
         })
         while True:
             response = await _read_frame(reader)
