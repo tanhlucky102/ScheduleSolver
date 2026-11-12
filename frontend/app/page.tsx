@@ -40,7 +40,7 @@ export default function Home() {
     loginWithPassword,
     solverProgress,
     solverRunning,
-    onlineTeachers,
+    onlineTeachers: realtimeOnlineTeachers,
     realtimeConnected,
   } = useWorkspaceSession();
   const [tab, setTab] = useState("overview");
@@ -97,7 +97,9 @@ export default function Home() {
   const personalColorRules = workspace?.color_rules ?? state?.config?.color_rules ?? [];
   const systemColorRules = state?.config?.color_rules ?? [];
   const activeShiftRules = state?.config?.shift_rules ?? workspace?.shift_rules ?? [];
-  const onlineTeachers = workspace?.online_teachers ?? [];
+  const onlineTeachers = realtimeOnlineTeachers?.length
+    ? realtimeOnlineTeachers
+    : (workspace?.online_teachers ?? []);
 
   if (!token) {
     return (
