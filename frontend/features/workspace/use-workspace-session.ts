@@ -47,11 +47,20 @@ export function useWorkspaceSession() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  async function refresh() {
-    const [p, w] = await Promise.all([requestJson<Profile>(apiUrl, token, "/api/me"), requestJson<Workspace>(apiUrl, token, "/api/workspace")]);
-    setProfile(p);
-    setWorkspace(w);
-    if (w.state?.config) setConfig(JSON.stringify(w.state?.config, null, 2));
+  async function refresh(fetchProfile = false) {
+    if (fetchProfile || !profile) {
+      const [p, w] = await Promise.all([
+        requestJson<Profile>(apiUrl, token, "/api/me"),
+        requestJson<Workspace>(apiUrl, token, "/api/workspace"),
+      ]);
+      setProfile(p);
+      setWorkspace(w);
+      if (w.state?.config) setConfig(JSON.stringify(w.state?.config, null, 2));
+    } else {
+      const w = await requestJson<Workspace>(apiUrl, token, "/api/workspace");
+      setWorkspace(w);
+      if (w.state?.config) setConfig(JSON.stringify(w.state?.config, null, 2));
+    }
   }
   useEffect(() => {
     workspaceRef.current = workspace;
@@ -181,9 +190,19 @@ export function useWorkspaceSession() {
     }
     let completed = false;
     try {
-      await requestJson(apiUrl, token, "/api/commands/" + action, { revision: workspace.revision, payload });
+      const res = await requestJson<{ revision: number; workspace?: Workspace }>(
+        apiUrl,
+        token,
+        "/api/commands/" + action,
+        { revision: workspace.revision, payload }
+      );
       completed = true;
-      await refresh();
+      if (res?.workspace) {
+        setWorkspace(res.workspace);
+        if (res.workspace.state?.config) setConfig(JSON.stringify(res.workspace.state?.config, null, 2));
+      } else {
+        await refresh();
+      }
       setMessage(
         ({
           solve: "Đã tìm được phương án xếp lịch hợp lệ với phòng cụ thể.",

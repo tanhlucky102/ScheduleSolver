@@ -162,9 +162,10 @@ async def solve_command(request: Command, p: Principal = Depends(principal)):
                     action="solve",
                     revision=revision + 1,
                 ))
-                return revision + 1
+                ws_data = visible(state, revision + 1, p)
+                return revision + 1, ws_data
 
-        new_revision = await asyncio.to_thread(persist_result)
+        new_revision, workspace_data = await asyncio.to_thread(persist_result)
         await hub.broadcast(p.workspace_id, {
             "type": "workspace:updated",
             "revision": new_revision,
@@ -172,6 +173,7 @@ async def solve_command(request: Command, p: Principal = Depends(principal)):
         })
         return {
             "revision": new_revision,
+            "workspace": workspace_data,
             "runs": runs,
             "evaluation": evaluation,
             "job_id": job_id,
@@ -202,12 +204,13 @@ def command(action: str, request: Command, background_tasks: BackgroundTasks, p:
                     revision=revision + 1,
                     body=state.published,
                 ))
+            workspace_data = visible(state, revision + 1, p)
         background_tasks.add_task(hub.broadcast, p.workspace_id, {
             "type": "workspace:updated",
             "revision": revision + 1,
             "actor": p.id,
         })
-        return {"revision": revision + 1, **result}
+        return {"revision": revision + 1, "workspace": workspace_data, **(result or {})}
     except (StopIteration, KeyError):
         raise HTTPException(422, "Missing or unknown input reference")
     except ValidationError as exc:
