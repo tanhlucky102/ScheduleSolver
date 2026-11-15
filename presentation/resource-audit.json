@@ -1,0 +1,71 @@
+{
+  "so_phong.csv": {
+    "rows": 25,
+    "columns": [
+      "ten_phong",
+      "tinh_chat_phong",
+      "suc_chua"
+    ],
+    "sha256": "98fdd3117ce9671bd7e5c99969973cbab43102312752036ed88ed8826724374c",
+    "types": {
+      "Phòng máy chiếu": 10,
+      "Phòng máy tính": 14,
+      "Phòng máy chiếu & máy tính": 1
+    },
+    "capacities": {
+      "200": 2,
+      "45": 14,
+      "100": 6,
+      "150": 3
+    }
+  },
+  "bo_mon.csv": {
+    "rows": 4,
+    "columns": [
+      "ma_bm",
+      "ten_bm",
+      "truong_bo_mon"
+    ],
+    "sha256": "ffd6e8bb2572f93ec8fccbd45a0cb82065869a4180a3ebdaa66b0c5b161b0c70"
+  },
+  "giang_vien.csv": {
+    "rows": 35,
+    "columns": [
+      "ma_gv",
+      "ho_ten",
+      "bo_mon",
+      "tro_giang",
+      "bi_danh"
+    ],
+    "sha256": "823a64099d96e6a8b746b2f1b4c8d1aa32f98130ab3adfd99dd8d31591870129"
+  },
+  "lich_truong_khac.csv": {
+    "rows": 22,
+    "columns": [
+      "ma_gv",
+      "truong",
+      "mon",
+      "lop",
+      "thu",
+      "bat_dau",
+      "ket_thuc",
+      "phong",
+      "gia_dinh"
+    ],
+    "sha256": "5b1ab2d72ccc8ee1aba3aadc16cba9c0d964404b7901f4a0c5db7c6e4c46682f",
+    "assumption_flags": {
+      "x": 22
+    }
+  },
+  "quy_uoc_phan_cong.csv": {
+    "rows": 104,
+    "columns": [
+      "ma_mon",
+      "ten_mon",
+      "ma_gv",
+      "day_lec",
+      "day_tut"
+    ],
+    "sha256": "6a547aa993fa10247339e37fa1a826e3cb0751ab307dbc15bfd6aa19a10e46b8"
+  }
+}

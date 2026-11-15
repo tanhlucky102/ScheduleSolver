@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { ActionButton, Icon } from "../shared/ui";
 import { CatalogImport } from "./catalog-import";
 import type { Dept, Teacher } from "./types";
 
@@ -7,8 +8,6 @@ export function CatalogEditor({
   disabled,
   initialDepartments,
   initialTeachers,
-  onlineTeacherIds,
-  realtimeConnected,
   onSaveCatalog,
   onSaveDept,
   onDeleteDept,
@@ -24,6 +23,7 @@ export function CatalogEditor({
 }) {
   const [activeTab, setActiveTab] = useState<"depts" | "import">("depts");
   const [deptSearch, setDeptSearch] = useState("");
+  const [savingDept, setSavingDept] = useState(false);
 
   const [deptModal, setDeptModal] = useState<{ open: boolean; isEdit: boolean; id: string; name: string }>({
     open: false,
@@ -40,17 +40,25 @@ export function CatalogEditor({
 
   const handleSaveDept = async () => {
     if (!deptModal.id.trim()) return;
-    if (onSaveDept) {
-      await onSaveDept({ id: deptModal.id.trim(), name: deptModal.name.trim() });
-    } else {
-      const updated = deptModal.isEdit
-        ? initialDepartments.map((d) =>
-            d.id === deptModal.id ? { ...d, name: deptModal.name.trim() } : d
-          )
-        : [...initialDepartments, { id: deptModal.id.trim(), name: deptModal.name.trim(), status: "UNSENT", note: "" }];
-      await onSaveCatalog({ departments: updated, teachers: initialTeachers });
+    setSavingDept(true);
+    try {
+      if (onSaveDept) {
+        await onSaveDept({ id: deptModal.id.trim(), name: deptModal.name.trim() });
+      } else {
+        const updated = deptModal.isEdit
+          ? initialDepartments.map((d) =>
+              d.id === deptModal.id ? { ...d, name: deptModal.name.trim() } : d
+            )
+          : [
+              ...initialDepartments,
+              { id: deptModal.id.trim(), name: deptModal.name.trim(), status: "UNSENT", note: "" },
+            ];
+        await onSaveCatalog({ departments: updated, teachers: initialTeachers });
+      }
+      setDeptModal({ open: false, isEdit: false, id: "", name: "" });
+    } finally {
+      setSavingDept(false);
     }
-    setDeptModal({ open: false, isEdit: false, id: "", name: "" });
   };
 
   const handleDeleteDept = async (id: string) => {
@@ -67,25 +75,27 @@ export function CatalogEditor({
     <section className="card">
       <div className="section-heading">
         <div>
-          <h2>Quản lý Danh mục Bộ môn</h2>
+          <h2>Danh mục Bộ môn chuyên môn</h2>
           <p>
-            Thêm, sửa, xóa và import danh sách các Bộ môn chuyên môn. (Quản lý giảng viên & hồ sơ năng lực được đặt tập trung tại mục Nhân Sự).
+            Thêm, sửa, xóa và nhập danh sách các Bộ môn. Quản lý giảng viên &amp; hồ sơ năng lực được đặt tập trung tại mục Nhân Sự.
           </p>
         </div>
       </div>
 
       <div className="sub-tabs" role="tablist">
         <button
+          type="button"
           className={"sub-tab-btn " + (activeTab === "depts" ? "active" : "")}
           onClick={() => setActiveTab("depts")}
         >
           Danh mục Bộ môn ({initialDepartments.length})
         </button>
         <button
+          type="button"
           className={"sub-tab-btn " + (activeTab === "import" ? "active" : "")}
           onClick={() => setActiveTab("import")}
         >
-          Import Bộ môn từ file
+          Nhập Bộ môn từ tệp
         </button>
       </div>
 
@@ -101,13 +111,15 @@ export function CatalogEditor({
                 style={{ minHeight: "36px", height: "36px" }}
               />
             </div>
-            <button
-              className="primary"
+            <ActionButton
+              type="button"
+              variant="primary"
+              icon="plus"
               disabled={disabled}
               onClick={() => setDeptModal({ open: true, isEdit: false, id: "", name: "" })}
             >
-              + Thêm bộ môn mới
-            </button>
+              Thêm bộ môn mới
+            </ActionButton>
           </div>
 
           <div className="table-wrap">
@@ -117,7 +129,7 @@ export function CatalogEditor({
                   <th style={{ width: "140px" }}>Mã bộ môn</th>
                   <th>Tên bộ môn</th>
                   <th style={{ width: "130px" }}>Nhân sự</th>
-                  <th style={{ width: "160px", textAlign: "right" }}>Thao tác</th>
+                  <th style={{ width: "170px", textAlign: "right" }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,21 +152,25 @@ export function CatalogEditor({
                           <span className="badge neutral">{count} giảng viên</span>
                         </td>
                         <td style={{ textAlign: "right" }}>
-                          <button
+                          <ActionButton
+                            type="button"
+                            icon="edit"
                             disabled={disabled}
-                            style={{ marginRight: "6px", minHeight: "32px", padding: "4px 10px" }}
+                            style={{ marginRight: "6px", minHeight: "30px", padding: "3px 9px", fontSize: "11.5px" }}
                             onClick={() => setDeptModal({ open: true, isEdit: true, id: d.id, name: d.name })}
                           >
                             Sửa
-                          </button>
-                          <button
-                            className="btn-remove"
+                          </ActionButton>
+                          <ActionButton
+                            type="button"
+                            variant="danger"
+                            icon="trash"
                             disabled={disabled}
-                            style={{ minHeight: "32px", padding: "4px 10px" }}
-                            onClick={() => handleDeleteDept(d.id)}
+                            style={{ minHeight: "30px", padding: "3px 9px", fontSize: "11.5px" }}
+                            onClick={() => void handleDeleteDept(d.id)}
                           >
                             Xóa
-                          </button>
+                          </ActionButton>
                         </td>
                       </tr>
                     );
@@ -165,7 +181,6 @@ export function CatalogEditor({
           </div>
         </>
       )}
-
 
       {activeTab === "import" && (
         <CatalogImport
@@ -182,10 +197,12 @@ export function CatalogEditor({
             <div className="modal-header">
               <h3>{deptModal.isEdit ? "Chỉnh sửa Bộ môn" : "Thêm Bộ môn mới"}</h3>
               <button
+                type="button"
                 className="modal-close"
+                aria-label="Đóng"
                 onClick={() => setDeptModal({ ...deptModal, open: false })}
               >
-                ×
+                <Icon name="x" size={16} />
               </button>
             </div>
             <form
@@ -217,9 +234,9 @@ export function CatalogEditor({
                 <button type="button" onClick={() => setDeptModal({ ...deptModal, open: false })}>
                   Hủy
                 </button>
-                <button className="primary" type="submit">
+                <ActionButton variant="primary" type="submit" loading={savingDept} loadingLabel="Đang lưu...">
                   {deptModal.isEdit ? "Cập nhật" : "Thêm bộ môn"}
-                </button>
+                </ActionButton>
               </div>
             </form>
           </div>

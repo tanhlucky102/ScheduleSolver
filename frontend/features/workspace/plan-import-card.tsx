@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { previewWorkbook } from "./api-client";
 import { formatDateVN } from "../shared/weeks";
+import { ActionButton, Icon } from "../shared/ui";
 import type { OfferingItem } from "./types";
 
 export function PlanImportCard({
@@ -16,7 +17,7 @@ export function PlanImportCard({
   token: string | null;
   busy: boolean;
   sessionsCount: number;
-  perform: (action: () => Promise<void>) => Promise<void>;
+  perform: (action: () => Promise<void>, actionKey?: string, successMsg?: string) => Promise<void>;
   command: (action: string, payload?: unknown) => Promise<unknown>;
 }) {
   const [preview, setPreview] = useState<{
@@ -26,6 +27,7 @@ export function PlanImportCard({
   } | null>(null);
   const [fileSelectedName, setFileSelectedName] = useState("");
   const [showSampleColumns, setShowSampleColumns] = useState(false);
+  const [submittingAction, setSubmittingAction] = useState<string | null>(null);
 
   return (
     <section className="card" style={{ border: sessionsCount === 0 ? "2px dashed #93c5fd" : undefined }}>
@@ -33,7 +35,7 @@ export function PlanImportCard({
         <div>
           <h2>Nhập kế hoạch đào tạo Excel (.xlsx)</h2>
           <p>
-            Tải file mẫu chuẩn (hỗ trợ cả số tiết lẻ như <b>2.5 tiết HANU</b>, hệ <b>CLC / Tiên tiến TT / MME / Đại trà</b>), điền danh sách học phần và tải lên để thẩm định trước khi chia lớp.
+            Tải file mẫu chuẩn (hỗ trợ số tiết lẻ như <b>2.5 tiết HANU</b>, hệ <b>CLC / Tiên tiến TT / MME / Đại trà</b>), điền danh sách học phần và tải lên để thẩm định trước khi chia lớp.
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
@@ -54,40 +56,68 @@ export function PlanImportCard({
               textDecoration: "none",
             }}
           >
-            📥 Tải File Mẫu Chuẩn (.xlsx)
+            <Icon name="download" size={14} />
+            <span>Tải File Mẫu Chuẩn (.xlsx)</span>
           </a>
-          <button
+          <ActionButton
             type="button"
+            icon="eye"
             onClick={() => setShowSampleColumns((prev) => !prev)}
             style={{ fontSize: "12px", minHeight: "32px", padding: "4px 10px" }}
           >
-            {showSampleColumns ? "Ẩn cấu trúc cột mẫu" : "👁 Xem cấu trúc 14 cột chuẩn"}
-          </button>
+            {showSampleColumns ? "Ẩn cấu trúc cột mẫu" : "Xem cấu trúc 14 cột chuẩn"}
+          </ActionButton>
           {sessionsCount > 0 && (
-            <button
+            <ActionButton
               type="button"
+              variant="danger"
+              icon="refresh"
+              loading={submittingAction === "reset"}
               disabled={busy}
               onClick={() => {
-                if (window.confirm(`Bạn có chắc chắn muốn xóa toàn bộ kế hoạch hiện tại (${sessionsCount} lớp) để nhập lại từ đầu?`)) {
+                if (
+                  window.confirm(
+                    `Bạn có chắc chắn muốn xóa toàn bộ kế hoạch hiện tại (${sessionsCount} lớp) để nhập lại từ đầu?`
+                  )
+                ) {
+                  setSubmittingAction("reset");
                   void perform(async () => {
                     await command("plan-reset", {});
-                  });
+                  }, "plan-reset").finally(() => setSubmittingAction(null));
                   setPreview(null);
                   setFileSelectedName("");
                 }
               }}
-              style={{ background: "#fef2f2", borderColor: "#fecaca", color: "#dc2626", fontSize: "11px", minHeight: "32px", padding: "4px 10px" }}
+              style={{ fontSize: "11.5px", minHeight: "32px", padding: "4px 10px" }}
             >
-              🔄 Xóa kế hoạch (Reset về 0 lớp)
-            </button>
+              Xóa kế hoạch (Reset {sessionsCount} lớp)
+            </ActionButton>
           )}
         </div>
       </div>
 
       {showSampleColumns && (
-        <div style={{ marginBottom: "14px", padding: "10px 12px", background: "#f8fafc", border: "1px solid var(--line)", borderRadius: "8px", fontSize: "11.5px" }}>
-          <b style={{ display: "block", marginBottom: "6px", color: "#0f172a" }}>
-            📋 Khớp 100% với bộ đọc Kế hoạch đào tạo (12 cột chuẩn trong 1 sheet Excel duy nhất):
+        <div
+          style={{
+            marginBottom: "14px",
+            padding: "10px 12px",
+            background: "#f8fafc",
+            border: "1px solid var(--line)",
+            borderRadius: "8px",
+            fontSize: "11.5px",
+          }}
+        >
+          <b
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              marginBottom: "6px",
+              color: "#0f172a",
+            }}
+          >
+            <Icon name="list" size={15} />
+            <span>Cấu trúc bảng Kế hoạch đào tạo (14 cột chuẩn trong 1 sheet Excel duy nhất):</span>
           </b>
           <div className="table-wrap">
             <table>
@@ -176,9 +206,13 @@ export function PlanImportCard({
             setFileSelectedName(file.name);
             setPreview(null);
             void perform(async () => {
-              const data = await previewWorkbook<{ offerings: OfferingItem[]; errors: { row: number; message: string }[]; can_import: boolean }>(apiUrl, token, file);
+              const data = await previewWorkbook<{
+                offerings: OfferingItem[];
+                errors: { row: number; message: string }[];
+                can_import: boolean;
+              }>(apiUrl, token, file);
               setPreview(data);
-            });
+            }, "plan-preview");
           }}
         />
       </label>
@@ -209,7 +243,7 @@ export function PlanImportCard({
                     <th>Khóa / Bộ môn</th>
                     <th>Sĩ số</th>
                     <th>Tiết Lec / Tut</th>
-                    <th>Thời gian học (BĐ → KT)</th>
+                    <th>Thời gian học (BĐ - KT)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -222,7 +256,7 @@ export function PlanImportCard({
                       <td>{o.lecture_periods} / {o.tutorial_periods}</td>
                       <td>
                         {o.start_date || o.end_date
-                          ? `${formatDateVN(o.start_date)} → ${formatDateVN(o.end_date)}`
+                          ? `${formatDateVN(o.start_date)} - ${formatDateVN(o.end_date)}`
                           : "Toàn học kỳ"}
                       </td>
                     </tr>
@@ -232,24 +266,41 @@ export function PlanImportCard({
             </div>
           )}
           {sessionsCount > 0 && (
-            <p style={{ fontSize: "12px", color: "#d97706", margin: "8px 0" }}>
-              ⚠️ Hệ thống đang có <b>{sessionsCount} lớp học phần</b>. Khi xác nhận, kế hoạch mới sẽ thay thế kế hoạch cũ.
+            <p
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "12px",
+                color: "#b45309",
+                margin: "8px 0",
+              }}
+            >
+              <Icon name="alert" size={15} />
+              <span>
+                Hệ thống đang có <b>{sessionsCount} lớp học phần</b>. Khi xác nhận, kế hoạch mới sẽ thay thế kế hoạch cũ.
+              </span>
             </p>
           )}
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-            <button
-              className="primary"
+            <ActionButton
+              type="button"
+              variant="primary"
+              icon="check"
+              loading={submittingAction === "import"}
+              loadingLabel="Đang nhập & chia lớp..."
               disabled={busy || !preview.can_import}
               onClick={() => {
+                setSubmittingAction("import");
                 void perform(async () => {
                   await command("offerings", { offerings: preview.offerings });
                   setPreview(null);
                   setFileSelectedName("");
-                });
+                }, "offerings").finally(() => setSubmittingAction(null));
               }}
             >
-              Xác nhận nhập kế hoạch & chia lớp
-            </button>
+              Xác nhận nhập kế hoạch &amp; chia lớp
+            </ActionButton>
             <button
               type="button"
               disabled={busy}

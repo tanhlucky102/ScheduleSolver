@@ -30,8 +30,22 @@ export const DraftRow = memo(function DraftRow({
   return (
     <tr>
       <td>
-        <b>{session.course}</b>
-        <small>{session.id}</small>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+          <b>{session.course}</b>
+          {session.kind && (
+            <span
+              className="badge neutral"
+              style={{ fontSize: "10px", padding: "1px 6px" }}
+            >
+              {session.kind}
+            </span>
+          )}
+        </div>
+        <small style={{ display: "block", color: "var(--muted)" }}>
+          {session.id}
+          {session.teacher ? ` · GV: ${session.teacher}` : ""}
+          {session.students ? ` · ${session.students} SV` : ""}
+        </small>
       </td>
       <td>
         <select

@@ -57,11 +57,23 @@ def build_external_template_xlsx() -> bytes:
 def build_teachers_template_csv() -> bytes:
     buf = StringIO()
     writer = csv.writer(buf)
-    writer.writerow(["id", "name", "department", "assistant", "active", "capabilities"])
-    writer.writerow(["GV01", "Nguyễn Văn An", "CNPM", "false", "true", "61FIT3SS1:LEC|TUT;61FIT3SE1:LEC"])
-    writer.writerow(["GV02", "Trần Thị Bình", "KHMT", "false", "true", "66FIT3AI1:LEC|TUT"])
-    writer.writerow(["TG01", "Lê Minh Châu", "CNPM", "true", "true", "61FIT3SS1:TUT"])
-    writer.writerow(["GV03", "Phạm Quốc Dũng", "HTTT", "false", "false", "61FIT3OS1CLC:LEC"])
+    writer.writerow(["ma_gv", "ho_ten", "bo_mon", "vai_tro", "trang_thai"])
+    writer.writerow(["GV01", "Nguyễn Văn An", "CNPM", "GV", "1"])
+    writer.writerow(["GV02", "Trần Thị Bình", "KHMT", "GV", "1"])
+    writer.writerow(["TG01", "Lê Minh Châu", "TTDPT", "TG", "1"])
+    writer.writerow(["GV03", "Phạm Quốc Dũng", "HTTT", "GV", "0"])
+    return ("\ufeff" + buf.getvalue()).encode("utf-8")
+
+
+def build_capabilities_template_csv() -> bytes:
+    buf = StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["ma_gv", "bo_mon", "ma_mon", "ten_mon", "day_lec", "day_tut"])
+    writer.writerow(["GV01", "CNPM", "61FIT3SS1", "Phát triển phần mềm nguồn mở", "1", "1"])
+    writer.writerow(["GV01", "CNPM", "61FIT3SE1", "Công nghệ phần mềm 1", "1", "0"])
+    writer.writerow(["TG01", "TTDPT", "61MME2GD1", "Thiết kế đồ họa đa phương tiện", "0", "1"])
+    writer.writerow(["GV02", "KHMT", "66FIT3AI1", "Trí tuệ nhân tạo", "1", "1"])
+    writer.writerow(["GV03", "HTTT", "61FIT3OS1CLC", "Hệ điều hành (CLC)", "1", "1"])
     return ("\ufeff" + buf.getvalue()).encode("utf-8")
 
 

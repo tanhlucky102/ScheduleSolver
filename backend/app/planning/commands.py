@@ -11,6 +11,9 @@ def apply(state, action, data, p):
             or old.break_minutes != new_cfg.break_minutes
             or old.include_break != new_cfg.include_break
             or old.first_period_start != new_cfg.first_period_start
+            or old.afternoon_start != new_cfg.afternoon_start
+            or old.evening_start != new_cfg.evening_start
+            or old.inter_shift_gap != new_cfg.inter_shift_gap
             or old.max_periods != new_cfg.max_periods
             or old.rooms != new_cfg.rooms
             or old.slots != new_cfg.slots

@@ -1,3 +1,5 @@
+export type AllowedProgram = "STANDARD" | "CLC" | "TT" | "MME";
+
 export type Window = { day: number; start: number; end: number; evening?: boolean };
 export type Room = {
   id: string;
@@ -8,7 +10,7 @@ export type Room = {
   availability: Window[];
   active: boolean;
   allowed_departments: string[];
-  allowed_programs: ("STANDARD" | "CLC" | "TT")[];
+  allowed_programs: AllowedProgram[];
   allowed_courses: string[];
   note: string;
 };

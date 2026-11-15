@@ -29,6 +29,7 @@ def txt(s,text,x,y,w,h=.5,size=22,color=INK,bold=False):
 
 def new(title,tag,source,notes,seconds=55):
  s=prs.slides.add_slide(prs.slide_layouts[6])
+ tag = __import__('re').sub(r'^\d+ • ', '', tag)
  s.background.fill.solid();s.background.fill.fore_color.rgb=RGBColor.from_string(BG)
  rect(s,.5,.43,.1,.22,TEAL);txt(s,tag.upper(),.76,.4,11,.3,11,BLUE,True)
  txt(s,title,.7,.93,11.95,1.05,29,INK,True)
@@ -61,7 +62,7 @@ def evidence(s,name,crop=None):
  w,h=im.size;fit=min(8.2/w,4.42/h)
  s.shapes.add_picture(str(p),Inches(.7),Inches(2.02),width=Inches(w*fit),height=Inches(h*fit))
 
-s=new('ScheduleSolver Web','Báo cáo dự án • 06/11/2026','README.md; AUDIT.md; verification/RESULTS.md',
+s=new('ScheduleSolver Web','Báo cáo dự án • 08/11/2026','README.md; AUDIT.md; verification/RESULTS.md',
 'Dự án hỗ trợ phối hợp giáo vụ, trưởng bộ môn và giảng viên. Trọng tâm là quy trình có kiểm soát và lịch đáp ứng ràng buộc. Giả định bài nói tiếng Việt cho hội đồng dự án phần mềm, khoảng 15 phút. Chưa có benchmark hoặc lịch học kỳ được nghiệm thu.',35)
 txt(s,'Từ kế hoạch đào tạo\nđến lịch giảng dạy có kiểm soát',.75,2.15,11.7,1.7,38,INK,True)
 txt(s,'Phân công đúng năng lực · Xếp giờ và phòng · Công bố theo phiên bản',.78,4.25,11.7,.8,21,MUTED)
@@ -81,7 +82,7 @@ card(s,4.77,2.15,3.8,3.65,'Trưởng bộ môn','Khai báo năng lực\nPhân c�
 card(s,8.84,2.15,3.8,3.65,'Giảng viên','Lịch giảng dạy cá nhân\nKhai báo lịch ngoài\nĐiều chỉnh khi xung đột')
 banner(s,'Quyền và phạm vi dữ liệu được kiểm tra tại backend.')
 
-s=new('Bàn giao theo trạng thái trước khi chạy solver','03 • Luồng nghiệp vụ','docs/UI_UX_REDESIGN.md; backend/app/domain.py',
+s=new('Bàn giao theo trạng thái trước khi chạy solver','03 • Luồng nghiệp vụ','docs/UI_UX_REDESIGN.md; backend/app/domain_rules.py',
 'UNSENT chưa giao; SENT cho phép trưởng bộ môn sửa; SUBMITTED khóa sửa. Giáo vụ trả riêng một bộ môn kèm lý do về SENT. Chỉ khi các bộ môn nộp hợp lệ, có khung giờ và phòng mới chạy solver. Công bố yêu cầu hard bằng 0.')
 steps=[('1. Nhập kế hoạch','Giáo vụ\nUNSENT'),('2. Gửi bộ môn','Giáo vụ → TBM\nSENT'),('3. Phân công','TBM nộp\nSUBMITTED'),('4. Xếp, kiểm tra','Giờ + phòng\nBản nháp'),('5. Công bố','hard = 0\nSnapshot')]
 for i,(a,b) in enumerate(steps):
@@ -98,95 +99,109 @@ card(s,.7,4.45,5.85,1.4,'42 STANDARD · 13 CLC · 12 TT','',TEAL)
 card(s,6.8,4.45,5.85,1.4,'4 bộ môn trong catalog','')
 banner(s,'Giữ nguồn từng dòng, cờ học liền, phòng Lec/Tut và số nhóm chỉ định.')
 
-s=new('Backend kiểm soát nghiệp vụ, dữ liệu và quyền','05 • Kiến trúc','README.md; AUDIT.md; backend/app/auth.py; backend/app/storage.py',
-'Browser gọi Supabase Auth để đăng nhập, FastAPI để làm nghiệp vụ. Backend xác thực token qua Supabase /user và lấy vai trò từ DB. Browser không truy cập schema schedule_web. Mỗi workspace lưu aggregate JSONB; profiles, publications và audit_log là bảng riêng.')
-card(s,.7,2.2,3.3,2.85,'Next.js','Giao diện theo vai trò\nTypeScript\nLịch tuần và biểu mẫu')
-card(s,5.,2.2,3.3,2.85,'FastAPI','Auth và nghiệp vụ\nSolver + evaluation\nNhập / xuất Excel',TEAL)
-card(s,9.3,2.2,3.3,2.85,'PostgreSQL','Workspace JSONB\nProfile và snapshot\nAudit log')
-txt(s,'API→',4.12,3.2,.8,.5,17,BLUE,True);txt(s,'SQL→',8.4,3.2,.8,.5,17,BLUE,True)
-rect(s,.7,5.4,11.9,.85,LIGHT);txt(s,'Supabase Auth: browser đăng nhập → token → backend xác thực',.98,5.63,11.3,.5,21,BLUE,True)
-
-s=new('Phòng cụ thể là tài nguyên bắt buộc của mỗi buổi','06 • Mô hình ràng buộc','ROOM_IMPLEMENTATION.md; backend/app/domain.py',
+s=new('Phòng cụ thể là tài nguyên bắt buộc của mỗi buổi','06 • Mô hình ràng buộc','ROOM_IMPLEMENTATION.md; backend/app/domain_rules.py',
 'Placement gồm buổi, khung giờ và room_id; giảng viên đã được phân công. Phòng phải hoạt động, đủ chỗ, đúng thiết bị/loại/điều kiện và chứa toàn buổi trong một khung khả dụng. Không suy ra phòng từ TKB tham khảo. Soft có trọng số nguyên 0–1000, mặc định 1; hard luôn ưu tiên.')
 card(s,.7,2.1,5.85,3.65,'Ràng buộc cứng','Không trùng GV / phòng\nĐủ chỗ, đúng thiết bị và điều kiện\nGiờ, thời lượng, khả dụng hợp lệ\nTôn trọng lịch chiếm dụng')
 card(s,6.8,2.1,5.85,3.65,'Ưu tiên mềm','Hạn chế thứ bảy và buổi tối\nHạn chế ngày chỉ một lớp\nGiảm vượt trần tiết/ngày\nGiảm phút trống của giảng viên',TEAL)
-banner(s,'6 máy chiếu + 11 máy tính · Chỉ công bố khi hard = 0 · Soft không bỏ qua hard.')
+banner(s,'Nguồn hiện tại: 25 phòng (10 máy chiếu + 14 máy tính + 1 kết hợp).')
 
-s=new('Ba chiến lược cùng tìm kiếm cặp giờ và phòng','07 • Thuật toán','backend/app/domain.py: placement_domains, solve_worker, solve',
-'Mỗi worker khởi tạo tham lam có xét xung đột: ưu tiên lớp có nhiều ràng buộc, dài và miền nhỏ; seed quyết định tie-break. Mỗi bước tiếp theo đổi placement của một buổi. HC nhận điểm tốt hơn. SA có thể nhận soft xấu hơn ở cùng hard theo nhiệt độ, không nhận hard xấu hơn. Tabu có danh sách cấm 15 bước và ngoại lệ khi cải thiện best. Ba worker dùng seed+i, mặc định 42/43/44, 500 lượt mỗi worker. Ba thread chưa chứng minh tăng tốc do GIL.',75)
-rect(s,.7,2.05,11.95,.65,LIGHT);txt(s,'Lọc miền giờ/phòng → Xếp lớp khó trước → Khởi tạo theo seed',.95,2.2,11.5,.4,21,BLUE,True)
-for x,label,body in [(.7,'HC','Nhận bước cải thiện'),(4.77,'SA','Khám phá theo nhiệt độ'),(8.84,'Tabu','Bộ nhớ bước di chuyển')]:
- card(s,x,3.05,3.8,1.9,label,body)
-banner(s,'Chọn điểm nhỏ nhất theo thứ tự (hard, soft) → đánh giá lại → trả nháp',5.35)
-txt(s,'Mặc định: 500 lượt / chiến lược · Seed 42, 43, 44 · Chưa chứng minh tối ưu toàn cục',.85,6.15,11.8,.5,16,MUTED)
-
-s=new('Lỗi tìm kiếm được tách khỏi kết luận vô nghiệm','08 • Độ tin cậy','ROOM_IMPLEMENTATION.md; backend/app/domain.py; AUDIT.md',
-'INFEASIBLE_INPUT: một buổi có miền cặp giờ/phòng rỗng theo cấu hình hiện tại. SEARCH_EXHAUSTED: ngân sách tìm kiếm kết thúc, chưa có lịch hard=0, không chứng minh toàn bài toán vô nghiệm. HTTP 409 rollback nháp/revision. Sửa nháp và công bố đều đánh giá lại. Snapshot độc lập nháp; row lock và revision ngăn ghi đè stale.')
-card(s,.7,2.15,5.85,2.9,'INFEASIBLE_INPUT','Có buổi không có cặp giờ/phòng hợp lệ.\nTrả nguyên nhân để bổ sung dữ liệu.')
-card(s,6.8,2.15,5.85,2.9,'SEARCH_EXHAUSTED','Hết lượt, chưa tìm được lịch hợp lệ.\nChưa thể kết luận bài toán vô nghiệm.',TEAL)
-banner(s,'Sửa nháp → chấm lại; công bố → snapshot riêng; cập nhật → revision + row lock',5.65)
+s=new('Ba chiến lược tìm kiếm giờ và phòng','07 • Thuật toán','backend/app/solver.py; backend/app/domain_rules.py',
+'Khởi tạo tham lam xếp buổi nhiều ràng buộc, dài và có miền nhỏ trước. Mỗi bước thay giờ/phòng của một buổi và so sánh điểm (H,S), ưu tiên H. HC chỉ nhận điểm tốt hơn. SA không nhận H tăng; khi H bằng nhau có thể nhận S tăng với xác suất phụ thuộc nhiệt độ giảm dần. Tabu giữ 15 bước đảo, chấp nhận bước không bị cấm kể cả khi xấu hơn, trừ khi bước cấm cải thiện best thì được phép. Các ví dụ chỉ giải thích quy tắc, không phải số liệu thực nghiệm. Bộ giải trả lịch khi H=0; chưa chứng minh tối ưu toàn cục. Các worker chạy qua thread Python nên chưa chứng minh tăng tốc CPU.',75)
+rect(s,.7,2.05,11.95,.58,LIGHT)
+txt(s,'Xếp buổi khó trước  →  đổi một cặp giờ/phòng  →  chấm điểm (H, S)',.95,2.18,11.4,.3,17,BLUE,True)
+for x,name,rule,example,limit,accent in [
+ (.7,'HC · Hill Climbing','Chỉ nhận điểm tốt hơn','(1,12) → (0,80)  ✓','Dễ kẹt ở nghiệm cục bộ',BLUE),
+ (4.77,'SA · Annealing','H không tăng; S có thể tăng','(0,12) → (0,14)  ?','Phụ thuộc lịch giảm nhiệt',TEAL),
+ (8.84,'Tabu Search','Nhớ 15 bước đảo gần đây','(0,12) → (0,13)  ✓*','Tốn bước kiểm tra danh sách',BLUE)]:
+ rect(s,x,3.0,3.8,2.62,WHITE)
+ rect(s,x,3.0,3.8,.08,accent)
+ txt(s,name,x+.2,3.22,3.4,.4,20,accent,True)
+ txt(s,rule,x+.2,3.79,3.4,.45,17,INK)
+ txt(s,example,x+.2,4.41,3.4,.42,19,INK,True)
+ rect(s,x+.18,5.05,3.44,.02,LIGHT)
+ txt(s,limit,x+.2,5.17,3.4,.35,14,MUTED)
+banner(s,'* Tabu nhận bước không bị cấm; cả ba giữ nghiệm tốt nhất theo (H, S).',5.98)
+s=new('Related Work & Technical Contributions','Đối chiếu phương pháp','UniTime: help.unitime.org/manuals/courses-solver.html • OR-Tools: developers.google.com/optimization/cp',
+'UniTime hỗ trợ lập lịch đại học với miền giờ, phòng và các ràng buộc phân bố. OR-Tools cung cấp bộ giải CP-SAT tổng quát; ứng dụng phải mô hình hóa và tích hợp nghiệp vụ. So sánh này là phân tích phạm vi, không phải thử nghiệm hiệu năng. Khoảng trống của dự án là tích hợp quy trình phân công và quy tắc dữ liệu của đơn vị; không khẳng định hệ thống khác không thể đáp ứng. Nhóm triển khai bộ đánh giá, miền placement, khởi tạo tham lam, HC/SA/Tabu và quy trình snapshot/RBAC. Các metaheuristic là phương pháp đã có; FastAPI, Next.js, Supabase, SQLAlchemy và openpyxl là thành phần tái sử dụng.',80)
+rows=[('Đối tượng','Điểm mạnh','Giới hạn khi áp dụng tại đơn vị'),('UniTime','Chuyên biệt lịch đại học','Cần ánh xạ dữ liệu và quy tắc cục bộ'),('OR-Tools / CP-SAT','Bộ giải ràng buộc tổng quát','Cần tự xây mô hình và quy trình web'),('ScheduleSolver','Quy trình 3 vai trò + giờ/phòng','Chưa benchmark; chưa bảo đảm tối ưu')]
+for i,row in enumerate(rows):
+ y=2.05+i*.62;rect(s,.7,y,11.95,.59,BLUE if i==0 else WHITE)
+ for x,w,t in zip([.9,3.5,7.2],[2.4,3.5,5.1],row):txt(s,t,x,y+.12,w,.45,15,WHITE if i==0 else INK,i==0)
+rect(s,.7,4.75,7.4,1.72,LIGHT)
+txt(s,'Nhóm phát triển',.95,4.9,6.9,.4,20,BLUE,True)
+txt(s,'Miền giờ/phòng + bộ đánh giá; khởi tạo có xét xung đột;\nquy trình phân công, kiểm tra và snapshot công bố.',.95,5.42,6.9,.9,17)
+txt(s,'Kế thừa',8.45,4.9,3.9,.4,20,TEAL,True)
+txt(s,'HC / SA / Tabu đã có\nFastAPI · Next.js · Supabase',8.45,5.42,4.1,.9,17)
 
 s=new('Giáo vụ xem lịch của toàn bộ 290 buổi học','09 • Minh chứng: STAFF',
 'verification/full-term-simulation/staff-entire-term.png; browser-results.json',
 'Ảnh giao diện thật trên bộ giả lập toàn học kỳ, không phải API fixture. Màn Lịch học kỳ chứa đủ 290 ID buổi, được đối chiếu tự động với kế hoạch; lọc theo khóa, giảng viên và thứ. Ảnh trên slide trích phần đầu để đọc được; ảnh toàn trang và sáu ảnh theo ngày được bàn giao trong thư mục verification/full-term-simulation. Đã công bố vào PostgreSQL cục bộ, chưa công bố trên hosted.',55)
 evidence(s,'staff-entire-term-viewport.png',(250,80,1910,1080))
-txt(s,'290/290 buổi\n\nTất cả khóa học\n\n17 phòng: 6 + 11',9.35,2.55,3.0,3.1,22,BLUE,True)
+txt(s,'290/290 buổi\n\nTất cả khóa học\n\n17 phòng giả lập\nCấu hình thử cũ',9.35,2.55,3.0,3.1,22,BLUE,True)
 txt(s,'Supabase Auth thật → FastAPI thật → PostgreSQL cục bộ · dữ liệu phòng giả lập',.75,6.52,12,.3,12,MUTED)
 
 s=new('Trưởng bộ môn kiểm tra phân công toàn học kỳ','10 • Minh chứng: HEAD / CNPM',
 'verification/full-term-simulation/head-full-term-assignment.png; browser-results.json',
-'Ảnh Trưởng bộ môn CNPM trên dữ liệu thật của bộ thử nghiệm 290 buổi. Bộ môn được giáo vụ trả lại qua API thật; TBM xem 11 lớp của QuyenNV bằng bộ lọc rồi nộp lại. Các lớp của bộ môn khác vẫn nằm ngoài quyền xem và sửa. Không gọi đây là lịch toàn bộ khoa của HEAD; minh chứng là nghiệp vụ phân công trong phạm vi bộ môn.',55)
+'Ảnh Trưởng bộ môn CNPM trên dữ liệu thật của bộ thử nghiệm 290 buổi. Bộ môn được giáo vụ trả lại qua API thật; TBM xem 11 lớp của giảng viên mẫu bằng bộ lọc rồi nộp lại. Các lớp của bộ môn khác vẫn nằm ngoài quyền xem và sửa. Không gọi đây là lịch toàn bộ khoa của HEAD; minh chứng là nghiệp vụ phân công trong phạm vi bộ môn.',55)
 evidence(s,'head-full-term-assignment.png',(250,80,1910,1210))
-txt(s,'Phạm vi: CNPM\n\nLọc QuyenNV\n\nTrả lại → nộp lại',9.35,2.55,3.0,3.1,22,BLUE,True)
+txt(s,'Phạm vi: CNPM\n\nLọc giảng viên mẫu\n\nTrả lại → nộp lại',9.35,2.55,3.0,3.1,22,BLUE,True)
 txt(s,'Phân công hợp lệ theo năng lực trong bộ giả lập; 7 bổ sung có provenance riêng.',.75,6.52,12,.3,12,MUTED)
 
-s=new('QuyenNV có đủ 11 buổi trong lịch cá nhân','11 • Minh chứng: TEACHER',
+s=new('Giảng viên mẫu có đủ 11 buổi trong lịch cá nhân','11 • Minh chứng: TEACHER',
 'verification/full-term-simulation/teacher-quyennv-calendar.png; browser-results.json',
-'Giảng viên dùng profile QuyenNV trong database cục bộ. Tài khoản Auth demo hiện có được ánh xạ tới QuyenNV chỉ trong database thử nghiệm; không sửa profile trên hosted. Lịch cá nhân lấy từ snapshot 290 buổi đã công bố và trả đúng 11 buổi. Có ảnh tuần mở toàn bộ khung giờ, danh sách đủ 11 buổi và mobile. Slide trích vùng thứ 2–6, từ 06:00 tới sau buổi cuối 18:50, chứa đủ 11 buổi; thứ 7/chủ nhật trống được bỏ khỏi crop. Bản tuần đầy đủ ở thư mục bằng chứng.',55)
+'Giảng viên dùng profile giảng viên mẫu trong database cục bộ. Tài khoản Auth demo hiện có được ánh xạ tới giảng viên mẫu chỉ trong database thử nghiệm; không sửa profile trên hosted. Lịch cá nhân lấy từ snapshot 290 buổi đã công bố và trả đúng 11 buổi. Có ảnh tuần mở toàn bộ khung giờ, danh sách đủ 11 buổi và mobile. Slide trích vùng thứ 2–6, từ 06:00 tới sau buổi cuối 18:50, chứa đủ 11 buổi; thứ 7/chủ nhật trống được bỏ khỏi crop. Bản tuần đầy đủ ở thư mục bằng chứng.',55)
 evidence(s,'teacher-quyennv-calendar.png',(0,140,1135,1000))
-txt(s,'QuyenNV\n\n11 buổi / tuần\n\nGiờ, lớp và phòng',9.35,2.55,3.0,3.1,22,BLUE,True)
+txt(s,'giảng viên mẫu\n\n11 buổi / tuần\n\nGiờ, lớp và phòng',9.35,2.55,3.0,3.1,22,BLUE,True)
 txt(s,'Profile demo cục bộ · tuần mở rộng và danh sách đầy đủ được bàn giao kèm ảnh.',.75,6.52,12,.3,12,MUTED)
 
-s=new('Đủ 290 buổi, 0 lỗi cứng trên bộ giả lập 17 phòng','12 • Kết quả kiểm chứng',
-'verification/full-term-simulation/browser-results.json; optimized/readiness.json; backend/tests/test_full_term.py',
-'Kết quả theo một cấu hình giả lập, seed 42 và 500 lượt mỗi chiến lược. Trước sửa: SEARCH_EXHAUSTED với 52 lỗi cứng sau 169.04 giây. Sau khởi tạo có xét ràng buộc và giảm chấm lại: 290 buổi, hard=0, 106.91 giây trong lần chạy Python trực tiếp. Đây là quan sát một lần chạy, không phải benchmark tổng quát hoặc chứng minh tối ưu. Browser chạy lại qua API thật, publish và export Excel; kiểm tra độc lập từng cặp lớp, phòng, khả dụng, thiết bị và reservation.',75)
-rows=[('Toàn học kỳ','290/290; hard = 0','Kế hoạch gốc + phòng giả lập 6/11'),
-      ('Python trực tiếp','169.04s → 106.91s','Một cấu hình; trước: 52 lỗi, sau: 0'),
-      ('Backend','45 tests passed','Thêm regression 290 buổi + oracle'),
-      ('Browser thật','3 actor; 0 lỗi trang','Chỉnh phòng, nộp lại, công bố, lọc'),
-      ('Frontend / Excel','Build + tsc PASS','Xuất đủ 290 dòng; lịch QuyenNV: 11')]
-for i,(a,b,c) in enumerate(rows):
- y=2.12+i*.76;rect(s,.7,y,11.95,.66,WHITE if i%2==0 else LIGHT)
- txt(s,a,.9,y+.16,2.65,.4,18,INK,True);txt(s,b,3.6,y+.16,3.1,.4,17,TEAL,True);txt(s,c,6.85,y+.16,5.55,.4,16)
-txt(s,'Kết quả trên bộ giả lập có ghi nguồn; không suy rộng sang mọi học kỳ.',.85,6.3,11.7,.4,17,MUTED)
+s=new('Kiểm chứng qua năm tầng','12 • Kết quả kiểm chứng',
+'docs/REFACTOR_AUDIT.md; verification/full-term-simulation/README.md; backend/tests/',
+'Bảng tóm tắt kết quả đã ghi trong báo cáo dự án, không phải một lần chạy kiểm thử mới khi biên tập slide. Báo cáo refactor ghi 48 backend tests đạt. Kiểm thử phòng gồm 19 bài theo tài liệu trước đó; cần phân biệt đây là nhóm con hoặc đợt kiểm thử khác, không cộng vào tổng 48. Oracle 20 lượt đối chiếu bộ đếm xung đột với cách đếm độc lập. Báo cáo tích hợp PostgreSQL dùng Docker để kiểm tra transaction, revision và rollback. Browser smoke 14 command theo báo cáo refactor dùng Auth/API fixture; thử nghiệm toàn học kỳ 290 buổi dùng Auth/API thật và database cục bộ, phòng giả lập 17 phòng. Con số 106.91 giây là một lượt Python trực tiếp, không phải benchmark chung.',75)
+rows=[('Backend','48 tests đạt','Theo báo cáo refactor'),
+      ('Ràng buộc phòng','19 bài đạt','Sức chứa, thiết bị, khả dụng'),
+      ('Oracle','20 lượt đối chiếu','Đếm xung đột độc lập'),
+      ('PostgreSQL','Tích hợp đạt','Transaction, revision, rollback'),
+      ('Browser / build','14 lệnh; build đạt','Ba vai trò với Auth/API fixture')]
+for i,(label,result,scope) in enumerate(rows):
+ y=2.05+i*.74
+ rect(s,.7,y,11.95,.66,WHITE if i%2==0 else LIGHT)
+ rect(s,.7,y,.06,.66,TEAL if i%2 else BLUE)
+ txt(s,label,.96,y+.15,3.2,.36,17,INK,True)
+ txt(s,result,4.1,y+.15,3.0,.36,17,TEAL,True)
+ txt(s,scope,7.1,y+.15,5.2,.36,16,INK)
+rect(s,.7,5.89,11.95,.77,BLUE)
+txt(s,'290 buổi, hard = 0: thử nghiệm riêng trên 17 phòng giả lập.',.95,6.04,11.4,.38,17,WHITE,True)
+s=new('Phạm vi bằng chứng và nguồn dữ liệu','Nguồn dữ liệu • resources','resources/*.csv; ke_hoach_mo_lop_HK1_2026.xlsx; presentation/resource-audit.json',
+'Đối chiếu trực tiếp resources ngày 08/11/2026: so_phong.csv có 25 phòng duy nhất, gồm 10 máy chiếu, 14 máy tính và 1 kết hợp. Hai phòng 200 chỗ, ba phòng 150 chỗ, sáu phòng 100 chỗ và 14 phòng 45 chỗ. Phòng kết hợp 206A1 có 100 chỗ, chỉ tính là một phòng vật lý. Nguồn có tên, tính chất và sức chứa; không có khung khả dụng hoặc reservation. bo_mon.csv có 4 dòng; giang_vien.csv có 35; quy_uoc_phan_cong.csv có 104 dòng quy ước, không đồng nghĩa 104 năng lực duy nhất. Lịch ngoài có 22 dòng, tất cả gia_dinh=x. Kế hoạch chính là ke_hoach_mo_lop_HK1_2026.xlsx; 67 offering và 290 buổi là kết quả chuyển đổi đã duyệt. Workbook FIT chỉ tham khảo. Kết quả 290/290, hard=0 thuộc bộ thử 17 phòng giả lập và 7 bổ sung năng lực, chưa xác minh lại trên danh mục 25 phòng. Không đưa nội dung tai_khoan.csv lên slide.',80)
+rows=[('Tệp / nhóm nguồn','Dữ liệu kiểm tra được','Phạm vi sử dụng'),('so_phong.csv','25 phòng: 10 + 14 + 1 kết hợp','Có tên, loại, sức chứa; thiếu khả dụng'),('bo_mon / giang_vien','4 bộ môn / 35 giảng viên','Danh mục tham chiếu'),('quy_uoc_phan_cong.csv','104 dòng quy ước Lec/Tut','Không tự bổ sung năng lực thiếu'),('lich_truong_khac.csv','22 dòng; tất cả gia_dinh = x','Dữ liệu giả định, không phải lịch xác nhận'),('Kế hoạch mở lớp HK1','67 dòng → 290 buổi (*)','(*) Sau chuyển đổi; FIT chỉ tham khảo')]
+for i,row in enumerate(rows):
+ y=2.02+i*.59;rect(s,.7,y,11.95,.56,BLUE if i==0 else WHITE)
+ for x,w,t in zip([.88,4.0,7.45],[2.95,3.25,5.0],row):txt(s,t,x,y+.12,w,.4,14,WHITE if i==0 else INK,i==0)
+rect(s,.7,5.8,11.95,.9,LIGHT)
+txt(s,'290 buổi / hard = 0: kết quả cũ với 17 phòng giả lập.\nChưa có bằng chứng chạy lại với danh mục 25 phòng hiện tại.',.95,5.95,11.4,.7,18,BLUE,True)
 
-s=new('Bằng chứng mới: Auth thật, API và database cục bộ','13 • Phạm vi bằng chứng',
-'verification/full-term-simulation/browser-results.json; manifest.json',
-'Đã kiểm chứng giao diện mới qua Chromium với Supabase Auth thật, FastAPI thật và PostgreSQL 17 Docker thật. Không mock API. Dữ liệu kế hoạch 67 dòng được giữ nguyên; số lượng phòng từ so_phong.csv. Mã/sức chứa/khả dụng phòng, reservations, khung giờ, năng lực thiếu và phân công được giả lập tường minh. Hosted database không bị sửa. Chưa nghiệm thu dữ liệu phòng và năng lực giảng viên thực tế.',65)
-card(s,.7,2.15,5.85,3.65,'Đã quan sát trực tiếp','Đăng nhập thật đủ 3 actor\nLịch 290 buổi; QuyenNV: 11\nSửa phòng có lưu database\nCông bố, RBAC và xuất Excel',TEAL)
-card(s,6.8,2.15,5.85,3.65,'Điều kiện của bằng chứng','PostgreSQL cục bộ riêng\n17 phòng: số lượng từ CSV\nThuộc tính và năng lực: giả lập\nHosted DB giữ nguyên')
-banner(s,'Đã chạy đủ học kỳ trong môi trường giả lập; chưa nghiệm thu học kỳ thực.')
-
-s=new('Giáo vụ có thể chỉnh phòng và các ràng buộc','14 • Cấu hình và giới hạn',
-'resources/so_phong.csv; manifest.json; staff-room-constraints.png; backend/app/domain.py',
-'Số lượng đúng nguồn: 6 phòng máy chiếu, 11 phòng máy tính. Mã MC01–MC06, MT01–MT11 giả lập; máy chiếu 200 chỗ, máy tính 40/48 chỗ. Hai reservation và MT11 chỉ CLC/TT được kiểm tra. Giáo vụ có thể sửa sức chứa, thiết bị, khả dụng, trạng thái và điều kiện dùng phòng; lịch công bố vẫn được bảo vệ. Trình duyệt đã thử sửa MC01 từ 200 lên 220 rồi trả về 200 và đối chiếu DB. Chưa đo tải, tối ưu toàn cục hoặc registry liên workspace.',65)
-card(s,.7,2.12,5.85,3.7,'Đúng số phòng từ nguồn','6 máy chiếu · 11 máy tính\nSức chứa giả lập: 200 / 40–48\nKhả dụng sáng, chiều và tối\n2 lịch chiếm dụng được tôn trọng')
-card(s,6.8,2.12,5.85,3.7,'Giáo vụ được chỉnh','Sức chứa và thiết bị\nKhung khả dụng, tạm ngưng\nĐiều kiện bộ môn / môn / chương trình\nSnapshot công bố vẫn được bảo vệ',TEAL)
-banner(s,'Để vận hành thực: xác nhận thuộc tính phòng, năng lực và phân công đã giả lập.')
+s=new('Từ phiên bản hiện tại đến nghiệm thu vận hành','Tiến độ và giới hạn','git f432b3e, 50fcd3d; docs/REFACTOR_AUDIT.md; README.md',
+'Phiên bản hiện tại tách route, command, model/rules, solver và storage; frontend tổ chức theo feature. Đây là thay đổi cấu trúc mã, không thay hợp đồng API. Commit trước bổ sung tối ưu đánh giá nháp, skeleton loaders và preset lịch ngoài. Báo cáo refactor ghi nhận 48 tests cùng typecheck/build; smoke mới dùng Auth/API fixture, khác với lượt thử toàn học kỳ có Auth/API thật và DB cục bộ. Chưa chạy lại ứng dụng khi biên tập presentation. Hướng tiếp theo là xác nhận dữ liệu, benchmark nhiều seed, sau đó giải quyết solver đồng bộ và kiểm thử tải.',65)
+items=[('01 • ĐÃ TRIỂN KHAI','Tách module nghiệp vụ và feature UI\nTối ưu đánh giá bản nháp\nTrạng thái tải và mẫu lịch ngoài'),('02 • ĐÃ KIỂM CHỨNG','48 tests theo báo cáo refactor\nTypecheck và production build đạt\nSmoke 3 vai trò bằng fixture'),('03 • CẦN HOÀN THIỆN','Kiểm chứng lại với 25 phòng nguồn\nBenchmark nhiều seed / cấu hình\nJob queue và kiểm thử tải')]
+for i,(label,body) in enumerate(items):
+ y=2.1+i*1.43;rect(s,.7,y,.65,.65,TEAL if i<2 else BLUE)
+ txt(s,str(i+1),.88,y+.1,.35,.45,21,WHITE,True)
+ txt(s,label,1.65,y+.02,4.2,.5,20,BLUE,True)
+ txt(s,body,6.1,y,6.4,1.25,18)
 
 s=new('Đã chứng minh luồng lập lịch đầy đủ trên bộ giả lập','15 • Kết luận và thảo luận',
 'verification/full-term-simulation/browser-results.json; manifest.json; optimized/readiness.json',
-'Đóng góp hiện đã có bằng chứng toàn quy trình: giữ kế hoạch 67 dòng, phân 290 buổi, xếp giờ/phòng hard=0, công bố cục bộ và ba vai trò thao tác qua Auth/API/DB thật. QuyenNV có 11 buổi riêng. Sửa khởi tạo đã giải quyết thất bại được tái hiện trong cấu hình này, không bảo đảm mọi đầu vào đều giải được. Tiếp theo là thay các giả định bằng dữ liệu phòng và năng lực được duyệt, nghiệm thu và benchmark rộng hơn.',45)
-for i,b in enumerate(['290/290 buổi hợp lệ với đúng 6 + 11 phòng từ nguồn','Đủ minh chứng 3 actor; lịch QuyenNV có 11 buổi','Giáo vụ chỉnh ràng buộc; lịch công bố được bảo vệ']):
+'Đóng góp hiện đã có bằng chứng toàn quy trình: giữ kế hoạch 67 dòng, phân 290 buổi, xếp giờ/phòng hard=0 trên 17 phòng giả lập; không phải danh mục 25 phòng hiện tại, công bố cục bộ và ba vai trò thao tác qua Auth/API/DB thật. giảng viên mẫu có 11 buổi riêng. Sửa khởi tạo đã giải quyết thất bại được tái hiện trong cấu hình này, không bảo đảm mọi đầu vào đều giải được. Tiếp theo là thay các giả định bằng dữ liệu phòng và năng lực được duyệt, nghiệm thu và benchmark rộng hơn.',45)
+for i,b in enumerate(['290/290 buổi hợp lệ trên cấu hình thử nghiệm cũ','Đủ minh chứng 3 actor; lịch giảng viên mẫu có 11 buổi','Giáo vụ chỉnh ràng buộc; lịch công bố được bảo vệ']):
  y=2.25+i*1.08;txt(s,b,.95,y,11.2,.8,25,INK,True);rect(s,.7,y+.05,.06,.5,TEAL)
-banner(s,'Tiếp theo: xác nhận dữ liệu giả lập → nghiệm thu thực → benchmark nhiều cấu hình',5.82)
+banner(s,'Tiếp theo: chạy lại với 25 phòng nguồn → nghiệm thu → benchmark nhiều cấu hình',5.82)
 
 prs.core_properties.title='ScheduleSolver Web — Báo cáo dự án'
 prs.core_properties.subject='Quy trình phân công và lập lịch giảng dạy'
 prs.core_properties.author='ScheduleSolver Project'
 prs.save(OUT/'ScheduleSolver_Project_VI.pptx')
 (OUT/'outline.json').write_text(json.dumps(outline,ensure_ascii=False,indent=2))
-md=['# ScheduleSolver Web — ghi chú trình bày','','16 slide chính, khoảng 15 phút; không có phụ lục.','','Kết quả kiểm thử trích từ tài liệu dự án, không chạy lại ứng dụng khi dựng deck.','']
+md=['# ScheduleSolver Web — ghi chú trình bày','',f'{len(prs.slides)} slide chính; có ghi chú kỹ thuật và nguồn.','','Kết quả kiểm thử trích từ tài liệu dự án, không chạy lại ứng dụng khi dựng deck.','']
 for item in outline:
  md += [f"## {item['slide']:02}. {item['message']}",'',f"Thời lượng: {item['seconds']} giây. Hình thức: {item['form']}.",'',item['notes'],'',f"Nguồn: {item['source']}",'']
 (OUT/'speaker-notes.md').write_text('\n'.join(md))

@@ -1,17 +1,19 @@
-# ScheduleSolver Web — bản trình bày cập nhật 06/11/2026
+# ScheduleSolver — presentation cập nhật 08/11/2026
 
-16 slide chính 16:9, khoảng 15 phút; không có phụ lục A.
+15 slide, khoảng 15 phút. PPTX chỉnh sửa được; PDF và preview được render bằng LibreOffice.
 
-- ScheduleSolver_Project_VI.pptx: bản chỉnh sửa được và speaker notes.
-- ScheduleSolver_Project_VI.pdf: bản trình chiếu đã render.
-- speaker-notes.md và outline.json: lời dẫn, thời lượng, nguồn từng slide.
-- preview/ và contact-sheet.png: render để kiểm tra trực quan.
-- qa-report.json: kiểm tra deck; build_deck.py: mã tái tạo.
+- Slide 5 trình bày dữ liệu; sơ đồ kiến trúc đã loại khỏi luồng trình chiếu.
+- Slide 8: Related Work & Technical Contributions, đối chiếu UniTime và OR-Tools; phân biệt mã nhóm triển khai với phương pháp/thư viện có sẵn.
+- Slide 7: Quy trình tìm kiếm và ba thẻ HC, SA, Tabu; mỗi thẻ có một quy tắc, một ví dụ điểm số và một giới hạn.
+- Slide 12: Năm hàng kiểm chứng với kết quả và phạm vi ngắn gọn; kết quả 290 buổi trên 17 phòng giả lập được tách khỏi các phép thử khác.
+- Loại cách diễn đạt gắn nguồn thông tin với cá nhân; ảnh gốc vẫn là minh chứng thử nghiệm.
 
-Đã dùng skill research-slides từ /home/masao-1112/Documents/tools-kit/research-skills/research-slides/SKILL.md cùng deck-production/results references.
+Nguồn đối chiếu: backend/app/solver.py, domain_rules.py, schemas.py, docs/REFACTOR_AUDIT.md và verification/full-term-simulation/README.md. Không chạy lại kiểm thử ứng dụng trong lần biên tập này.
 
-Minh chứng giao diện mới có đủ STAFF, HEAD CNPM và TEACHER QuyenNV, lấy từ luồng Supabase Auth thật → API thật → PostgreSQL cục bộ. Toàn học kỳ 290 buổi, 0 lỗi cứng; QuyenNV 11 buổi. Đúng số lượng 6 phòng máy chiếu + 11 phòng máy tính từ resources/so_phong.csv; các thuộc tính phòng và năng lực thiếu là giả lập có provenance. Không thay dữ liệu hosted. Xem verification/full-term-simulation/README.md.
+Related work: https://help.unitime.org/manuals/courses-solver.html và https://developers.google.com/optimization/cp (truy cập 08/11/2026). So sánh phạm vi chức năng, không phải benchmark.
 
-Bảng thời gian là hai lần Python trực tiếp cùng dữ liệu/seed/ngân sách, không phải benchmark tổng quát; lượt UI/API được ghi riêng. Đã chạy lại 45 backend tests, TypeScript, production build và Chromium ba actor. Chưa nghiệm thu dữ liệu học kỳ thực hoặc chứng minh tối ưu.
+Đã rà soát trực quan toàn bộ trang render; kiểm tra tọa độ thành phần trong qa-report.json. Chưa kiểm tra bằng Microsoft PowerPoint gốc. Tái tạo bằng build_deck.py trong môi trường có python-pptx và Pillow.
 
-Deck được render bằng LibreOffice; chưa kiểm tra trên Microsoft PowerPoint gốc.
+## Đính chính phạm vi nguồn
+
+Đối chiếu trực tiếp resources: 25 phòng (10 máy chiếu, 14 máy tính, 1 kết hợp), 4 bộ môn, 35 GV, 104 dòng quy ước phân công. Toàn bộ 22 dòng lịch ngoài có gia_dinh=x. Danh mục phòng có tên/loại/sức chứa, chưa có khả dụng. Kết quả 290/290 hard=0 và thời gian trên slide thuộc cấu hình thử nghiệm cũ 17 phòng giả lập, không được xem là kết quả chạy danh mục nguồn hiện tại. Không chạy lại solver trong lần cập nhật slide này. Xem resource-audit.json.

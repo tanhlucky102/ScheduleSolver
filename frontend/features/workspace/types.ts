@@ -3,6 +3,20 @@ import type { Room, Reservation } from "../rooms/types";
 
 export type Profile = { role: "STAFF" | "HEAD" | "TEACHER"; teacher: string | null; department: string | null };
 
+export type NotificationItem = {
+  id: string;
+  revision: number;
+  action: string;
+  actor_id?: string;
+  actor_role?: string;
+  actor_label?: string;
+  department?: string | null;
+  teacher?: string | null;
+  summary: string;
+  tone?: "info" | "success" | "warning";
+  created_at: string;
+};
+
 export type OfferingItem = {
   id: string;
   course: string;
@@ -48,6 +62,7 @@ export type Event = {
   department?: string;
   students?: number;
   course?: string;
+  course_name?: string;
   institution?: string;
   class_name?: string;
   room?: string;
@@ -79,6 +94,7 @@ export type Workspace = {
   has_publication: boolean;
   revision: number;
   online_teachers?: string[];
+  notifications?: NotificationItem[];
   color_rules?: ColorRule[];
   shift_rules?: ShiftRule[];
   term_config?: {
@@ -92,6 +108,9 @@ export type Workspace = {
     break_minutes: number;
     include_break: boolean;
     first_period_start: number;
+    afternoon_start?: number;
+    evening_start?: number;
+    inter_shift_gap?: number;
   };
   evaluation?: Report;
   state: {
@@ -106,6 +125,9 @@ export type Workspace = {
       break_minutes: number;
       include_break?: boolean;
       first_period_start?: number;
+      afternoon_start?: number;
+      evening_start?: number;
+      inter_shift_gap?: number;
       active_days?: number[];
       shift_rules?: ShiftRule[];
       color_rules?: ColorRule[];

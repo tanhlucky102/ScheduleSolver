@@ -27,6 +27,11 @@ export type WeekOccurrenceInfo = {
   extraWeeks: number;
 };
 
+export type TermDateRange = {
+  termStartIso?: string;
+  termEndIso?: string;
+};
+
 export const DEFAULT_HANU_HOLIDAYS: HolidayRule[] = [
   {
     id: "HOL-0902",
@@ -94,7 +99,7 @@ export function addDaysIso(mondayIso: string, offsetDays: number): string {
 }
 
 export function dayHeaderWithDate(day: number, weekStartIso?: string): string {
-  const baseName = day === 8 ? "Chủ nhật" : `Thứ ${day}`;
+  const baseName = day === 8 ? "Chủ Nhật" : `Thứ ${day}`;
   if (!weekStartIso || weekStartIso === "all") return baseName;
   const dIso = addDaysIso(weekStartIso, day - 2);
   const short = formatShortDateVN(dIso);
@@ -160,7 +165,7 @@ export function findCurrentOrDefaultWeek(weeks: AcademicWeek[]): string {
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const hit = weeks.find((w) => w.startIso <= todayIso && todayIso <= w.endIso);
   if (hit) return hit.startIso;
-  return "all";
+  return weeks[0].startIso;
 }
 
 function jsUtcDayForHanuDay(day: number): number {
@@ -171,144 +176,127 @@ function jsUtcDayForHanuDay(day: number): number {
 export function evaluateWeekOccurrence(
   item: { day: number; start_date?: string; end_date?: string; activity_type?: string },
   weekStartIso: string,
-  holidays: HolidayRule[] = []
+  holidays: HolidayRule[] = [],
+  termRange?: TermDateRange
 ): WeekOccurrenceInfo {
   const sdRaw = (item.start_date || "").slice(0, 10);
   const edRaw = (item.end_date || "").slice(0, 10);
+  const fallbackStart = (termRange?.termStartIso || "2026-08-03").slice(0, 10);
+  const fallbackEnd = (termRange?.termEndIso || "2027-01-03").slice(0, 10);
+
+  const sdResolved = sdRaw || fallbackStart;
+  const edResolved =
+    edRaw || (sdResolved > fallbackEnd ? addDaysIso(sdResolved, 15 * 7) : fallbackEnd);
+
   const actUp = (item.activity_type || "").toUpperCase();
   const isSingleMakeup = actUp === "MAKEUP" && Boolean(sdRaw) && sdRaw === edRaw;
   const isAllWeeks = !weekStartIso || weekStartIso === "all";
   const targetIso = isAllWeeks ? "" : addDaysIso(weekStartIso, item.day - 2);
 
-  const sdDt = sdRaw ? toUtcDate(sdRaw) : null;
-  const edDt = edRaw ? toUtcDate(edRaw) : null;
+  const sdDt = toUtcDate(sdResolved) ?? new Date(Date.UTC(2026, 7, 3));
+  const rawEdDt = toUtcDate(edResolved) ?? new Date(Date.UTC(2027, 0, 3));
+  const edDt = rawEdDt.getTime() < sdDt.getTime() ? sdDt : rawEdDt;
 
-  if (sdDt && edDt && sdDt.getTime() <= edDt.getTime()) {
-    const targetDow = jsUtcDayForHanuDay(item.day);
-    const offset = (targetDow - sdDt.getUTCDay() + 7) % 7;
-    const firstOcc = new Date(sdDt.getTime() + offset * 86_400_000);
-    if (firstOcc.getTime() > edDt.getTime()) {
-      return {
-        visible: false,
-        status: "OUT_OF_RANGE",
-        holidayName: "",
-        makeupNextDate: "",
-        shiftedFromDate: "",
-        sessionNumber: null,
-        totalSessions: 0,
-        effectiveStartDate: sdRaw,
-        effectiveEndDate: edRaw,
-        extraWeeks: 0,
-      };
-    }
+  const targetDow = jsUtcDayForHanuDay(item.day);
+  const offset = (targetDow - sdDt.getUTCDay() + 7) % 7;
+  const firstOcc = new Date(sdDt.getTime() + offset * 86_400_000);
+  const firstOccIso = formatUtcIso(firstOcc);
 
-    const baseSessions = Math.floor((edDt.getTime() - firstOcc.getTime()) / (7 * 86_400_000)) + 1;
-    type TimelineRow = {
-      date: string;
-      status: WeekOccurrenceStatus;
-      holidayName: string;
-      shiftedFromDate: string;
-      makeupNextDate: string;
-      sessionNumber: number | null;
+  if (firstOcc.getTime() > edDt.getTime()) {
+    return {
+      visible: false,
+      status: "OUT_OF_RANGE",
+      holidayName: "",
+      makeupNextDate: "",
+      shiftedFromDate: "",
+      sessionNumber: null,
+      totalSessions: 0,
+      effectiveStartDate: sdResolved,
+      effectiveEndDate: edResolved,
+      extraWeeks: 0,
     };
-    const timeline: TimelineRow[] = [];
-    let completed = 0;
-    let pendingHolidays: { date: string; name: string }[] = [];
-    const skippedNames: string[] = [];
-    let curMs = firstOcc.getTime();
+  }
 
-    for (let step = 0; step < 104 && completed < baseSessions; step++) {
-      const curIso = formatUtcIso(new Date(curMs));
-      const hit = isSingleMakeup ? null : findHolidayOnDate(curIso, holidays);
-      if (hit) {
-        pendingHolidays.push({ date: curIso, name: hit.name });
-        if (!skippedNames.includes(hit.name)) skippedNames.push(hit.name);
-        timeline.push({
-          date: curIso,
-          status: "HOLIDAY_OFF",
-          holidayName: hit.name,
-          shiftedFromDate: "",
-          makeupNextDate: "",
-          sessionNumber: null,
-        });
-      } else {
-        completed += 1;
-        let st: WeekOccurrenceStatus = "NORMAL";
-        let hNames = "";
-        let fromDt = "";
-        if (pendingHolidays.length > 0) {
-          hNames = Array.from(new Set(pendingHolidays.map((x) => x.name))).join(", ");
-          fromDt = pendingHolidays[0].date;
-          pendingHolidays = [];
-          st = "SHIFTED_NEXT_WEEK";
-        } else if (curMs > edDt.getTime() && skippedNames.length > 0) {
-          hNames = skippedNames.join(", ");
-          st = "MAKEUP_EXTENSION";
-        }
-        timeline.push({
-          date: curIso,
-          status: st,
-          holidayName: hNames,
-          shiftedFromDate: fromDt,
-          makeupNextDate: "",
-          sessionNumber: completed,
-        });
-      }
-      curMs += 7 * 86_400_000;
-    }
+  const baseSessions = Math.floor((edDt.getTime() - firstOcc.getTime()) / (7 * 86_400_000)) + 1;
+  type TimelineRow = {
+    date: string;
+    status: WeekOccurrenceStatus;
+    holidayName: string;
+    shiftedFromDate: string;
+    makeupNextDate: string;
+    sessionNumber: number | null;
+  };
+  const timeline: TimelineRow[] = [];
+  let completed = 0;
+  let pendingHolidays: { date: string; name: string }[] = [];
+  const skippedNames: string[] = [];
+  let curMs = firstOcc.getTime();
 
-    let nextTeaching = "";
-    for (let i = timeline.length - 1; i >= 0; i--) {
-      if (timeline[i].status !== "HOLIDAY_OFF") {
-        nextTeaching = timeline[i].date;
-      } else {
-        timeline[i].makeupNextDate = nextTeaching;
-      }
-    }
-
-    const teachingRows = timeline.filter((r) => r.status !== "HOLIDAY_OFF");
-    const effStart = teachingRows.length ? teachingRows[0].date : formatUtcIso(firstOcc);
-    const effEnd = teachingRows.length ? teachingRows[teachingRows.length - 1].date : edRaw;
-    const extraWeeks = timeline.filter((r) => r.status === "HOLIDAY_OFF").length;
-
-    if (isAllWeeks) {
-      return {
-        visible: true,
-        status: "NORMAL",
-        holidayName: skippedNames.join(", "),
-        makeupNextDate: "",
+  for (let step = 0; step < 104 && completed < baseSessions; step++) {
+    const curIso = formatUtcIso(new Date(curMs));
+    const hit = isSingleMakeup ? null : findHolidayOnDate(curIso, holidays);
+    if (hit) {
+      pendingHolidays.push({ date: curIso, name: hit.name });
+      if (!skippedNames.includes(hit.name)) skippedNames.push(hit.name);
+      timeline.push({
+        date: curIso,
+        status: "HOLIDAY_OFF",
+        holidayName: hit.name,
         shiftedFromDate: "",
-        sessionNumber: null,
-        totalSessions: baseSessions,
-        effectiveStartDate: effStart,
-        effectiveEndDate: effEnd,
-        extraWeeks,
-      };
-    }
-
-    const matched = timeline.find((r) => r.date === targetIso);
-    if (!matched) {
-      return {
-        visible: false,
-        status: "OUT_OF_RANGE",
-        holidayName: "",
         makeupNextDate: "",
-        shiftedFromDate: "",
         sessionNumber: null,
-        totalSessions: baseSessions,
-        effectiveStartDate: effStart,
-        effectiveEndDate: effEnd,
-        extraWeeks,
-      };
+      });
+    } else {
+      completed += 1;
+      let st: WeekOccurrenceStatus = "NORMAL";
+      let hNames = "";
+      let fromDt = "";
+      if (pendingHolidays.length > 0) {
+        hNames = Array.from(new Set(pendingHolidays.map((x) => x.name))).join(", ");
+        fromDt = pendingHolidays[0].date;
+        pendingHolidays = [];
+        st = "SHIFTED_NEXT_WEEK";
+      } else if (curMs > edDt.getTime() && skippedNames.length > 0) {
+        hNames = skippedNames.join(", ");
+        st = "MAKEUP_EXTENSION";
+      }
+      timeline.push({
+        date: curIso,
+        status: st,
+        holidayName: hNames,
+        shiftedFromDate: fromDt,
+        makeupNextDate: "",
+        sessionNumber: completed,
+      });
     }
+    curMs += 7 * 86_400_000;
+  }
 
+  let nextTeaching = "";
+  for (let i = timeline.length - 1; i >= 0; i--) {
+    if (timeline[i].status !== "HOLIDAY_OFF") {
+      nextTeaching = timeline[i].date;
+    } else {
+      timeline[i].makeupNextDate = nextTeaching;
+    }
+  }
+
+  const teachingRows = timeline.filter((r) => r.status !== "HOLIDAY_OFF");
+  const lastBaseOcc = new Date(firstOcc.getTime() + (baseSessions - 1) * 7 * 86_400_000);
+  const extraWeeks = timeline.filter((r) => r.status === "HOLIDAY_OFF").length;
+  const effStart = teachingRows.length ? teachingRows[0].date : firstOccIso;
+  const effEnd = teachingRows.length
+    ? teachingRows[teachingRows.length - 1].date
+    : formatUtcIso(new Date(lastBaseOcc.getTime() + extraWeeks * 7 * 86_400_000));
+
+  if (isAllWeeks) {
     return {
       visible: true,
-      status: matched.status,
-      holidayName: matched.holidayName,
-      makeupNextDate: matched.makeupNextDate,
-      shiftedFromDate: matched.shiftedFromDate,
-      sessionNumber: matched.sessionNumber,
+      status: "NORMAL",
+      holidayName: skippedNames.join(", "),
+      makeupNextDate: "",
+      shiftedFromDate: "",
+      sessionNumber: null,
       totalSessions: baseSessions,
       effectiveStartDate: effStart,
       effectiveEndDate: effEnd,
@@ -316,94 +304,41 @@ export function evaluateWeekOccurrence(
     };
   }
 
-  // Open-ended or single-bound items
-  if (!isAllWeeks && targetIso) {
-    if (sdRaw && targetIso < sdRaw) {
-      return {
-        visible: false,
-        status: "OUT_OF_RANGE",
-        holidayName: "",
-        makeupNextDate: "",
-        shiftedFromDate: "",
-        sessionNumber: null,
-        totalSessions: null,
-        effectiveStartDate: sdRaw,
-        effectiveEndDate: edRaw,
-        extraWeeks: 0,
-      };
-    }
-    if (edRaw && targetIso > edRaw) {
-      return {
-        visible: false,
-        status: "OUT_OF_RANGE",
-        holidayName: "",
-        makeupNextDate: "",
-        shiftedFromDate: "",
-        sessionNumber: null,
-        totalSessions: null,
-        effectiveStartDate: sdRaw,
-        effectiveEndDate: edRaw,
-        extraWeeks: 0,
-      };
-    }
-    const hitNow = isSingleMakeup ? null : findHolidayOnDate(targetIso, holidays);
-    if (hitNow) {
-      let probeIso = addDaysIso(targetIso, 7);
-      for (let k = 0; k < 12; k++) {
-        if (!findHolidayOnDate(probeIso, holidays)) break;
-        probeIso = addDaysIso(probeIso, 7);
-      }
-      return {
-        visible: true,
-        status: "HOLIDAY_OFF",
-        holidayName: hitNow.name,
-        makeupNextDate: probeIso,
-        shiftedFromDate: "",
-        sessionNumber: null,
-        totalSessions: null,
-        effectiveStartDate: sdRaw,
-        effectiveEndDate: edRaw,
-        extraWeeks: 1,
-      };
-    }
-    const prevIso = addDaysIso(targetIso, -7);
-    if (!sdRaw || prevIso >= sdRaw) {
-      const hitPrev = isSingleMakeup ? null : findHolidayOnDate(prevIso, holidays);
-      if (hitPrev) {
-        return {
-          visible: true,
-          status: "SHIFTED_NEXT_WEEK",
-          holidayName: hitPrev.name,
-          makeupNextDate: "",
-          shiftedFromDate: prevIso,
-          sessionNumber: null,
-          totalSessions: null,
-          effectiveStartDate: sdRaw,
-          effectiveEndDate: edRaw,
-          extraWeeks: 1,
-        };
-      }
-    }
+  const matched = timeline.find((r) => r.date === targetIso);
+  if (!matched) {
+    return {
+      visible: false,
+      status: "OUT_OF_RANGE",
+      holidayName: "",
+      makeupNextDate: "",
+      shiftedFromDate: "",
+      sessionNumber: null,
+      totalSessions: baseSessions,
+      effectiveStartDate: effStart,
+      effectiveEndDate: effEnd,
+      extraWeeks,
+    };
   }
 
   return {
     visible: true,
-    status: "NORMAL",
-    holidayName: "",
-    makeupNextDate: "",
-    shiftedFromDate: "",
-    sessionNumber: null,
-    totalSessions: null,
-    effectiveStartDate: sdRaw,
-    effectiveEndDate: edRaw,
-    extraWeeks: 0,
+    status: matched.status,
+    holidayName: matched.holidayName,
+    makeupNextDate: matched.makeupNextDate,
+    shiftedFromDate: matched.shiftedFromDate,
+    sessionNumber: matched.sessionNumber,
+    totalSessions: baseSessions,
+    effectiveStartDate: effStart,
+    effectiveEndDate: effEnd,
+    extraWeeks,
   };
 }
 
 export function isEventActiveInWeek(
   item: { day: number; start_date?: string; end_date?: string; activity_type?: string },
   weekStartIso: string,
-  holidays: HolidayRule[] = []
+  holidays: HolidayRule[] = [],
+  termRange?: TermDateRange
 ): boolean {
-  return evaluateWeekOccurrence(item, weekStartIso, holidays).visible;
+  return evaluateWeekOccurrence(item, weekStartIso, holidays, termRange).visible;
 }

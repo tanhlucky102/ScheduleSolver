@@ -15,6 +15,7 @@ from .timetable.models import (
     Reservation as Reservation,
     Placement as Placement,
     External as External,
+    NotificationItem as NotificationItem,
     State as State,
 )
 
@@ -59,6 +60,7 @@ __all__ = [
     "Reservation",
     "Placement",
     "External",
+    "NotificationItem",
     "State",
     "split",
     "eligible",

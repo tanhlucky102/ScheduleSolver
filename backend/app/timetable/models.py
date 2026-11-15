@@ -104,7 +104,7 @@ class Offering(Model):
     lecture_periods: float = Field(ge=0, le=8)
     tutorial_periods: float = Field(ge=0, le=8)
     room: Literal["PROJECTOR", "COMPUTER"]
-    program: Literal["STANDARD", "CLC", "TT"] = "STANDARD"
+    program: Literal["STANDARD", "CLC", "TT", "MME"] = "STANDARD"
     required_equipment: list[str] = Field(default_factory=list)
     required_room_type: str | None = None
     combined: bool | None = None
@@ -209,6 +209,9 @@ class Config(Model):
     break_minutes: int = Field(default=10, ge=0, le=60)
     include_break: bool = True
     first_period_start: int = Field(default=430, ge=300, le=720)
+    afternoon_start: int = Field(default=740, ge=360, le=1200)
+    evening_start: int = Field(default=1030, ge=600, le=1380)
+    inter_shift_gap: int = Field(default=15, ge=0, le=120)
     active_days: list[int] = Field(default_factory=lambda: [2, 3, 4, 5, 6, 7])
     shift_rules: list[ShiftRule] = Field(default_factory=list, max_length=20)
     color_rules: list[ColorRule] = Field(default_factory=list, max_length=100)
@@ -245,7 +248,7 @@ class Room(Model):
     availability: list[Slot] = Field(default_factory=list, max_length=300)
     active: bool = True
     allowed_departments: list[str] = Field(default_factory=list)
-    allowed_programs: list[Literal["STANDARD", "CLC", "TT"]] = Field(default_factory=list)
+    allowed_programs: list[Literal["STANDARD", "CLC", "TT", "MME"]] = Field(default_factory=list)
     allowed_courses: list[str] = Field(default_factory=list)
     note: str = Field(default="", max_length=1000)
 
@@ -294,6 +297,20 @@ class External(Model):
         return self
 
 
+class NotificationItem(Model):
+    id: str = Field(min_length=1, max_length=80)
+    revision: int = Field(ge=0)
+    action: str = Field(min_length=1, max_length=80)
+    actor_id: str = Field(default="", max_length=120)
+    actor_role: str = Field(default="", max_length=40)
+    actor_label: str = Field(default="", max_length=120)
+    department: str | None = Field(default=None, max_length=80)
+    teacher: str | None = Field(default=None, max_length=80)
+    summary: str = Field(min_length=1, max_length=500)
+    tone: Literal["info", "success", "warning"] = "info"
+    created_at: str = Field(min_length=1, max_length=40)
+
+
 class State(Model):
     config: Config = Field(default_factory=Config)
     departments: list[Department] = Field(default_factory=list)
@@ -305,6 +322,7 @@ class State(Model):
     external: list[External] = Field(default_factory=list)
     rooms: list[Room] = Field(default_factory=list)
     reservations: list[Reservation] = Field(default_factory=list)
+    notifications: list[NotificationItem] = Field(default_factory=list, max_length=100)
     @model_validator(mode="after")
     def integrity(self):
         for items in (self.departments, self.teachers, self.offerings, self.sessions, self.external, self.rooms, self.reservations):

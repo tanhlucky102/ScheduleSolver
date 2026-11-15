@@ -1,4 +1,3 @@
-from .seed import teacher_capabilities
 from ..timetable.models import Department, Teacher, ColorRule
 from .schemas import Catalog
 
@@ -32,16 +31,22 @@ def apply(state, action, data, p):
         else:
             if any(d.status != "UNSENT" or d.note for d in catalog.departments):
                 raise ValueError("New departments must be unsent")
-        seed_caps = teacher_capabilities()
+        existing_map = {et.id: et for et in state.teachers}
         for t in catalog.teachers:
-            existing = next((et for et in state.teachers if et.id == t.id), None)
-            if not t.capabilities:
-                if existing and existing.capabilities:
-                    t.capabilities = existing.capabilities
-                elif t.id in seed_caps:
-                    t.capabilities = seed_caps[t.id]
-            if not t.color_rules and existing and existing.color_rules:
-                t.color_rules = existing.color_rules
+            existing = existing_map.get(t.id)
+            if existing is not None:
+                preserved_caps = {c: list(kinds) for c, kinds in existing.capabilities.items()}
+                if t.assistant and not existing.assistant:
+                    preserved_caps = {
+                        c: [k for k in kinds if k != "LEC"]
+                        for c, kinds in preserved_caps.items()
+                    }
+                    preserved_caps = {c: kinds for c, kinds in preserved_caps.items() if kinds}
+                t.capabilities = preserved_caps
+                if not t.color_rules and existing.color_rules:
+                    t.color_rules = list(existing.color_rules)
+            else:
+                t.capabilities = {}
         state.departments, state.teachers = catalog.departments, catalog.teachers
     elif action == "department-save":
         dept_id = str(data.get("id", "")).strip()
@@ -68,29 +73,37 @@ def apply(state, action, data, p):
         name = str(data.get("name", "")).strip()
         department = str(data.get("department", "")).strip()
         assistant = bool(data.get("assistant", False))
-        capabilities = data.get("capabilities", {})
         if not teacher_id:
             raise ValueError("Mã giảng viên không được để trống")
         if not department or not any(d.id == department for d in state.departments):
             raise ValueError(f"Bộ môn '{department}' không tồn tại")
         existing = next((t for t in state.teachers if t.id == teacher_id), None)
         active = bool(data["active"]) if "active" in data and data["active"] is not None else (existing.active if existing else True)
-        seed_caps = teacher_capabilities()
         if existing:
+            was_assistant = existing.assistant
             existing.name = name or existing.name
             existing.department = department
             existing.assistant = assistant
             existing.active = active
-            if capabilities:
-                existing.capabilities = capabilities
-            elif not existing.capabilities and teacher_id in seed_caps:
-                existing.capabilities = seed_caps[teacher_id]
+            if assistant and not was_assistant:
+                filtered_caps = {
+                    c: [k for k in kinds if k != "LEC"]
+                    for c, kinds in existing.capabilities.items()
+                }
+                existing.capabilities = {c: kinds for c, kinds in filtered_caps.items() if kinds}
         else:
             state.teachers.append(Teacher(
-                id=teacher_id, name=name or teacher_id, department=department,
-                assistant=assistant, active=active,
-                capabilities=capabilities or seed_caps.get(teacher_id, {})
+                id=teacher_id,
+                name=name or teacher_id,
+                department=department,
+                assistant=assistant,
+                active=active,
+                capabilities={},
             ))
+        if not active:
+            assigned_ids = [s.id for s in state.sessions if s.teacher == teacher_id]
+            if assigned_ids:
+                return {"warning_assigned_sessions": len(assigned_ids)}
     elif action == "teacher-delete":
         teacher_id = str(data.get("id", "")).strip()
         target = next((t for t in state.teachers if t.id == teacher_id), None)

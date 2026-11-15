@@ -75,7 +75,19 @@ def test_muc4_1_personnel_active_online_and_cross_dept_visibility(api):
     assert post(
         client,
         "teacher-save",
-        {"id": "t_cross", "name": "GV Liên Bộ Môn", "department": "CNPM", "assistant": False, "active": True, "capabilities": {"CS": ["LEC", "TUT"]}},
+        {"id": "t_cross", "name": "GV Liên Bộ Môn", "department": "CNPM", "assistant": False, "active": True},
+        revision=rev,
+    ).status_code == 200
+
+    # HEAD of CNPM declares t_cross's capabilities (STAFF cannot set capabilities)
+    p.role = "HEAD"
+    p.department = "CNPM"
+    p.teacher = "t_cross"
+    rev = client.get("/api/workspace").json()["revision"]
+    assert post(
+        client,
+        "teacher",
+        {"department": "CNPM", "teacher": "t_cross", "assistant": False, "active": True, "capabilities": {"CS": ["LEC", "TUT"]}},
         revision=rev,
     ).status_code == 200
 
@@ -319,11 +331,11 @@ def test_muc3_4_end_to_end_hanu_6_shifts_full_workflow(api):
                 {"id": "TTDPT", "name": "Truyền thông ĐPT", "status": "UNSENT"},
             ],
             "teachers": [
-                {"id": "gv_cnpm", "name": "GV CNPM", "department": "CNPM", "assistant": False, "active": True, "capabilities": {"61FIT3SS1": ["LEC", "TUT"]}},
-                {"id": "gv_nghi", "name": "GV Tạm Nghỉ", "department": "CNPM", "assistant": False, "active": False, "capabilities": {"61FIT3SS1": ["LEC", "TUT"]}},
-                {"id": "gv_httt", "name": "GV HTTT", "department": "HTTT", "assistant": False, "active": True, "capabilities": {"61FIT3OS1CLC": ["LEC", "TUT"]}},
-                {"id": "gv_khmt", "name": "GV KHMT", "department": "KHMT", "assistant": False, "active": True, "capabilities": {"66FIT3AI1": ["LEC", "TUT"]}},
-                {"id": "gv_mme", "name": "GV MME", "department": "TTDPT", "assistant": False, "active": True, "capabilities": {"61MME2GD1": ["LEC", "TUT"]}},
+                {"id": "gv_cnpm", "name": "GV CNPM", "department": "CNPM", "assistant": False, "active": True},
+                {"id": "gv_nghi", "name": "GV Tạm Nghỉ", "department": "CNPM", "assistant": False, "active": False},
+                {"id": "gv_httt", "name": "GV HTTT", "department": "HTTT", "assistant": False, "active": True},
+                {"id": "gv_khmt", "name": "GV KHMT", "department": "KHMT", "assistant": False, "active": True},
+                {"id": "gv_mme", "name": "GV MME", "department": "TTDPT", "assistant": False, "active": True},
             ],
         },
         revision=rev,
@@ -351,11 +363,21 @@ def test_muc3_4_end_to_end_hanu_6_shifts_full_workflow(api):
     rev = client.get("/api/workspace").json()["revision"]
     assert post(client, "external-import", {"items": ext_prev["items"]}, revision=rev).status_code == 200
 
-    # 5. HEAD of each department balances & submits
+    # 5. HEAD of each department imports/declares capabilities, balances & submits
+    dept_caps_csv = (
+        "ma_gv,bo_mon,ma_mon,ten_mon,day_lec,day_tut\n"
+        "gv_cnpm,CNPM,61FIT3SS1,PM nguồn mở,1,1\n"
+        "gv_nghi,CNPM,61FIT3SS1,PM nguồn mở,1,1\n"
+        "gv_httt,HTTT,61FIT3OS1CLC,Hệ điều hành CLC,1,1\n"
+        "gv_khmt,KHMT,66FIT3AI1,Trí tuệ nhân tạo,1,1\n"
+        "gv_mme,TTDPT,61MME2GD1,Thiết kế đồ họa,1,1\n"
+    )
     for dept_id, head_tid in (("CNPM", "gv_cnpm"), ("HTTT", "gv_httt"), ("KHMT", "gv_khmt"), ("TTDPT", "gv_mme")):
         p.role = "HEAD"
         p.department = dept_id
         p.teacher = head_tid
+        rev = client.get("/api/workspace").json()["revision"]
+        assert post(client, "capabilities-import", {"csv_text": dept_caps_csv, "mode": "merge"}, revision=rev).status_code == 200
         rev = client.get("/api/workspace").json()["revision"]
         assert post(client, "balance", {"department": dept_id}, revision=rev).status_code == 200
         rev = client.get("/api/workspace").json()["revision"]

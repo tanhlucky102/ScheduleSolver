@@ -9,16 +9,27 @@ from app.domain import State
 from app.models import Workspace, Profile
 from app import storage
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--staff-user", type=UUID, required=True)
-parser.add_argument("--name", required=True)
-args = parser.parse_args()
 
-with storage.get_session() as session:
-    workspace = Workspace(name=args.name, body=State().model_dump(), revision=0)
-    session.add(workspace)
-    session.flush()
-    profile = Profile(id=args.staff_user, workspace_id=workspace.id, role="STAFF")
-    session.add(profile)
-    session.commit()
-    print("Workspace:", workspace.id)
+def initial_state() -> State:
+    # Default workspace initialization starts clean without pre-seeded capabilities or assignments.
+    return State()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--staff-user", type=UUID, required=True)
+    parser.add_argument("--name", required=True)
+    args = parser.parse_args()
+
+    with storage.get_session() as session:
+        workspace = Workspace(name=args.name, body=initial_state().model_dump(), revision=0)
+        session.add(workspace)
+        session.flush()
+        profile = Profile(id=args.staff_user, workspace_id=workspace.id, role="STAFF")
+        session.add(profile)
+        session.commit()
+        print("Workspace:", workspace.id)
+
+
+if __name__ == "__main__":
+    main()

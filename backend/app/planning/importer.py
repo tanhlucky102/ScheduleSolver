@@ -24,7 +24,7 @@ HANU_COURSE_SUFFIX_DEPT = {
 
 def _infer_program(course_upper: str, raw_prog: str = "") -> str:
     p = raw_prog.strip().upper()
-    if p in ("STANDARD", "CLC", "TT"):
+    if p in ("STANDARD", "CLC", "TT", "MME"):
         return p
     if "CLC" in course_upper or course_upper.startswith("62FIT"):
         return "CLC"

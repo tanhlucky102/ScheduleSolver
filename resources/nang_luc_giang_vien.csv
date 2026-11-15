@@ -1,0 +1,112 @@
+﻿ma_gv,bo_mon,ma_mon,ten_mon,day_lec,day_tut
+AnhVQ,CNPM,61FIT2PR1,Lập trình 1,,x
+AnhVQ,CNPM,61FIT3JSD,Phát triển phần mềm java,,x
+AnhVQ,CNPM,61FIT3WPR,Lập trình web,,x
+DungVT,CNPM,61FIT4SPM,Quản lý dự án phần mềm,x,x
+DungVT,CNPM,62FIT3WPR,Lập trình web,x,x
+DungVT,CNPM,66FIT2PR1,Lập trình 1,x,x
+DungVT,CNPM,66FIT3WPR,Lập trình web,x,x
+KhanhNQ,CNPM,61FIT3DSY,Hệ thống phân tán,x,x
+KhanhNQ,CNPM,61FIT3SS1,Chuyên đề 1,x,x
+KhanhNQ,CNPM,62FIT3SS1,Chuyên đề 1,x,x
+NamTT,CNPM,61FIT3SE1,Công nghệ phần mềm 1,x,x
+NamTT,CNPM,62FIT3SEN,Công nghệ phần mềm,x,x
+NamTT,CNPM,66FIT3SEN,Công nghệ phần mềm,x,x
+QuanDD,CNPM,61FIT3WPR,Lập trình web,x,
+QuanDD,CNPM,61MME2PR1,Lập trình 1,x,
+QuanDD,CNPM,62FIT2PR1,Lập trình 1,x,x
+QuanDD,CNPM,66FIT3WPR,Lập trình web,x,x
+QuyenNV,CNPM,61FIT2PR1,Lập trình 1,x,x
+QuyenNV,CNPM,61FIT3JSD,Phát triển phần mềm java,x,
+QuyenNV,CNPM,61FIT3SE1,Công nghệ phần mềm 1,,x
+QuyenNV,CNPM,66FIT2PR1,Lập trình 1,x,x
+VinhTT,CNPM,61FIT2PR1,Lập trình 1,,x
+VinhTT,CNPM,61MME2PR1,Lập trình 1,,x
+AnhNT,HTTT,61FIT4ATI,Các chủ đề mời trong ngành công nghệ thông tin,,x
+DucBM,HTTT,61FIT4ATI,Các chủ đề mời trong ngành công nghệ thông tin,x,x
+NgaNT,HTTT,61FIT3DBS,Cơ sở dữ liệu,,x
+NgaNT,HTTT,61FIT3EBU,Kinh doanh điện tử,x,x
+NgaNT,HTTT,61MME3DBS,Cơ sở dữ liệu,,x
+NgaNT,HTTT,61MME3EBU,Kinh doanh điện tử,x,x
+NgaNT,HTTT,62FIT3DBS,Cơ sở dữ liệu,x,x
+NgocTB,HTTT,61FIT3SAD,Phân tích thiết kế hệ thống,x,
+NgocTB,HTTT,61FIT4EIS,Hệ thống thông tin doanh nghiệp,x,
+NgocTB,HTTT,61MME2EIS,Hệ thống thông tin doanh nghiệp,x,
+NgocTB,HTTT,62FIT3SAD,Phân tích thiết kế hệ thống,x,x
+NgocTB,HTTT,62FIT4EIS,Hệ thống thông tin doanh nghiệp,x,x
+NgocTB,HTTT,66FIT3SAD,Phân tích thiết kế hệ thống,x,x
+NguyetDTM,HTTT,61FIT3DBS,Cơ sở dữ liệu,x,x
+NguyetDTM,HTTT,61MME3DBS,Cơ sở dữ liệu,x,
+NguyetDTM,HTTT,66FIT3DBS,Cơ sở dữ liệu,x,x
+ThaiTT,HTTT,61FIT3SAD,Phân tích thiết kế hệ thống,,x
+ThaiTT,HTTT,61FIT4EIS,Hệ thống thông tin doanh nghiệp,,x
+ThaiTT,HTTT,61MME2EIS,Hệ thống thông tin doanh nghiệp,,x
+ThaiTT,HTTT,62FIT4EIS,Hệ thống thông tin doanh nghiệp,x,x
+ToanLM,HTTT,61FIT4EIS,Hệ thống thông tin doanh nghiệp,,x
+ToanLM,HTTT,61MME2EIS,Hệ thống thông tin doanh nghiệp,,x
+ToanLM,HTTT,62FIT4EIS,Hệ thống thông tin doanh nghiệp,x,x
+VuNTM,HTTT,61FIT2RES,Phương pháp nghiên cứu khoa học,x,
+VuNTM,HTTT,61MME2RES,Phương pháp nghiên cứu khoa học,x,
+VuNTM,HTTT,61MME3WDE,Thiết kế web,x,
+VuNTM,HTTT,62FIT2RES,Phương pháp nghiên cứu khoa học,,x
+VuNTM,HTTT,62FIT4ATI,Các chủ đề mời trong ngành công nghệ thông tin,x,x
+BachNG,KHMT,61FIT3CGR,Đồ họa máy tính,x,x
+HuongNT,KHMT,61FIT2DMA,Toán rời rạc,x,x
+HuongNT,KHMT,66FIT2DMA,Toán rời rạc,x,x
+HuyVQ,KHMT,61FIT2POP,Nguyên lý hệ điều hành,x,x
+HuyVQ,KHMT,62FIT4NAD,Quản trị mạng,x,x
+KhanhBQ,KHMT,61FIT4MLA,Học máy và ứng dụng,x,x
+KhanhBQ,KHMT,62FIT4MLA,Học máy và ứng dụng,x,x
+KhoaTN,KHMT,61FIT2PCO,Nguyên lý máy tính,,x
+KhoaTN,KHMT,61MME2PRC,Nguyên lý máy tính,x,x
+KhoaTN,KHMT,61MME2PRE,Quan hệ công chúng,,x
+KhoaTN,KHMT,61MME3CG2,Đồ họa máy tính 2,x,x
+KhoaTN,KHMT,66FIT2PCO,Nguyên lý máy tính,x,x
+SonNTK,KHMT,61FIT2CAL,Toán cao cấp,x,x
+SonNTK,KHMT,66FIT2CAL,Toán cao cấp,x,x
+ThangNX,KHMT,61FIT2AIN,Trí tuệ nhân tạo,x,
+ThangNX,KHMT,61FIT3AIN,,x,
+ThangNX,KHMT,62FIT3SS1,Chuyên đề 1,x,x
+ThangNX,KHMT,62FIT4ATI,Các chủ đề mời trong ngành công nghệ thông tin,x,x
+ThangNX,KHMT,66FIT2RES,Phương pháp nghiên cứu khoa học,x,x
+ThangNX,KHMT,66FIT3AIN,Trí tuệ nhân tạo,x,x
+ThangNX,KHMT,66FIT3SS1,Chuyên đề,x,x
+ThaoDTP,KHMT,61FIT2PCO,Nguyên lý máy tính,x,x
+ThaoDTP,KHMT,61FIT3NPR,Lập trình mạng,x,x
+ThaoDTP,KHMT,61FIT3SS1,Chuyên đề 1,x,x
+ThaoDTP,KHMT,62FIT2POP,Nguyên lý hệ điều hành,x,x
+ThaoDTP,KHMT,62FIT3SS1,Chuyên đề 1,x,x
+ThaoDTP,KHMT,66FIT2PCO,Nguyên lý máy tính,x,x
+ThaoDTP,KHMT,66FIT2POP,Nguyên lý hệ điều hành,x,x
+TungVNS,KHMT,61FIT2CAL,Toán cao cấp,,x
+TungVNS,KHMT,61MME2DMA,Toán rời rạc,x,x
+VinhNT,KHMT,61FIT2AIN,Trí tuệ nhân tạo,,x
+VinhNT,KHMT,61FIT3AIN,,,x
+AnhNP,TTDPT,61MME3SM1,,x,x
+AnhNP,TTDPT,61MME3SM1A,Chuyên đề truyền thông đa phương tiện 1,x,x
+AnhNQ,TTDPT,61MME3MUL,Đa phương tiện,,x
+AnhNQ,TTDPT,61MME4ADC,Quảng cáo và sáng tạo quảng cáo,x,x
+BachNN,TTDPT,61MME3DIM,Maketing kỹ thuật số,x,x
+ChauNTB,TTDPT,61MME3CCO,Truyền thông doanh nghiệp,x,x
+ChauNTB,TTDPT,61MME4ADC,Quảng cáo và sáng tạo quảng cáo,x,x
+Dung,TTDPT,61FIT4SPM,Quản lý dự án phần mềm,x,x
+Dung,TTDPT,61MME3CCO,Truyền thông doanh nghiệp,,x
+Dung,TTDPT,61MME4CCM,,x,x
+Dung,TTDPT,61MME4CCMA,Quản lý vấn đề khủng hoảng truyền thông,x,x
+Dung,TTDPT,62FIT3WPR,Lập trình web,,x
+Dung,TTDPT,66FIT2PR1,Lập trình 1,,x
+Dung,TTDPT,66FIT3WPR,Lập trình web,,x
+LinhTTT,TTDPT,61MME4B2B,Maketing với khách hàng doanh nghiệp,x,x
+LySTP,TTDPT,61MME3WDE,Thiết kế web,,x
+PhuongTM,TTDPT,61FIT3MUL,Đa phương tiện,,x
+PhuongTM,TTDPT,61MME2MRE,,x,x
+PhuongTM,TTDPT,61MME2PRE,Quan hệ công chúng,x,x
+TuanVM,TTDPT,61FIT3MUL,Đa phương tiện,x,
+TuanVM,TTDPT,61FIT3SS1,Chuyên đề 1,x,x
+TuanVM,TTDPT,61MME2PRM,,x,x
+TuanVM,TTDPT,61MME3MUL,Đa phương tiện,x,
+TuanVM,TTDPT,62FIT3SS1,Chuyên đề 1,x,x
+TuanVM,TTDPT,62FIT4EBU,Kinh doanh điện tử,x,x
+VanHT,TTDPT,61FIT3MUL,Đa phương tiện,,x
+VanHT,TTDPT,61MME2COT,Lý thuyết truyền thông,x,x
+VanHT,TTDPT,61MME3MUL,Đa phương tiện,,x

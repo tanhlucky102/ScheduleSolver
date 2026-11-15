@@ -49,12 +49,14 @@ def test_head_balance_and_capabilities_preset(api):
         assert response.status_code == status, response.text
         return response
 
-    # 1. Capabilities preset as staff
-    run("capabilities-preset")
-
-    # 2. Return department D to SENT status
+    # 1. Legacy capabilities-preset is removed; return department D so HEAD can import capabilities
+    run("capabilities-preset", status=404)
     run("return", {"department": "D", "note": "Re-balance"})
     p.role = "HEAD"; p.department = "D"; p.teacher = "t"
+    run("capabilities-import", {
+        "csv_text": "ma_gv,bo_mon,ma_mon,ten_mon,day_lec,day_tut\nt,D,CS,Course,1,1\n",
+        "mode": "merge",
+    })
 
     # 3. Balance department D
     res = run("balance", {"department": "D"})

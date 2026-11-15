@@ -1,0 +1,860 @@
+/* QLDT-style Timetable, Config & Solver UI styles */
+
+/* 1. QLDT Card & Compact 2-Row Toolbar */
+.qldt-card {
+  padding: 16px 18px;
+}
+
+.qldt-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.qldt-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qldt-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qldt-term-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: #f0f6fc;
+  border: 1px solid #bcd6ee;
+  color: #135d90;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qldt-segmented {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.qldt-segmented button {
+  border: none !important;
+  background: transparent;
+  color: #334155;
+  font-size: 11.5px;
+  font-weight: 600;
+  min-height: 28px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.qldt-segmented button:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.qldt-segmented button[aria-pressed="true"] {
+  background: #135d90;
+  color: #ffffff;
+}
+
+.qldt-segmented button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.qldt-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1px solid #135d90;
+  background: #ffffff;
+  color: #135d90;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.qldt-action-btn:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.qldt-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cohort pills & compact inline filters */
+.qldt-filter-bar {
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(140px, 1fr)) minmax(190px, 1.3fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+@media (max-width: 1420px) {
+  .qldt-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+.qldt-cohort-pills {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  padding: 2px;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.qldt-cohort-pill {
+  min-height: 28px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  border: 0 !important;
+  background: transparent;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.qldt-cohort-pill:hover {
+  background: #f1f5f9;
+  color: #135d90;
+}
+
+.qldt-cohort-pill[aria-pressed="true"] {
+  background: #135d90;
+  color: #ffffff;
+}
+
+.qldt-inline-select,
+.qldt-inline-search {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  font-size: 12.5px !important;
+  border-radius: 7px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  width: 100% !important;
+}
+
+.qldt-toolbar-group .qldt-inline-select {
+  width: auto !important;
+}
+
+.qldt-inline-select {
+  padding-right: 26px !important;
+  flex: 1 1 150px;
+}
+
+.qldt-inline-search {
+  min-width: 185px;
+  flex: 1.3 1 200px;
+}
+
+/* 2. Sub-bar directly above Weekly Grid (matches qldt_tkb_dang_tuan.jpg) */
+.qldt-week-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.qldt-week-select {
+  height: 36px !important;
+  min-height: 36px !important;
+  min-width: 320px;
+  max-width: 470px;
+  flex: 1 1 320px;
+  padding: 0 32px 0 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 7px !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+.qldt-subbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.qldt-evening-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  margin: 0 !important;
+  user-select: none;
+}
+
+.qldt-evening-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+}
+
+.qldt-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #334155;
+}
+
+.qldt-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+
+.qldt-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* 3. QLDT Weekly Timetable Table (.qldt-week-table) */
+.qldt-week-wrap {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #ffffff;
+}
+
+.qldt-week-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.qldt-week-table thead th {
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  padding: 9px 6px;
+  border-bottom: 1px solid #cbd5e1;
+  border-right: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.qldt-week-table thead th:last-child {
+  border-right: none;
+}
+
+.qldt-week-table thead th.qldt-nav-col-left {
+  width: 66px;
+  padding: 4px;
+}
+
+.qldt-week-table thead th.qldt-nav-col-right {
+  width: 62px;
+  padding: 4px;
+}
+
+.qldt-day-header-date {
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 3px;
+}
+
+.qldt-day-holiday-tag {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #be123c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qldt-week-arrow-btn {
+  width: 34px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent !important;
+  border-radius: 6px;
+  background: transparent;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.qldt-week-arrow-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1 !important;
+}
+
+.qldt-week-arrow-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.qldt-week-table tbody tr {
+  height: 44px;
+}
+
+.qldt-period-cell,
+.qldt-clock-cell {
+  background: #135d90 !important;
+  color: #ffffff !important;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12.5px;
+  padding: 6px 4px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  user-select: none;
+}
+
+.qldt-period-cell {
+  font-weight: 700;
+  width: 66px;
+}
+
+.qldt-clock-cell {
+  font-weight: 500;
+  width: 62px;
+  font-variant-numeric: tabular-nums;
+}
+
+.qldt-day-cell {
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 3px !important;
+  vertical-align: stretch;
+  background: #ffffff;
+}
+
+.qldt-day-cell.is-holiday-col {
+  background: #fffafa;
+}
+
+.qldt-day-cell.is-evening-row {
+  background: #fafcff;
+}
+
+/* Pastel Course Blocks inside rowSpan cells */
+.qldt-slot-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  min-height: 76px;
+}
+
+.qldt-slot-grid[data-count="1"] > .qldt-course-block {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.qldt-course-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1.5px solid #2b6cb0;
+  background: #dceefb;
+  color: #0f2942;
+  font-size: 11.5px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  height: auto;
+  overflow: visible;
+  transition: filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+.qldt-course-block.is-compact {
+  padding: 5px 7px;
+  gap: 1.5px;
+  font-size: 11px;
+  line-height: 1.28;
+}
+
+.qldt-course-block:hover {
+  filter: brightness(0.98);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.qldt-course-title {
+  font-weight: 700;
+  font-size: 11.5px;
+  color: inherit;
+  word-break: break-word;
+}
+
+.qldt-course-block.is-compact .qldt-course-title {
+  font-size: 11px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.qldt-course-meta {
+  font-size: 11px;
+  color: inherit;
+  opacity: 0.94;
+}
+
+.qldt-course-meta strong {
+  font-weight: 600;
+}
+
+.qldt-course-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.qldt-status-pill {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Dense 3+ overlap summary card (prevents row height explosion & messy text) */
+.qldt-dense-cluster {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5px;
+  height: 100%;
+  padding: 6px 7px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 3px solid #135d90;
+  border-radius: 5px;
+}
+
+.qldt-dense-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #135d90;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.qldt-dense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.qldt-compact-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 3px solid #2b6cb0;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: #0f2942;
+  font-size: 11px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qldt-compact-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qldt-more-btn {
+  width: 100%;
+  min-height: 26px !important;
+  padding: 3px 8px !important;
+  border-radius: 5px !important;
+  border: 1px solid #bcd6ee !important;
+  background: #eff6ff !important;
+  color: #135d90 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.qldt-more-btn:hover {
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+}
+
+/* Slot Detail Modal Table */
+.qldt-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.qldt-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.qldt-modal-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 9px 10px;
+  border-bottom: 2px solid #135d90;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.qldt-modal-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+  color: #1e293b;
+}
+
+.qldt-modal-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* 4. QLDT Semester Grouped Table (.qldt-semester-table — matches qldt_tkb_hoc_ky.png) */
+.qldt-semester-wrap {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #ffffff;
+}
+
+.qldt-semester-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.qldt-semester-table thead th {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 11px 10px;
+  border-bottom: 2px solid #135d90;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.qldt-semester-table thead th.col-center,
+.qldt-semester-table tbody td.col-center {
+  text-align: center;
+}
+
+.qldt-semester-table tbody tr.group-even td {
+  background: #ffffff;
+}
+
+.qldt-semester-table tbody tr.group-odd td {
+  background: #f1f5f9;
+}
+
+.qldt-semester-table tbody td {
+  padding: 9px 10px;
+  vertical-align: middle;
+  color: #1e293b;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.qldt-semester-table tbody td.subrow-cell {
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.qldt-semester-table tbody tr.group-last td {
+  border-bottom: 1.5px solid #94a3b8;
+}
+
+.qldt-date-stack {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.qldt-makeup-tag {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #ede9fe;
+  color: #6d28d9;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+/* 5. Personal Schedule Sub-tabs */
+.qldt-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid #cbd5e1;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.qldt-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.qldt-subtab-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.qldt-subtab-btn[aria-selected="true"] {
+  background: #135d90;
+  border-color: #135d90;
+  color: #ffffff;
+}
+
+.qldt-subtab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.qldt-subtab-btn[aria-selected="true"] .qldt-subtab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+/* 6. Solver Action Bar & Collapsible Details */
+.solver-primary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  margin-bottom: 14px;
+}
+
+.solver-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.solver-cta-left,
+.solver-cta-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-publish-success {
+  background: #15803d !important;
+  border-color: #15803d !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.btn-publish-success:hover:not(:disabled) {
+  background: #166534 !important;
+}
+
+.solver-advanced-panel {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.solver-advanced-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* 7. Config Editor Auto-Sync Switch & Preset Confirmation */
+.config-sync-bar {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12.5px;
+  color: #1e3a8a;
+}
+
+.config-toggle-label {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.config-toggle-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: #135d90;
+  cursor: pointer;
+}
+
+.preset-confirm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media print {
+  .qldt-filter-bar,
+  .qldt-action-btn,
+  .qldt-segmented,
+  .qldt-subtabs,
+  .qldt-week-arrow-btn {
+    display: none !important;
+  }
+  .qldt-card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  .qldt-week-wrap,
+  .qldt-semester-wrap {
+    overflow: visible !important;
+  }
+}

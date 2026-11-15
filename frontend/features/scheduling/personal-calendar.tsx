@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { EmptyState } from "../shared/ui";
-import { clock, dayName } from "../shared/time";
+import { EmptyState, Icon, Spinner, ActionButton } from "../shared/ui";
+import { clock } from "../shared/time";
 import {
   DEFAULT_HANU_HOLIDAYS,
   addDaysIso,
@@ -15,10 +15,26 @@ import {
   getHolidaysInWeek,
   type WeekOccurrenceInfo,
 } from "../shared/weeks";
-import { resolveRule } from "./term-calendar-model";
+import {
+  buildDayPeriodClusters,
+  buildPeriodRows,
+  mapEventToPeriods,
+  resolveRule,
+} from "./term-calendar-model";
 import { exportTeacherWorkbook } from "../workspace/api-client";
 import type { CalendarEvent } from "../workspace/ui-types";
-import type { ColorRule, HolidayRule } from "../catalog/types";
+import type { ColorRule, HolidayRule, ShiftRule } from "../catalog/types";
+import type { PeriodConfigInput } from "./term-calendar-types";
+
+type RichPersonalEvent = CalendarEvent & {
+  isExternal: boolean;
+  _occ: WeekOccurrenceInfo;
+  course_name?: string;
+  section?: string;
+  cohort?: string;
+  kind?: string;
+  periods?: number;
+};
 
 const overlaps = (a: CalendarEvent, b: CalendarEvent) => {
   if (a.day !== b.day || !(a.start < b.end && b.start < a.end)) return false;
@@ -35,39 +51,55 @@ const DEFAULT_ACTIVITY_LABELS: Record<string, string> = {
   PERSONAL_BUSY: "Lịch bận cá nhân",
 };
 
+function downloadPersonalCsv(filename: string, rows: string[][]) {
+  const esc = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
+  const csv = "\uFEFF" + rows.map((r) => r.map(esc).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function PersonalCalendar({
   published,
   external,
   colorRules = [],
+  shiftRules = [],
+  periodConfig,
   termConfig,
   apiUrl = "http://localhost:8000",
   token = null,
   busy = false,
+  onOpenExternalTab,
 }: {
   published: CalendarEvent[];
   external: CalendarEvent[];
   colorRules?: ColorRule[];
+  shiftRules?: ShiftRule[];
+  periodConfig?: PeriodConfigInput;
   termConfig?: { term_name?: string; term_start_date?: string; term_end_date?: string; holidays?: HolidayRule[] };
   apiUrl?: string;
   token?: string | null;
   busy?: boolean;
+  onOpenExternalTab?: () => void;
 }) {
-  const [view, setView] = useState("week");
-  const [source, setSource] = useState("all");
+  const [view, setView] = useState<"week" | "semester">("week");
+  const [source, setSource] = useState<"all" | "faculty" | "external">("all");
+  const [showEvening, setShowEvening] = useState(true);
   const [exporting, setExporting] = useState(false);
 
   const termName = termConfig?.term_name || "Học kỳ 1 - Năm học 2026 - 2027";
+  const termStartIso = termConfig?.term_start_date || "2026-08-03";
+  const termEndIso = termConfig?.term_end_date || "2027-01-03";
+  const termRange = useMemo(() => ({ termStartIso, termEndIso }), [termStartIso, termEndIso]);
+
   const holidays = useMemo(() => termConfig?.holidays ?? DEFAULT_HANU_HOLIDAYS, [termConfig?.holidays]);
   const weeks = useMemo(
-    () => buildAcademicWeeks(termConfig?.term_start_date || "2026-08-03", termConfig?.term_end_date || "2027-01-03"),
-    [termConfig?.term_start_date, termConfig?.term_end_date]
-  );
-  const holidayWeekChips = useMemo(
-    () =>
-      weeks
-        .map((w) => ({ week: w, hits: getHolidaysInWeek(w, holidays) }))
-        .filter((x) => x.hits.length > 0),
-    [weeks, holidays]
+    () => buildAcademicWeeks(termStartIso, termEndIso),
+    [termStartIso, termEndIso]
   );
 
   const [selectedWeek, setSelectedWeek] = useState<string>(() => findCurrentOrDefaultWeek(weeks));
@@ -80,29 +112,33 @@ export function PersonalCalendar({
   const currentWeekIdx = weeks.findIndex((w) => w.startIso === selectedWeek);
   const activeWeekObj = currentWeekIdx >= 0 ? weeks[currentWeekIdx] : undefined;
 
-  const weekHolidays = useMemo(() => {
-    if (selectedWeek === "all") return [];
-    const found: { day: number; dateIso: string; name: string }[] = [];
-    for (let d = 2; d <= 8; d++) {
-      const dIso = addDaysIso(selectedWeek, d - 2);
-      const hit = findHolidayOnDate(dIso, holidays);
-      if (hit) found.push({ day: d, dateIso: dIso, name: hit.name });
-    }
-    return found;
-  }, [selectedWeek, holidays]);
+  const periodRows = useMemo(
+    () => buildPeriodRows(shiftRules, periodConfig),
+    [shiftRules, periodConfig]
+  );
+  const maxVisiblePeriod = showEvening ? 15 : 10;
+  const visiblePeriodRows = useMemo(
+    () => periodRows.filter((r) => r.period <= maxVisiblePeriod),
+    [periodRows, maxVisiblePeriod]
+  );
 
-  const events = useMemo(() => {
+  const weekKeyForEval = view === "semester" ? "all" : selectedWeek;
+
+  const events: RichPersonalEvent[] = useMemo(() => {
     const merged = [
       ...(source === "external" ? [] : published.map((e) => ({ ...e, isExternal: false }))),
       ...(source === "faculty" ? [] : external.map((e) => ({ ...e, isExternal: true }))),
     ];
     return merged
-      .map((e) => ({ ...e, _occ: evaluateWeekOccurrence(e, selectedWeek, holidays) }))
+      .map((e) => ({
+        ...e,
+        _occ: evaluateWeekOccurrence(e, weekKeyForEval, holidays, termRange),
+      }))
       .filter((e) => e._occ.visible)
       .sort((a, b) => a.day - b.day || a.start - b.start || a.id.localeCompare(b.id));
-  }, [published, external, source, selectedWeek, holidays]);
+  }, [published, external, source, weekKeyForEval, holidays, termRange]);
 
-  const conflict = (e: CalendarEvent) =>
+  const isConflict = (e: CalendarEvent) =>
     external.some((x) => x.id === e.id) && published.some((p) => overlaps(p, e));
 
   const findStatusRule = (key: string): ColorRule | undefined =>
@@ -115,17 +151,19 @@ export function PersonalCalendar({
     return DEFAULT_ACTIVITY_LABELS[key] || actType || "Lịch ngoài";
   };
 
-  const findCustomMatch = (e: CalendarEvent & { isExternal: boolean }): ColorRule | undefined => {
+  const findCustomMatch = (e: RichPersonalEvent): ColorRule | undefined => {
     const courseUp = (e.course || "").toUpperCase();
     const idUp = (e.id || "").toUpperCase();
     const instUp = (e.institution || "").toUpperCase();
-    const kindUp = idUp.includes("-LEC-")
-      ? "LEC"
-      : idUp.includes("-TUT-")
-      ? "TUT"
-      : idUp.includes("-COMBINED-")
-      ? "COMBINED"
-      : "";
+    const kindUp =
+      (e.kind || "").toUpperCase() ||
+      (idUp.includes("-LEC-")
+        ? "LEC"
+        : idUp.includes("-TUT-")
+        ? "TUT"
+        : idUp.includes("-COMBINED-")
+        ? "COMBINED"
+        : "");
 
     return (
       colorRules.find((r) => r.category === "CUSTOM" && courseUp.includes(r.key.toUpperCase())) ||
@@ -135,15 +173,31 @@ export function PersonalCalendar({
     );
   };
 
-  const getEventStyle = (e: CalendarEvent & { isExternal: boolean }) => {
-    if (conflict(e)) {
+  const getEventStyle = (e: RichPersonalEvent) => {
+    const occ = e._occ;
+    if (occ.status === "HOLIDAY_OFF") {
+      return { bg: "#fff1f2", border: "#fb7185", text: "#881337", accent: "#be123c", ruleNote: "" };
+    }
+    if (isConflict(e)) {
       const cRule = resolveRule("STATUS", "CONFLICT", colorRules);
-      return { bg: cRule.bg_color, border: cRule.border_color, text: cRule.text_color, ruleNote: cRule.note };
+      return {
+        bg: cRule.bg_color || "#fef3c7",
+        border: "#dc2626",
+        text: "#7f1d1d",
+        accent: "#dc2626",
+        ruleNote: cRule.note,
+      };
     }
     const matched = findCustomMatch(e);
     if (e.isExternal) {
       if (matched) {
-        return { bg: matched.bg_color, border: matched.border_color, text: matched.text_color, ruleNote: matched.note };
+        return {
+          bg: matched.bg_color,
+          border: matched.border_color,
+          text: matched.text_color,
+          accent: matched.border_color,
+          ruleNote: matched.note,
+        };
       }
       const actKey = (e.activity_type || "EXTERNAL_TEACHING").toUpperCase();
       const customStatus = findStatusRule(actKey);
@@ -152,565 +206,695 @@ export function PersonalCalendar({
           bg: customStatus.bg_color,
           border: customStatus.border_color,
           text: customStatus.text_color,
+          accent: customStatus.border_color,
           ruleNote: customStatus.note,
         };
       }
       if (e.color && e.color.startsWith("#")) {
-        return { bg: e.color, border: "#94a3b8", text: "#0f172a", ruleNote: "" };
+        return { bg: e.color, border: "#64748b", text: "#0f172a", accent: "#475569", ruleNote: "" };
       }
-      if (actKey === "STUDYING" || actKey === "MAKEUP") {
-        const stRule = resolveRule("STATUS", actKey, colorRules);
-        return { bg: stRule.bg_color, border: stRule.border_color, text: stRule.text_color, ruleNote: stRule.note };
+      if (actKey === "STUDYING") {
+        return { bg: "#dcfce7", border: "#16a34a", text: "#14532d", accent: "#15803d", ruleNote: "" };
       }
-      return { bg: "#fef9c3", border: "#fde047", text: "#713f12", ruleNote: "" };
+      if (actKey === "MAKEUP") {
+        return { bg: "#f3e8ff", border: "#9333ea", text: "#581c87", accent: "#7e22ce", ruleNote: "" };
+      }
+      return { bg: "#fef3c7", border: "#d97706", text: "#78350f", accent: "#b45309", ruleNote: "" };
+    }
+
+    if (occ.status === "SHIFTED_NEXT_WEEK" || occ.status === "MAKEUP_EXTENSION") {
+      return { bg: "#f3e8ff", border: "#9333ea", text: "#581c87", accent: "#7e22ce", ruleNote: "" };
     }
     if (matched) {
-      return { bg: matched.bg_color, border: matched.border_color, text: matched.text_color, ruleNote: matched.note };
-    }
-    if (e.evening || e.start >= 1020) {
-      const evRule = resolveRule("STATUS", "EVENING", colorRules);
-      return { bg: evRule.bg_color, border: evRule.border_color, text: evRule.text_color, ruleNote: evRule.note };
+      return {
+        bg: matched.bg_color,
+        border: matched.border_color,
+        text: matched.text_color,
+        accent: matched.border_color,
+        ruleNote: matched.note,
+      };
     }
     const facRule = findStatusRule("FACULTY");
     if (facRule) {
-      return { bg: facRule.bg_color, border: facRule.border_color, text: facRule.text_color, ruleNote: facRule.note };
+      return {
+        bg: facRule.bg_color,
+        border: facRule.border_color,
+        text: facRule.text_color,
+        accent: facRule.border_color,
+        ruleNote: facRule.note,
+      };
     }
-    return { bg: undefined, border: undefined, text: undefined, ruleNote: "" };
+    const idUp = (e.id || "").toUpperCase();
+    if ((e.kind || "").toUpperCase() === "TUT" || idUp.includes("-TUT-")) {
+      return { bg: "#fce8ea", border: "#c53030", text: "#3b0d11", accent: "#c53030", ruleNote: "" };
+    }
+    return { bg: "#dceefb", border: "#2b6cb0", text: "#0f2942", accent: "#b91c1c", ruleNote: "" };
   };
 
   const legendItems = useMemo(() => {
     const facultyRule = findStatusRule("FACULTY");
-    const eveningRule = resolveRule("STATUS", "EVENING", colorRules);
     const extRule = findStatusRule("EXTERNAL_TEACHING");
-    const studyRule = resolveRule("STATUS", "STUDYING", colorRules);
-    const makeupRule = resolveRule("STATUS", "MAKEUP", colorRules);
-    const conflictRule = resolveRule("STATUS", "CONFLICT", colorRules);
+    const studyRule = findStatusRule("STUDYING");
+    const makeupRule = findStatusRule("MAKEUP");
+    const conflictRule = findStatusRule("CONFLICT");
 
-    const baseItems: { id: string; label: string; color?: string; border?: string; note?: string; className?: string }[] = [
+    return [
       {
-        id: "base-faculty",
+        id: "fac",
         label: facultyRule?.label || "Lịch khoa",
-        color: facultyRule?.bg_color,
-        border: facultyRule?.border_color,
-        note: facultyRule?.note,
+        bg: facultyRule?.bg_color || "#dceefb",
+        border: facultyRule?.border_color || "#2b6cb0",
       },
       {
-        id: "base-evening",
-        label: findStatusRule("EVENING")?.label || "TKB tối",
-        color: findStatusRule("EVENING")?.bg_color || eveningRule.bg_color || "#e0f2fe",
-        border: findStatusRule("EVENING")?.border_color || eveningRule.border_color || "#38bdf8",
-        note: eveningRule.note,
-      },
-      {
-        id: "base-ext",
+        id: "ext",
         label: extRule?.label || "Dạy trường ngoài",
-        color: extRule?.bg_color || "#fef08a",
-        border: extRule?.border_color || "#facc15",
-        note: extRule?.note,
+        bg: extRule?.bg_color || "#fef3c7",
+        border: extRule?.border_color || "#d97706",
       },
       {
-        id: "base-study",
-        label: findStatusRule("STUDYING")?.label || "Đi học / NCS",
-        color: studyRule.bg_color || "#dcfce7",
-        border: studyRule.border_color || "#4ade80",
-        note: studyRule.note,
+        id: "study",
+        label: studyRule?.label || "Đi học / NCS",
+        bg: studyRule?.bg_color || "#dcfce7",
+        border: studyRule?.border_color || "#16a34a",
       },
       {
-        id: "base-makeup",
-        label: findStatusRule("MAKEUP")?.label || "Dạy bù",
-        color: makeupRule.bg_color || "#f3e8ff",
-        border: makeupRule.border_color || "#c084fc",
-        note: makeupRule.note,
+        id: "makeup",
+        label: makeupRule?.label || "Dạy bù",
+        bg: makeupRule?.bg_color || "#f3e8ff",
+        border: makeupRule?.border_color || "#9333ea",
       },
       {
-        id: "base-conflict",
-        label: findStatusRule("CONFLICT")?.label || "Trùng lịch",
-        color: findStatusRule("CONFLICT")?.bg_color,
-        border: findStatusRule("CONFLICT")?.border_color,
-        className: findStatusRule("CONFLICT") ? undefined : "conflict-dot",
-        note: conflictRule.note,
+        id: "conflict",
+        label: conflictRule?.label || "Trùng lịch",
+        bg: conflictRule?.bg_color || "#fef3c7",
+        border: "#dc2626",
       },
     ];
-
-    const handledStatusKeys = new Set(["FACULTY", "EVENING", "EXTERNAL_TEACHING", "STUDYING", "MAKEUP", "CONFLICT"]);
-    const extraCustomItems: typeof baseItems = colorRules
-      .filter((r) => !(r.category === "STATUS" && handledStatusKeys.has(r.key.toUpperCase())))
-      .map((r) => ({
-        id: `rule-${r.id}`,
-        label: r.label || r.key,
-        color: r.bg_color,
-        border: r.border_color || r.text_color,
-        note: r.note ? `${r.key}: ${r.note}` : r.key,
-      }));
-
-    return [...baseItems, ...extraCustomItems];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorRules]);
 
+  const weekDays = [2, 3, 4, 5, 6, 7, 8];
+
+  const dayClusterMaps = useMemo(() => {
+    const byDay = new Map<
+      number,
+      ReturnType<typeof buildDayPeriodClusters<RichPersonalEvent>>
+    >();
+    for (const d of weekDays) {
+      const dayEvs = events.filter((e) => e.day === d);
+      byDay.set(d, buildDayPeriodClusters(dayEvs, periodRows, maxVisiblePeriod));
+    }
+    return byDay;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, periodRows, maxVisiblePeriod]);
+
+  const [slotModal, setSlotModal] = useState<{
+    day: number;
+    periodLabel: string;
+    items: RichPersonalEvent[];
+  } | null>(null);
+
+  const handlePrevWeek = () => {
+    if (!weeks.length) return;
+    if (selectedWeek === "all") setSelectedWeek(weeks[0].startIso);
+    else if (currentWeekIdx > 0) setSelectedWeek(weeks[currentWeekIdx - 1].startIso);
+  };
+
+  const handleNextWeek = () => {
+    if (!weeks.length) return;
+    if (selectedWeek === "all") setSelectedWeek(weeks[0].startIso);
+    else if (currentWeekIdx >= 0 && currentWeekIdx < weeks.length - 1) {
+      setSelectedWeek(weeks[currentWeekIdx + 1].startIso);
+    }
+  };
+
   const handleExportPersonal = async () => {
-    if (!token || exporting) return;
+    if (exporting || (published.length === 0 && external.length === 0)) return;
     setExporting(true);
     try {
-      const blob = await exportTeacherWorkbook(apiUrl, token, {
-        weekStart: selectedWeek,
-        weekLabel: activeWeekObj?.label || termName,
+      if (token) {
+        const blob = await exportTeacherWorkbook(apiUrl, token, {
+          weekStart: weekKeyForEval,
+          weekLabel: activeWeekObj?.label || termName,
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = activeWeekObj
+          ? `TKB-CaNhan-Tuan${activeWeekObj.weekNumber}-${activeWeekObj.startIso}.xlsx`
+          : `TKB-CaNhan-HocKy.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      const header = [
+        "Mã MH / Hoạt động",
+        "Đơn vị / Tên môn",
+        "Lớp / Nhóm",
+        "Phân loại",
+        "Thứ",
+        "Tiết BĐ",
+        "Số tiết",
+        "Khung giờ",
+        "Phòng",
+        "Từ ngày",
+        "Đến ngày",
+      ];
+      const rows = events.map((ev) => {
+        const mp = mapEventToPeriods(ev, periodRows);
+        return [
+          ev.course || ev.id,
+          ev.isExternal ? ev.institution || "Ngoài khoa" : ev.course_name || "Khoa CNTT",
+          ev.class_name || ev.section || ev.id,
+          ev.isExternal ? getActivityLabel(ev.activity_type) : "Lịch khoa",
+          ev.day === 8 ? "CN" : String(ev.day),
+          String(mp.startPeriod),
+          String(mp.spanPeriods),
+          `${clock(ev.start)} - ${clock(ev.end)}`,
+          ev.room_id || ev.room || "",
+          formatDateVN(ev._occ.effectiveStartDate),
+          formatDateVN(ev._occ.effectiveEndDate),
+        ];
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = activeWeekObj
-        ? `TKB-CaNhan-Tuan${activeWeekObj.weekNumber}-${activeWeekObj.startIso}.xlsx`
-        : `TKB-CaNhan-ToanKy.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadPersonalCsv("TKB-CaNhan.csv", [header, ...rows]);
     } finally {
       setExporting(false);
     }
   };
 
-  const renderDateBadge = (e: CalendarEvent & { _occ?: WeekOccurrenceInfo }) => {
-    const occ = e._occ;
-    const rawS = occ?.effectiveStartDate || e.start_date;
-    const rawE = occ?.effectiveEndDate || e.end_date;
-    if (!rawS && !rawE) return null;
-    const s = formatShortDateVN(rawS);
-    const en = formatShortDateVN(rawE);
-    const extra = occ && occ.extraWeeks > 0 ? ` (+${occ.extraWeeks}t bù lễ)` : "";
-    if (s && en) return `${s}–${en}${extra}`;
-    return (s || en) + extra;
+  const renderPersonalBlock = (ev: RichPersonalEvent) => {
+    const st = getEventStyle(ev);
+    const occ = ev._occ;
+    const isHolOff = occ.status === "HOLIDAY_OFF";
+    const isMakeup = occ.status === "SHIFTED_NEXT_WEEK" || occ.status === "MAKEUP_EXTENSION";
+    const hasConflict = isConflict(ev) && !isHolOff;
+    const effStart = occ.effectiveStartDate || termStartIso;
+    const effEnd = occ.effectiveEndDate || termEndIso;
+
+    const titleText = ev.course_name
+      ? `${ev.course_name} (${ev.course || ev.id})`
+      : ev.course || ev.id;
+
+    const groupText = ev.isExternal
+      ? `${getActivityLabel(ev.activity_type)}${ev.institution ? ` · ${ev.institution}` : ""}`
+      : [ev.section || ev.class_name || ev.id, ev.cohort ? `${ev.cohort}` : ""].filter(Boolean).join(".");
+
+    const tooltip = [
+      titleText,
+      ev.isExternal ? `Đơn vị: ${ev.institution || "Ngoài khoa"}` : "Đơn vị: Khoa CNTT",
+      `Lớp / Nhóm: ${ev.class_name || ev.section || ev.id}`,
+      `Phòng: ${ev.room_id || ev.room || "Chưa gán"}`,
+      `Khung giờ: ${clock(ev.start)} → ${clock(ev.end)}`,
+      `Thời gian học: ${formatDateVN(effStart)} → ${formatDateVN(effEnd)}`,
+      isHolOff ? `Nghỉ lễ ${occ.holidayName} → Bù ${formatDateVN(occ.makeupNextDate)}` : "",
+      isMakeup ? `Buổi học bù lễ ${occ.holidayName}` : "",
+      hasConflict ? "Cảnh báo: Trùng giờ với lịch giảng dạy chính khóa tại Khoa!" : "",
+      ev.note || st.ruleNote ? `Ghi chú: ${[ev.note, st.ruleNote].filter(Boolean).join(" · ")}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    return (
+      <div
+        key={ev.id}
+        title={tooltip}
+        className="qldt-course-block"
+        style={{
+          background: st.bg,
+          borderColor: st.border,
+          borderWidth: hasConflict ? "2px" : "1.5px",
+          borderStyle: isHolOff ? "dashed" : "solid",
+          color: st.text,
+          cursor: "default",
+        }}
+      >
+        <div className="qldt-course-title">{titleText}</div>
+        <div className="qldt-course-meta">
+          <strong>{ev.isExternal ? "Loại:" : "Nhóm:"}</strong> {groupText}
+        </div>
+        <div className="qldt-course-meta">
+          <strong>Phòng:</strong> {ev.room_id || ev.room || "Chưa gán"}
+        </div>
+        {(ev.note || st.ruleNote) && (
+          <div className="qldt-course-meta" style={{ fontStyle: "italic" }}>
+            {ev.note || st.ruleNote}
+          </div>
+        )}
+
+        {hasConflict && (
+          <span
+            className="qldt-status-pill"
+            style={{ background: "#fee2e2", color: "#991b1b", border: "1px solid #f87171" }}
+          >
+            Trùng lịch khoa
+          </span>
+        )}
+        {isHolOff && (
+          <span
+            className="qldt-status-pill"
+            style={{ background: "#ffe4e6", color: "#9f1239", border: "1px solid #fda4af" }}
+          >
+            Nghỉ lễ · Bù {formatShortDateVN(occ.makeupNextDate)}
+          </span>
+        )}
+        {isMakeup && (
+          <span
+            className="qldt-status-pill"
+            style={{ background: "#f3e8ff", color: "#6d28d9", border: "1px solid #d8b4fe" }}
+          >
+            Dạy bù lễ
+          </span>
+        )}
+
+        <div className="qldt-course-time">
+          <span style={{ color: st.accent, display: "inline-flex", alignItems: "center" }}>
+            <Icon name="clock" size={12} />
+          </span>
+          <span>
+            {clock(ev.start)} → {clock(ev.end)}
+          </span>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <section className="card personal-calendar">
-      <div className="section-heading" style={{ flexWrap: "wrap", gap: "10px" }}>
-        <div>
-          <h2>⚙️ THỜI KHÓA BIỂU DẠNG TUẦN (Lịch khoa, Dạy ngoài & Lịch đi học)</h2>
-          <p>
-            Xem theo từng tuần thực tế giống cổng đào tạo HANU hoặc gộp toàn học kỳ · hỗ trợ xuất Excel cá nhân
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-          {token && (
+    <section className="card qldt-card personal-calendar">
+      {/* Row 1: Term Badge · Source Select · View Tabs (Tuần / Học kỳ) · Print & Excel */}
+      <div className="qldt-toolbar">
+        <div className="qldt-toolbar-row">
+          <div className="qldt-toolbar-group">
+            <span className="qldt-term-badge">
+              <Icon name="calendar" size={15} />
+              <span>{termName}</span>
+            </span>
+
+            <select
+              aria-label="Nguồn lịch cá nhân"
+              className="qldt-inline-select"
+              value={source}
+              onChange={(e) => setSource(e.target.value as "all" | "faculty" | "external")}
+            >
+              <option value="all">Thời khóa biểu cá nhân (Tất cả)</option>
+              <option value="faculty">Lịch giảng dạy tại Khoa ({published.length})</option>
+              <option value="external">Lịch ngoài khoa &amp; Đi học ({external.length})</option>
+            </select>
+
+            <div className="qldt-segmented" role="tablist" aria-label="Chế độ xem lịch cá nhân">
+              <button
+                type="button"
+                aria-pressed={view === "week"}
+                onClick={() => setView("week")}
+              >
+                <Icon name="term" size={14} />
+                <span>Thời khóa biểu dạng tuần</span>
+              </button>
+              <button
+                type="button"
+                aria-pressed={view === "semester"}
+                onClick={() => setView("semester")}
+              >
+                <Icon name="list" size={14} />
+                <span>Thời khóa biểu dạng học kỳ</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="qldt-toolbar-group">
             <button
               type="button"
+              className="qldt-action-btn"
+              onClick={() => window.print()}
+            >
+              <Icon name="printer" size={15} />
+              <span>In</span>
+            </button>
+            <button
+              type="button"
+              className="qldt-action-btn"
               disabled={busy || exporting || (published.length === 0 && external.length === 0)}
               onClick={() => void handleExportPersonal()}
-              style={{
-                background: "#0f766e",
-                borderColor: "#0f766e",
-                color: "#ffffff",
-                fontWeight: 600,
-                fontSize: "12px",
-              }}
             >
-              {exporting
-                ? "⏳ Đang xuất..."
-                : activeWeekObj
-                ? `📥 Xuất Excel Tuần ${activeWeekObj.weekNumber} (.xlsx)`
-                : "📥 Xuất Excel Cả Kỳ (.xlsx)"}
-            </button>
-          )}
-          <div className="segmented" aria-label="Chế độ xem lịch">
-            <button aria-pressed={view === "week"} onClick={() => setView("week")}>
-              Lịch tuần
-            </button>
-            <button aria-pressed={view === "list"} onClick={() => setView("list")}>
-              Danh sách
+              {exporting ? <Spinner size={14} /> : <Icon name="file-spreadsheet" size={15} />}
+              <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Thanh chọn Học kỳ + Loại lịch + Tuần chuẩn cổng đào tạo HANU */}
-      <div
-        style={{
-          background: "#f8fafc",
-          border: "1px solid #cbd5e1",
-          borderRadius: "10px",
-          padding: "12px 14px",
-          marginBottom: "14px",
-          display: "grid",
-          gap: "10px",
-        }}
-      >
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <div
-            style={{
-              flex: "1 1 240px",
-              padding: "7px 12px",
-              borderRadius: "6px",
-              border: "1px solid var(--line)",
-              background: "#ffffff",
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "#0f172a",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            🎓 {termName}
-          </div>
-          <select
-            aria-label="Nguồn lịch"
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-            style={{ flex: "1 1 220px", background: "#ffffff", fontWeight: 500 }}
-          >
-            <option value="all">Thời khóa biểu cá nhân (Tất cả lịch)</option>
-            <option value="faculty">Thời khóa biểu Khoa (Chính khóa)</option>
-            <option value="external">Lịch dạy ngoài, Đi học & Dạy bù</option>
-          </select>
-        </div>
-
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-          <select
-            aria-label="Chọn tuần học"
-            value={selectedWeek}
-            onChange={(e) => setSelectedWeek(e.target.value)}
-            style={{ flex: "1 1 360px", background: "#ffffff", fontWeight: 600, color: "#1e3a8a" }}
-          >
-            <option value="all">📅 Toàn học kỳ (Hiển thị gộp tất cả các tuần)</option>
-            {weeks.map((w) => {
-              const hits = getHolidaysInWeek(w, holidays);
-              return (
-                <option key={w.startIso} value={w.startIso}>
-                  {w.label}
-                  {hits.length > 0 ? ` · 🎌 ${hits.map((h) => h.name).join(", ")}` : ""}
-                </option>
-              );
-            })}
-          </select>
-
-          <div style={{ display: "flex", gap: "6px" }}>
-            <button
-              type="button"
-              disabled={selectedWeek === "all" ? weeks.length === 0 : currentWeekIdx <= 0}
-              onClick={() => {
-                if (selectedWeek === "all" && weeks.length) setSelectedWeek(weeks[0].startIso);
-                else if (currentWeekIdx > 0) setSelectedWeek(weeks[currentWeekIdx - 1].startIso);
-              }}
-              style={{ minHeight: "34px", padding: "4px 10px", fontSize: "12px" }}
-            >
-              ◀ Tuần trước
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const cur = findCurrentOrDefaultWeek(weeks);
-                setSelectedWeek(cur === "all" && weeks.length ? weeks[0].startIso : cur);
-              }}
-              style={{ minHeight: "34px", padding: "4px 10px", fontSize: "12px" }}
-            >
-              Hôm nay
-            </button>
-            <button
-              type="button"
-              disabled={selectedWeek !== "all" && currentWeekIdx >= weeks.length - 1}
-              onClick={() => {
-                if (selectedWeek === "all" && weeks.length) setSelectedWeek(weeks[0].startIso);
-                else if (currentWeekIdx >= 0 && currentWeekIdx < weeks.length - 1) {
-                  setSelectedWeek(weeks[currentWeekIdx + 1].startIso);
-                }
-              }}
-              style={{ minHeight: "34px", padding: "4px 10px", fontSize: "12px" }}
-            >
-              Tuần sau ▶
-            </button>
-          </div>
-        </div>
-
-        {holidayWeekChips.length > 0 && (
-          <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", fontSize: "11.5px" }}>
-            <span style={{ fontWeight: 600, color: "#92400e" }}>🎌 Xem nhanh tuần lễ trong kỳ:</span>
-            {holidayWeekChips.map(({ week: w, hits }) => {
-              const active = selectedWeek === w.startIso;
-              return (
-                <button
-                  key={w.startIso}
-                  type="button"
-                  onClick={() => setSelectedWeek(w.startIso)}
-                  style={{
-                    minHeight: "26px",
-                    padding: "2px 9px",
-                    fontSize: "11px",
-                    borderRadius: "999px",
-                    fontWeight: 600,
-                    background: active ? "#be123c" : "#fff1f2",
-                    borderColor: active ? "#be123c" : "#fda4af",
-                    color: active ? "#ffffff" : "#9f1239",
-                  }}
-                >
-                  Tuần {w.weekNumber}: {hits.map((h) => h.name).join(", ")}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {weekHolidays.length > 0 && (
-          <div
-            style={{
-              background: "#fff1f2",
-              border: "1px solid #fecdd3",
-              borderRadius: "8px",
-              padding: "8px 12px",
-              fontSize: "12px",
-              color: "#9f1239",
-            }}
-          >
-            <b>🎌 Nghỉ lễ trong tuần này:</b>{" "}
-            {weekHolidays
-              .map((h) => `${h.day === 8 ? "CN" : `Thứ ${h.day}`} (${formatShortDateVN(h.dateIso)}): ${h.name}`)
-              .join(" · ")}{" "}
-            — Các môn trùng ngày lễ được nghỉ và tự động đẩy học bù sang đúng Thứ &amp; Ca đó của tuần kế tiếp.
-          </div>
-        )}
-      </div>
-
-      <div className="calendar-toolbar" style={{ flexWrap: "wrap", gap: "10px" }}>
-        <div className="legend" style={{ flexWrap: "wrap", gap: "10px" }}>
-          {legendItems.map((item) => (
-            <span key={item.id} title={item.note || item.label}>
-              <i
-                className={item.className}
-                style={
-                  item.color
-                    ? {
-                        background: item.color,
-                        border: item.border ? `1px solid ${item.border}` : undefined,
-                      }
-                    : undefined
-                }
-              />{" "}
-              {item.label}
-            </span>
-          ))}
-        </div>
-        <small style={{ color: "var(--muted)", marginLeft: "auto" }}>
-          Đang hiển thị <b>{events.length}</b> buổi trong {activeWeekObj ? `Tuần ${activeWeekObj.weekNumber}` : "toàn kỳ"}
-        </small>
-      </div>
-
-      {!events.length ? (
-        <EmptyState title="Không có buổi dạy / lịch học trong tuần đã chọn">
-          Bạn có thể chuyển sang tuần khác, chọn &quot;Toàn học kỳ&quot;, hoặc khai báo/Import lịch dạy ngoài &amp; lịch đi học bên dưới.
-        </EmptyState>
-      ) : (
+      {view === "week" ? (
         <>
-          {view === "week" && (
-            <div
-              className="calendar-scroll calendar-expanded"
-              tabIndex={0}
-              aria-label="Lịch tuần đầy đủ khung giờ"
+          <div className="qldt-week-subbar">
+            <select
+              aria-label="Chọn tuần học"
+              className="qldt-week-select"
+              value={selectedWeek}
+              onChange={(e) => setSelectedWeek(e.target.value)}
             >
-              <div className="week-grid">
-                <div className="time-column">
-                  <div className="day-heading">Giờ</div>
-                  <div className="time-body">
-                    {Array.from({ length: 18 }, (_, i) => (
-                      <span key={i} style={{ top: i * 60 }}>
-                        {clock((i + 6) * 60)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                {Array.from({ length: 7 }, (_, i) => i + 2).map((day) => {
-                  const dayHol = selectedWeek !== "all" ? findHolidayOnDate(addDaysIso(selectedWeek, day - 2), holidays) : null;
-                  return (
-                  <section className="week-day" key={day}>
-                    <h3
-                      className="day-heading"
-                      style={dayHol ? { background: "#fff1f2", color: "#9f1239" } : undefined}
-                      title={dayHol ? `Nghỉ lễ: ${dayHol.name}` : undefined}
-                    >
-                      {dayHeaderWithDate(day, selectedWeek)}
-                      {dayHol && (
-                        <small style={{ display: "block", fontSize: "10px", fontWeight: 700, color: "#be123c" }}>
-                          🎌 {dayHol.name}
-                        </small>
-                      )}
-                    </h3>
-                    <div className="day" style={dayHol ? { background: "rgba(255, 241, 242, 0.35)" } : undefined}>
-                      {events
-                        .filter((e) => e.day === day)
-                        .map((event) => {
-                          const sameDay = events.filter((e) => e.day === day);
-                          const group = new Set([event.id]);
-                          let growing = true;
-                          while (growing) {
-                            growing = false;
-                            for (const item of sameDay) {
-                              if (
-                                !group.has(item.id) &&
-                                sameDay.some((other) => group.has(other.id) && overlaps(item, other))
-                              ) {
-                                group.add(item.id);
-                                growing = true;
-                              }
-                            }
-                          }
-                          const cluster = sameDay.filter((e) => group.has(e.id));
-                          const lane = cluster.findIndex((e) => e.id === event.id);
-                          const st = getEventStyle(event);
-                          const dtBadge = renderDateBadge(event);
-                          const occ = event._occ;
-                          const isHolOff = occ.status === "HOLIDAY_OFF";
-                          const isMakeupShift = occ.status === "SHIFTED_NEXT_WEEK" || occ.status === "MAKEUP_EXTENSION";
-                          const effStart = occ.effectiveStartDate || event.start_date;
-                          const effEnd = occ.effectiveEndDate || event.end_date;
-                          const dayLabelShort = day === 8 ? "CN" : `Thứ ${day}`;
+              {weeks.map((w) => {
+                const hits = getHolidaysInWeek(w, holidays);
+                return (
+                  <option key={w.startIso} value={w.startIso}>
+                    {w.label}
+                    {hits.length > 0 ? ` · Nghỉ lễ: ${hits.map((h) => h.name).join(", ")}` : ""}
+                  </option>
+                );
+              })}
+              <option value="all">Mẫu tuần chuẩn toàn kỳ (Gộp các tuần)</option>
+            </select>
 
-                          return (
-                            <article
-                              key={event.id}
-                              title={[
-                                `${event.course || event.id}`,
-                                event.institution ? `Đơn vị: ${event.institution}` : "Khoa CNTT",
-                                event.activity_type ? `Loại: ${getActivityLabel(event.activity_type)}` : "",
-                                `Giờ: ${clock(event.start)} – ${clock(event.end)}`,
-                                `Phòng: ${event.room_id || event.room || "Chưa có"}`,
-                                effStart || effEnd
-                                  ? `Thời gian thực học: ${formatDateVN(effStart)} → ${formatDateVN(effEnd)}${occ.extraWeeks > 0 ? ` (+${occ.extraWeeks} tuần bù lễ ${occ.holidayName})` : ""}`
-                                  : "",
-                                isHolOff
-                                  ? `🎌 Nghỉ lễ: ${occ.holidayName} → Học bù ${dayLabelShort} tuần sau (${formatDateVN(occ.makeupNextDate)})`
-                                  : "",
-                                isMakeupShift ? `🔄 Buổi học bù lễ: ${occ.holidayName}` : "",
-                                event.note || st.ruleNote ? `Note: ${[event.note, st.ruleNote].filter(Boolean).join(" · ")}` : "",
-                              ]
-                                .filter(Boolean)
-                                .join("\n")}
-                              className={
-                                "calendar-event " +
-                                (event.isExternal ? "external-event " : "") +
-                                (conflict(event) && !isHolOff ? "conflict-event" : "")
-                              }
-                              style={{
-                                top: event.start - 360,
-                                height: Math.max(28, event.end - event.start),
-                                left: "calc(" + (lane / cluster.length) * 100 + "% + 3px)",
-                                width: "calc(" + 100 / cluster.length + "% - 6px)",
-                                ...(st.bg ? { background: st.bg, borderColor: st.border, color: st.text } : {}),
-                                ...(isHolOff
-                                  ? {
-                                      background: "#fff1f2",
-                                      borderColor: "#fb7185",
-                                      borderStyle: "dashed",
-                                      color: "#9f1239",
-                                      opacity: 0.92,
-                                    }
-                                  : {}),
-                              }}
-                            >
-                              <b>{event.course}</b>
-                              <small>
-                                {clock(event.start)}–{clock(event.end)} · {event.room_id || event.room || "Chưa có phòng"}
-                              </small>
-                              {isHolOff ? (
-                                <strong style={{ color: "#be123c", fontSize: "10.5px" }}>
-                                  🎌 Nghỉ lễ ({occ.holidayName}) → Bù {dayLabelShort} tuần sau ({formatShortDateVN(occ.makeupNextDate)})
-                                </strong>
-                              ) : isMakeupShift ? (
-                                <strong style={{ color: "#6d28d9", fontSize: "10.5px" }}>
-                                  🔄 Học bù lễ {occ.holidayName}
-                                  {occ.sessionNumber && occ.totalSessions ? ` (Buổi ${occ.sessionNumber}/${occ.totalSessions})` : ""}
-                                </strong>
-                              ) : (
-                                <small>
-                                  {event.isExternal
-                                    ? `${getActivityLabel(event.activity_type)} · ${event.institution}`
-                                    : event.id}
-                                </small>
-                              )}
-                              {dtBadge && <small>📅 {dtBadge}</small>}
-                              {(event.note || st.ruleNote) && <small>📝 {event.note || st.ruleNote}</small>}
-                              {conflict(event) && !isHolOff && <strong>Cần đổi lịch ngoài</strong>}
-                            </article>
-                          );
-                        })}
-                    </div>
-                  </section>
-                  );
-                })}
+            <div className="qldt-subbar-controls">
+              <label className="qldt-evening-toggle">
+                <input
+                  type="checkbox"
+                  checked={showEvening}
+                  onChange={(e) => setShowEvening(e.target.checked)}
+                />
+                <span>Thời khóa biểu tối</span>
+              </label>
+
+              <div className="qldt-legend">
+                {legendItems.map((item) => (
+                  <span key={item.id} className="qldt-legend-item">
+                    <span
+                      className="qldt-legend-swatch"
+                      style={{ background: item.bg, border: `1.5px solid ${item.border}` }}
+                    />
+                    {item.label}
+                  </span>
+                ))}
               </div>
             </div>
-          )}
+          </div>
 
-          <div className={view === "week" ? "agenda mobile-agenda" : "agenda"}>
-            {Array.from(new Set(events.map((e) => e.day))).map((day) => (
-              <section key={day}>
-                <h3>{selectedWeek === "all" ? dayName(day) : dayHeaderWithDate(day, selectedWeek)}</h3>
-                {events
-                  .filter((e) => e.day === day)
-                  .map((e) => {
-                    const occ = e._occ;
-                    const isHolOff = occ.status === "HOLIDAY_OFF";
-                    const isMakeupShift = occ.status === "SHIFTED_NEXT_WEEK" || occ.status === "MAKEUP_EXTENSION";
-                    const effStart = occ.effectiveStartDate || e.start_date;
-                    const effEnd = occ.effectiveEndDate || e.end_date;
-                    const dTxt = day === 8 ? "CN" : `Thứ ${day}`;
-                    return (
-                      <article
-                        className={conflict(e) && !isHolOff ? "agenda-event conflict-event" : "agenda-event"}
-                        key={e.id}
-                        style={isHolOff ? { background: "#fff1f2", borderColor: "#fecdd3" } : undefined}
+          {published.length === 0 && external.length === 0 ? (
+            <EmptyState title="Chưa có lịch giảng dạy hoặc lịch cá nhân">
+              <span>
+                Lịch khoa sẽ tự động hiển thị sau khi Giáo vụ công bố. Bạn có thể khai báo trước lịch dạy ngoài hoặc lịch đi học để bộ giải tránh xếp trùng.
+              </span>
+              {onOpenExternalTab && (
+                <div style={{ marginTop: "10px" }}>
+                  <ActionButton
+                    type="button"
+                    variant="primary"
+                    icon="plus"
+                    onClick={onOpenExternalTab}
+                  >
+                    Khai báo lịch ngoài khoa
+                  </ActionButton>
+                </div>
+              )}
+            </EmptyState>
+          ) : (
+            <div className="qldt-week-wrap">
+              <table className="qldt-week-table" role="table">
+                <thead>
+                  <tr>
+                    <th className="qldt-nav-col-left">
+                      <button
+                        type="button"
+                        className="qldt-week-arrow-btn"
+                        aria-label="Tuần trước"
+                        disabled={selectedWeek !== "all" && currentWeekIdx <= 0}
+                        onClick={handlePrevWeek}
+                        title="Tuần trước"
                       >
-                        <time>
-                          {clock(e.start)}
-                          <small>{clock(e.end)}</small>
-                        </time>
-                        <div>
-                          <b>{e.course}</b>
-                          <small>
-                            {e.class_name || e.id} · {e.room_id || e.room || "Chưa có phòng"}
-                          </small>
-                          <small>
-                            {e.institution || "Lịch khoa chính thức"}
-                            {(effStart || effEnd)
-                              ? ` · 📅 ${formatDateVN(effStart)} → ${formatDateVN(effEnd)}${occ.extraWeeks > 0 ? ` (+${occ.extraWeeks}t bù lễ)` : ""}`
-                              : ""}
-                            {isHolOff
-                              ? ` · 🎌 Nghỉ lễ ${occ.holidayName} → Học bù ${dTxt} tuần sau (${formatDateVN(occ.makeupNextDate)})`
-                              : isMakeupShift
-                              ? ` · 🔄 Học bù lễ ${occ.holidayName}`
-                              : ""}
-                            {e.note ? ` · 📝 ${e.note}` : ""}
-                          </small>
-                        </div>
-                        <span
-                          className={
-                            "badge " +
-                            (isHolOff
-                              ? "warning"
-                              : conflict(e)
-                              ? "warning"
-                              : isMakeupShift
-                              ? "neutral"
-                              : e.isExternal
-                              ? "neutral"
-                              : "success")
-                          }
+                        <Icon name="arrow-left" size={16} />
+                      </button>
+                    </th>
+
+                    {weekDays.map((d) => {
+                      const dayIso = selectedWeek !== "all" ? addDaysIso(selectedWeek, d - 2) : "";
+                      const shortDate = dayIso ? formatShortDateVN(dayIso) : "";
+                      const dayHol = dayIso ? findHolidayOnDate(dayIso, holidays) : null;
+                      const dayLabel = d === 8 ? "Chủ Nhật" : `Thứ ${d}`;
+                      return (
+                        <th
+                          key={d}
+                          style={dayHol ? { background: "#fff1f2", color: "#9f1239" } : undefined}
                         >
-                          {isHolOff
-                            ? "🎌 Nghỉ lễ (Bù tuần sau)"
-                            : conflict(e)
-                            ? "Trùng lịch"
-                            : isMakeupShift
-                            ? "🔄 Học bù lễ"
-                            : e.isExternal
-                            ? getActivityLabel(e.activity_type)
+                          <span>{dayLabel}</span>
+                          {shortDate && <span className="qldt-day-header-date">({shortDate})</span>}
+                          {dayHol && (
+                            <span className="qldt-day-holiday-tag" title={dayHol.name}>
+                              {dayHol.name}
+                            </span>
+                          )}
+                        </th>
+                      );
+                    })}
+
+                    <th className="qldt-nav-col-right">
+                      <button
+                        type="button"
+                        className="qldt-week-arrow-btn"
+                        aria-label="Tuần sau"
+                        disabled={selectedWeek !== "all" && currentWeekIdx >= weeks.length - 1}
+                        onClick={handleNextWeek}
+                        title="Tuần sau"
+                      >
+                        <Icon name="arrow-right" size={16} />
+                      </button>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {visiblePeriodRows.map((pRow) => (
+                    <tr key={pRow.period}>
+                      <td className="qldt-period-cell">{pRow.label}</td>
+
+                      {weekDays.map((d) => {
+                        const dayMap = dayClusterMaps.get(d);
+                        const cellState = dayMap?.get(pRow.period);
+                        if (cellState?.type === "covered") return null;
+
+                        const dayIso = selectedWeek !== "all" ? addDaysIso(selectedWeek, d - 2) : "";
+                        const isHolCol = Boolean(dayIso && findHolidayOnDate(dayIso, holidays));
+
+                        if (!cellState) {
+                          return (
+                            <td
+                              key={d}
+                              className={`qldt-day-cell${isHolCol ? " is-holiday-col" : ""}${
+                                pRow.evening ? " is-evening-row" : ""
+                              }`}
+                            />
+                          );
+                        }
+
+                        const { cluster } = cellState;
+                        return (
+                          <td
+                            key={d}
+                            rowSpan={cluster.rowSpan}
+                            className={`qldt-day-cell${isHolCol ? " is-holiday-col" : ""}${
+                              pRow.evening ? " is-evening-row" : ""
+                            }`}
+                          >
+                            {cluster.events.length <= 2 ? (
+                              <div
+                                className="qldt-slot-grid"
+                                data-count={String(cluster.events.length)}
+                              >
+                                {cluster.events.map((ev) => renderPersonalBlock(ev))}
+                              </div>
+                            ) : (
+                              <div className="qldt-dense-cluster">
+                                {cluster.events.slice(0, 2).map((ev) => {
+                                  const st = getEventStyle(ev);
+                                  return (
+                                    <div
+                                      key={ev.id}
+                                      className="qldt-compact-chip"
+                                      style={{
+                                        background: st.bg,
+                                        borderLeftColor: st.border,
+                                        color: st.text,
+                                      }}
+                                    >
+                                      <span>
+                                        <b>{ev.course || ev.id}</b> · {ev.room_id || ev.room || "—"}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                                <button
+                                  type="button"
+                                  className="qldt-more-btn"
+                                  onClick={() =>
+                                    setSlotModal({
+                                      day: d,
+                                      periodLabel: `Tiết ${cluster.startPeriod} – ${cluster.endPeriod}`,
+                                      items: cluster.events,
+                                    })
+                                  }
+                                >
+                                  + Xem tất cả {cluster.events.length} buổi
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+
+                      <td className="qldt-clock-cell">{pRow.clockLabel}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Mode 2: Thời khóa biểu dạng học kỳ */
+        !events.length ? (
+          <EmptyState title="Chưa có dữ liệu lịch trong học kỳ">
+            Hãy khai báo lịch ngoài khoa hoặc chờ lịch chính khóa được công bố.
+          </EmptyState>
+        ) : (
+          <div className="qldt-semester-wrap">
+            <table className="qldt-semester-table" role="table">
+              <thead>
+                <tr>
+                  <th style={{ width: "130px" }}>Mã MH / Hoạt động</th>
+                  <th>Đơn vị / Tên môn</th>
+                  <th style={{ width: "120px" }}>Lớp / Nhóm</th>
+                  <th style={{ width: "130px" }}>Phân loại</th>
+                  <th className="col-center" style={{ width: "54px" }}>
+                    Thứ
+                  </th>
+                  <th className="col-center" style={{ width: "76px" }}>
+                    Tiết BĐ
+                  </th>
+                  <th className="col-center" style={{ width: "130px" }}>
+                    Số tiết / Khung giờ
+                  </th>
+                  <th style={{ width: "100px" }}>Phòng</th>
+                  <th style={{ width: "120px" }}>Thời gian học</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((ev, idx) => {
+                  const mp = mapEventToPeriods(ev, periodRows);
+                  const st = getEventStyle(ev);
+                  const effStart = ev._occ.effectiveStartDate || termStartIso;
+                  const effEnd = ev._occ.effectiveEndDate || termEndIso;
+                  const hasConflict = isConflict(ev);
+
+                  return (
+                    <tr
+                      key={ev.id}
+                      className={`${idx % 2 === 0 ? "group-even" : "group-odd"} group-last`}
+                    >
+                      <td style={{ fontWeight: 700 }}>{ev.course || ev.id}</td>
+                      <td>
+                        <div>
+                          {ev.isExternal
+                            ? ev.institution || "Đơn vị ngoài"
+                            : ev.course_name || "Khoa CNTT (Chính khóa)"}
+                        </div>
+                        {ev.note && (
+                          <small style={{ color: "var(--muted)", display: "block" }}>{ev.note}</small>
+                        )}
+                      </td>
+                      <td>{ev.class_name || ev.section || ev.id}</td>
+                      <td>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "2px 7px",
+                            borderRadius: "4px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            background: st.bg,
+                            border: `1px solid ${st.border}`,
+                            color: st.text,
+                          }}
+                        >
+                          {hasConflict
+                            ? "Trùng lịch khoa"
+                            : ev.isExternal
+                            ? getActivityLabel(ev.activity_type)
                             : "Lịch khoa"}
                         </span>
-                      </article>
-                    );
-                  })}
-              </section>
-            ))}
+                      </td>
+                      <td className="col-center">{ev.day === 8 ? "CN" : ev.day}</td>
+                      <td className="col-center">{mp.startPeriod}</td>
+                      <td className="col-center">
+                        <b>{mp.spanPeriods} tiết</b>
+                        <small style={{ display: "block", color: "var(--muted)" }}>
+                          {clock(ev.start)} – {clock(ev.end)}
+                        </small>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{ev.room_id || ev.room || "—"}</td>
+                      <td>
+                        <div className="qldt-date-stack">
+                          <span>{formatDateVN(effStart)}</span>
+                          <span>{formatDateVN(effEnd)}</span>
+                        </div>
+                        {ev._occ.extraWeeks > 0 && (
+                          <span className="qldt-makeup-tag">+{ev._occ.extraWeeks} tuần bù lễ</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </>
+        )
       )}
-      <p className="inline-help">
-        Lịch ngoài trường &amp; lịch đi học được dùng để hệ thống tránh xếp trùng khi Giáo vụ chạy bộ giải; sau khi công bố, lịch khoa luôn giữ quyền ưu tiên cao nhất.
-      </p>
+
+      {slotModal && (
+        <div className="modal-overlay" onClick={() => setSlotModal(null)}>
+          <div
+            className="modal-card"
+            style={{ maxWidth: "660px", maxHeight: "85vh", display: "flex", flexDirection: "column" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div>
+                <h3 style={{ margin: 0 }}>
+                  {dayHeaderWithDate(slotModal.day, selectedWeek)} · {slotModal.periodLabel}
+                </h3>
+                <p style={{ margin: "4px 0 0", fontSize: "12.5px", color: "var(--muted)" }}>
+                  {slotModal.items.length} hoạt động trong khung này
+                </p>
+              </div>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setSlotModal(null)}
+                aria-label="Đóng"
+              >
+                <Icon name="x" size={18} />
+              </button>
+            </div>
+            <div
+              style={{
+                flex: "1 1 auto",
+                minHeight: 0,
+                overflowY: "auto",
+                padding: "12px 2px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gridAutoRows: "max-content",
+                alignContent: "start",
+                gap: "10px",
+              }}
+            >
+              {slotModal.items.map((ev) => renderPersonalBlock(ev))}
+            </div>
+            <div className="actions" style={{ justifyContent: "flex-end", marginTop: "14px" }}>
+              <button type="button" className="primary" onClick={() => setSlotModal(null)}>
+                Đóng cửa sổ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

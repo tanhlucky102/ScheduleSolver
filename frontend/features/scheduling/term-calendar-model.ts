@@ -1,5 +1,13 @@
 import { clock } from "../shared/time";
-import type { Event, ColorRule, ShiftRule } from "./term-calendar-types";
+import type {
+  Event,
+  ColorRule,
+  ShiftRule,
+  PeriodConfigInput,
+  PeriodRow,
+  MappedPeriodRange,
+  PeriodCluster,
+} from "./term-calendar-types";
 import type { Workspace } from "../workspace/types";
 
 export function calcShiftDuration(
@@ -44,6 +52,262 @@ export function buildTimeSlots(shiftRules?: ShiftRule[]) {
   }));
 }
 
+function parsePeriodRangeFromLabel(label?: string): [number, number] | null {
+  if (!label) return null;
+  const m = label.match(/tiết\s*(\d{1,2})(?:\s*[-–—~]\s*(\d{1,2}))?/i);
+  if (!m) return null;
+  const p1 = Number(m[1]);
+  const p2 = m[2] ? Number(m[2]) : p1;
+  if (!Number.isFinite(p1) || p1 < 1 || p1 > 15) return null;
+  const clampedEnd = Math.max(p1, Math.min(15, Number.isFinite(p2) ? p2 : p1));
+  return [p1, clampedEnd];
+}
+
+export function buildPeriodRows(
+  shiftRules?: ShiftRule[],
+  periodConfig?: PeriodConfigInput
+): PeriodRow[] {
+  const pMin = Math.max(15, Math.round(periodConfig?.period_minutes ?? 50));
+  const gap = Math.max(0, Math.round(periodConfig?.inter_shift_gap ?? 15));
+  const shiftDur = calcShiftDuration(2.5, pMin, 0, false);
+
+  const sortedShifts = shiftRules && shiftRules.length > 0
+    ? [...shiftRules].sort((a, b) => a.start - b.start)
+    : [];
+
+  const morningShifts = sortedShifts.filter((s) => !s.evening && s.start < 720);
+  const afternoonShifts = sortedShifts.filter((s) => !s.evening && s.start >= 720 && s.start < 1010);
+  const eveningShifts = sortedShifts.filter((s) => Boolean(s.evening) || s.start >= 1010);
+
+  // Anchor Morning (Tiết 3–6), Afternoon (Tiết 7–10), Evening (Tiết 11–15) to canonical HANU QLĐT slots
+  const p3Start = morningShifts[0]?.start ?? periodConfig?.first_period_start ?? 430; // 07:10
+  const p4Start = p3Start + pMin; // 08:00
+  const p4End = morningShifts[0]?.end && morningShifts[0].end > p4Start ? morningShifts[0].end : p3Start + shiftDur; // 09:15
+
+  const defaultM2Start = p4End + gap; // 09:30
+  const p5Start =
+    morningShifts[1] && morningShifts[1].start >= p4Start + 30
+      ? morningShifts[1].start
+      : defaultM2Start;
+  const p6Start = p5Start + pMin; // 10:20
+  const p6End = morningShifts[1]?.end && morningShifts[1].end > p6Start ? morningShifts[1].end : p5Start + shiftDur; // 11:35
+
+  const aftAnchor = periodConfig?.afternoon_start ?? 740; // 12:20
+  const p7Start = afternoonShifts[0]?.start ?? Math.max(aftAnchor, p6End + gap);
+  const p8Start = p7Start + pMin; // 13:10
+  const p8End = afternoonShifts[0]?.end && afternoonShifts[0].end > p8Start ? afternoonShifts[0].end : p7Start + shiftDur; // 14:25
+
+  const defaultA2Start = p8End + gap; // 14:40
+  const p9Start =
+    afternoonShifts[1] && afternoonShifts[1].start >= p8Start + 30
+      ? afternoonShifts[1].start
+      : defaultA2Start;
+  const p10Start = p9Start + pMin; // 15:30
+  const p10End = afternoonShifts[1]?.end && afternoonShifts[1].end > p10Start ? afternoonShifts[1].end : p9Start + shiftDur; // 16:45
+
+  const eveAnchor = periodConfig?.evening_start ?? 1030; // 17:10
+  const p11Start = eveningShifts[0]?.start ?? Math.max(eveAnchor, p10End + gap);
+  const p12Start = p11Start + pMin; // 18:00
+  const p12End = eveningShifts[0]?.end && eveningShifts[0].end > p12Start ? eveningShifts[0].end : p11Start + shiftDur; // 19:15
+
+  const defaultE2Start = p12End + gap; // 19:30
+  const p13Start =
+    eveningShifts[1] && eveningShifts[1].start >= p12Start + 30
+      ? eveningShifts[1].start
+      : defaultE2Start;
+  const p14Start = p13Start + pMin; // 20:20
+  const p14End = Math.min(
+    1440,
+    eveningShifts[1]?.end && eveningShifts[1].end > p14Start ? eveningShifts[1].end : p13Start + shiftDur
+  );
+  const p15Start = Math.min(1410, p14Start + pMin); // 21:10
+  const p15End = Math.min(1440, p15Start + pMin);
+
+  const p2Start = Math.max(0, p3Start - pMin); // 06:20
+  const p1Start = Math.max(0, p2Start - pMin); // 05:30
+
+  const schedule: [number, number, boolean][] = [
+    [p1Start, p2Start, false],
+    [p2Start, p3Start, false],
+    [p3Start, p4Start, false],
+    [p4Start, p4End, false],
+    [p5Start, p6Start, false],
+    [p6Start, p6End, false],
+    [p7Start, p8Start, false],
+    [p8Start, p8End, false],
+    [p9Start, p10Start, false],
+    [p10Start, p10End, false],
+    [p11Start, p12Start, true],
+    [p12Start, p12End, true],
+    [p13Start, p14Start, true],
+    [p14Start, p14End, true],
+    [p15Start, p15End, true],
+  ];
+
+  // Respect explicit "Tiết X – Y" overrides if configured by staff
+  for (const sh of sortedShifts) {
+    const explicit = parsePeriodRangeFromLabel(sh.periods_label) || parsePeriodRangeFromLabel(sh.label);
+    if (!explicit) continue;
+    const [sP, eP] = explicit;
+    const count = eP - sP + 1;
+    for (let k = 0; k < count; k++) {
+      const idx = sP + k - 1;
+      if (idx < 0 || idx >= 15) continue;
+      const st = sh.start + k * pMin;
+      const en = k === count - 1 ? Math.max(st + 20, sh.end) : Math.min(sh.end, st + pMin);
+      schedule[idx] = [st, en, Boolean(sh.evening) || idx >= 10];
+    }
+  }
+
+  return schedule.map(([st, en, eve], idx) => ({
+    period: idx + 1,
+    label: `Tiết ${idx + 1}`,
+    start: st,
+    end: Math.max(st + 15, en),
+    clockLabel: clock(st),
+    evening: eve,
+  }));
+}
+
+export function mapEventToPeriods(
+  event: { start: number; end: number; periods?: number },
+  periodRows: PeriodRow[]
+): MappedPeriodRange {
+  const rows = periodRows.length ? periodRows : buildPeriodRows();
+
+  // Find the canonical starting period whose start time best matches or contains event.start
+  let bestIdx = 0;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const dist = Math.abs(event.start - r.start);
+    // Slight preference if event.start falls inside [r.start - 5, r.end - 10]
+    const insideBonus = event.start >= r.start - 5 && event.start < r.end - 10 ? -8 : 0;
+    const score = dist + insideBonus;
+    if (score < bestScore) {
+      bestScore = score;
+      bestIdx = i;
+    }
+  }
+
+  const startPeriod = rows[bestIdx].period;
+
+  // If explicit academic period count is known (e.g., 2 tiết for LEC/TUT, 3 tiết for COMBINED),
+  // use it directly so standard 2-period shifts map cleanly to Tiết 3–4, 5–6, 7–8, 9–10, 11–12.
+  if (event.periods && Number.isFinite(event.periods) && event.periods >= 1) {
+    const span = Math.max(1, Math.min(15 - startPeriod + 1, Math.round(event.periods)));
+    return {
+      startPeriod,
+      endPeriod: startPeriod + span - 1,
+      spanPeriods: span,
+    };
+  }
+
+  const overlapping = rows.filter(
+    (r) => r.period >= startPeriod && Math.min(event.end, r.end) - Math.max(event.start, r.start) >= 15
+  );
+  if (overlapping.length > 0) {
+    const endPeriod = overlapping[overlapping.length - 1].period;
+    return {
+      startPeriod,
+      endPeriod,
+      spanPeriods: Math.max(1, endPeriod - startPeriod + 1),
+    };
+  }
+
+  const estSpan = Math.max(
+    1,
+    Math.min(15 - startPeriod + 1, Math.round((event.end - event.start) / 55) || 2)
+  );
+  return {
+    startPeriod,
+    endPeriod: startPeriod + estSpan - 1,
+    spanPeriods: estSpan,
+  };
+}
+
+export function buildDayPeriodClusters<T extends { start: number; end: number; periods?: number; id: string }>(
+  dayEvents: T[],
+  periodRows: PeriodRow[],
+  maxPeriod: number
+): Map<number, { type: "cluster"; cluster: PeriodCluster<T> } | { type: "covered" }> {
+  const mapped = dayEvents
+    .map((ev) => {
+      const range = mapEventToPeriods(ev, periodRows);
+      return {
+        ev,
+        startPeriod: Math.max(1, range.startPeriod),
+        endPeriod: Math.min(maxPeriod, range.endPeriod),
+      };
+    })
+    .filter((item) => item.startPeriod <= maxPeriod && item.startPeriod <= item.endPeriod)
+    .sort(
+      (a, b) =>
+        a.startPeriod - b.startPeriod ||
+        b.endPeriod - a.endPeriod ||
+        a.ev.start - b.ev.start ||
+        a.ev.id.localeCompare(b.ev.id)
+    );
+
+  const clusters: PeriodCluster<T>[] = [];
+  for (const item of mapped) {
+    const last = clusters[clusters.length - 1];
+    if (last && item.startPeriod <= last.endPeriod) {
+      last.endPeriod = Math.max(last.endPeriod, item.endPeriod);
+      last.rowSpan = last.endPeriod - last.startPeriod + 1;
+      last.events.push(item.ev);
+    } else {
+      clusters.push({
+        startPeriod: item.startPeriod,
+        endPeriod: item.endPeriod,
+        rowSpan: item.endPeriod - item.startPeriod + 1,
+        events: [item.ev],
+      });
+    }
+  }
+
+  const cellMap = new Map<number, { type: "cluster"; cluster: PeriodCluster<T> } | { type: "covered" }>();
+  for (const c of clusters) {
+    cellMap.set(c.startPeriod, { type: "cluster", cluster: c });
+    for (let p = c.startPeriod + 1; p <= c.endPeriod; p++) {
+      cellMap.set(p, { type: "covered" });
+    }
+  }
+  return cellMap;
+}
+
+export function getQldtBlockPalette(
+  e: Event,
+  colorRules?: ColorRule[]
+): { bg: string; border: string; text: string; accent: string } {
+  const occ = e._occ;
+  if (occ?.status === "HOLIDAY_OFF") {
+    return { bg: "#fff1f2", border: "#fb7185", text: "#881337", accent: "#be123c" };
+  }
+  if (occ?.status === "SHIFTED_NEXT_WEEK" || occ?.status === "MAKEUP_EXTENSION" || e.activity_type === "MAKEUP") {
+    return { bg: "#ede9fe", border: "#7c3aed", text: "#2e1065", accent: "#6d28d9" };
+  }
+  const kindUp = (e.kind || "").toUpperCase();
+  const customKind = (colorRules ?? []).find(
+    (r) => r.category === "KIND" && r.key.toUpperCase() === kindUp
+  );
+  if (customKind) {
+    return {
+      bg: customKind.bg_color,
+      border: customKind.border_color,
+      text: customKind.text_color,
+      accent: customKind.border_color,
+    };
+  }
+  if (kindUp === "TUT") {
+    return { bg: "#fce8ea", border: "#c53030", text: "#3b0d11", accent: "#c53030" };
+  }
+  if (kindUp === "COMBINED") {
+    return { bg: "#ede9fe", border: "#7c3aed", text: "#2e1065", accent: "#6d28d9" };
+  }
+  return { bg: "#dceefb", border: "#2b6cb0", text: "#0f2942", accent: "#b91c1c" };
+}
+
 export function getProgramType(e: Event): "CLC" | "TT" | "MME" | "STANDARD" {
   const course = (e.course || "").toUpperCase();
   const id = (e.id || "").toUpperCase();
@@ -67,13 +331,13 @@ export const DEFAULT_COLOR_RULES: ColorRule[] = [
   { id: "prog-tt", category: "PROGRAM", key: "TT", label: "Hệ Tiên tiến (TT / 66FIT)", bg_color: "#d1fae5", border_color: "#6ee7b7", text_color: "#065f46", note: "Giảng dạy 100% tiếng Anh" },
   { id: "prog-mme", category: "PROGRAM", key: "MME", label: "Truyền thông ĐPT (MME)", bg_color: "#ffedd5", border_color: "#fed7aa", text_color: "#7c2d12", note: "Cần phòng đồ họa cấu hình cao" },
   { id: "prog-std", category: "PROGRAM", key: "STANDARD", label: "Hệ Đại trà tiêu chuẩn", bg_color: "#ffffff", border_color: "#cbd5e1", text_color: "#0f172a", note: "Chương trình chuẩn Khoa CNTT" },
-  { id: "kind-lec", category: "KIND", key: "LEC", label: "Buổi Lý thuyết (LEC)", bg_color: "#e0e7ff", border_color: "#a5b4fc", text_color: "#3730a3", note: "Phòng máy chiếu sức chứa lớn" },
-  { id: "kind-tut", category: "KIND", key: "TUT", label: "Buổi Thực hành (TUT)", bg_color: "#fce7f3", border_color: "#f9a8d4", text_color: "#9d174d", note: "Phòng máy tính chia nhóm nhỏ" },
-  { id: "kind-comb", category: "KIND", key: "COMBINED", label: "Buổi Gộp LT + TH", bg_color: "#ede9fe", border_color: "#c4b5fd", text_color: "#5b21b6", note: "Học liền mạch Lý thuyết & Thực hành" },
+  { id: "kind-lec", category: "KIND", key: "LEC", label: "Buổi Lý thuyết (LEC)", bg_color: "#dceefb", border_color: "#2b6cb0", text_color: "#0f2942", note: "Phòng máy chiếu sức chứa lớn" },
+  { id: "kind-tut", category: "KIND", key: "TUT", label: "Buổi Thực hành (TUT)", bg_color: "#fce8ea", border_color: "#c53030", text_color: "#3b0d11", note: "Phòng máy tính chia nhóm nhỏ" },
+  { id: "kind-comb", category: "KIND", key: "COMBINED", label: "Buổi Gộp LT + TH", bg_color: "#ede9fe", border_color: "#7c3aed", text_color: "#2e1065", note: "Học liền mạch Lý thuyết & Thực hành" },
   { id: "st-evening", category: "STATUS", key: "EVENING", label: "Thời khóa biểu tối", bg_color: "#e0f2fe", border_color: "#38bdf8", text_color: "#0369a1", note: "Ca học từ sau 16:55" },
-  { id: "st-makeup", category: "STATUS", key: "MAKEUP", label: "Lịch Dạy bù", bg_color: "#f3e8ff", border_color: "#c084fc", text_color: "#6b21a8", note: "Buổi dạy bù nghỉ lễ / công tác" },
-  { id: "st-study", category: "STATUS", key: "STUDYING", label: "Lịch Đi học / NCS", bg_color: "#dcfce7", border_color: "#86efac", text_color: "#166534", note: "Giảng viên đi học cao học / NCS / bồi dưỡng" },
-  { id: "st-conflict", category: "STATUS", key: "CONFLICT", label: "Cảnh báo Trùng lịch", bg_color: "#fef3c7", border_color: "#f59e0b", text_color: "#92400e", note: "Cần điều chỉnh ngay để tránh đụng giờ" },
+  { id: "st-makeup", category: "STATUS", key: "MAKEUP", label: "Lịch Dạy bù", bg_color: "#f3e8ff", border_color: "#9333ea", text_color: "#581c87", note: "Buổi dạy bù nghỉ lễ / công tác" },
+  { id: "st-study", category: "STATUS", key: "STUDYING", label: "Lịch Đi học / NCS", bg_color: "#dcfce7", border_color: "#16a34a", text_color: "#14532d", note: "Giảng viên đi học cao học / NCS / bồi dưỡng" },
+  { id: "st-conflict", category: "STATUS", key: "CONFLICT", label: "Cảnh báo Trùng lịch", bg_color: "#fef3c7", border_color: "#d97706", text_color: "#78350f", note: "Cần điều chỉnh ngay để tránh đụng giờ" },
 ];
 
 export function resolveRule(

@@ -8,6 +8,7 @@ from ..templates import (
     build_plan_template_xlsx,
     build_external_template_xlsx,
     build_teachers_template_csv,
+    build_capabilities_template_csv,
     build_rooms_template_csv,
     preview_external_file,
 )
@@ -37,6 +38,12 @@ def download_template(kind: str):
             build_teachers_template_csv(),
             media_type=csv_mime,
             headers={"Content-Disposition": "attachment; filename=Mau_Nhan_Su_Giang_Vien.csv"},
+        )
+    if kind == "capabilities":
+        return Response(
+            build_capabilities_template_csv(),
+            media_type=csv_mime,
+            headers={"Content-Disposition": "attachment; filename=Mau_Nang_Luc_Giang_Vien.csv"},
         )
     if kind == "rooms":
         return Response(

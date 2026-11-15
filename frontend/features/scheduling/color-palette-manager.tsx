@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Icon, ActionButton } from "../shared/ui";
 import type { ColorRule } from "../catalog/types";
 
 const SIMPLE_STARTER_EXAMPLES: ColorRule[] = [
@@ -105,21 +106,25 @@ export function ColorPaletteManager({
     <section className="card">
       <div className="section-heading" style={{ flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
         <div>
-          <h2>🎨 Quản lý Mã Màu & Tự Note theo Sở thích (Dành riêng cho Giảng viên)</h2>
+          <h2 style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+            <Icon name="palette" size={18} />
+            <span>Bảng mã màu &amp; Ghi chú cá nhân</span>
+          </h2>
           <p>
-            Khi bạn đổi <b>Tên nhãn</b> hoặc <b>Màu sắc</b> rồi bấm Lưu, cả ô lịch lẫn thanh chú thích phía trên TKB cá nhân sẽ tự động đổi chữ & màu tương ứng ngay lập tức.
+            Khi cập nhật <b>Tên nhãn</b> hoặc <b>Màu sắc</b> rồi bấm Lưu, ô lịch và thanh chú thích trên Thời khóa biểu cá nhân sẽ áp dụng ngay lập tức.
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
           {customRules.length === 0 && (
-            <button
+            <ActionButton
               type="button"
+              icon="plus"
               disabled={busy}
               onClick={() => void onCommand("color-rules", { rules: SIMPLE_STARTER_EXAMPLES })}
               style={{ minHeight: "38px", height: "38px", padding: "0 12px", fontSize: "12px" }}
             >
-              + Nạp ví dụ mẫu (Trường A, Trường B)
-            </button>
+              Nạp ví dụ mẫu (Trường A, Trường B)
+            </ActionButton>
           )}
           <select
             value={catFilter}
@@ -136,19 +141,29 @@ export function ColorPaletteManager({
       </div>
 
       {visible.length === 0 ? (
-        <div style={{ padding: "18px", textAlign: "center", background: "#f8fafc", border: "1px dashed var(--line)", borderRadius: "8px", fontSize: "12.5px", color: "var(--muted)" }}>
-          Chưa có mã màu riêng nào. Giảng viên có thể thêm ở khung bên dưới (VD: Trường A, Trường B, mã môn, LEC/TUT hoặc ghi đè màu & chữ của Lịch khoa / Đi học / Dạy bù).
+        <div
+          style={{
+            padding: "18px",
+            textAlign: "center",
+            background: "#f8fafc",
+            border: "1px dashed var(--line)",
+            borderRadius: "8px",
+            fontSize: "12.5px",
+            color: "var(--muted)",
+          }}
+        >
+          Chưa có mã màu riêng nào. Bạn có thể thêm ở khung bên dưới (VD: Trường A, Trường B, mã môn, LEC/TUT hoặc tùy biến màu Lịch khoa / Đi học / Dạy bù).
         </div>
       ) : (
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th style={{ width: "165px" }}>Phân loại & Mã</th>
-                <th style={{ width: "220px" }}>Tên nhãn trên TKB & Xem trước</th>
+                <th style={{ width: "165px" }}>Phân loại &amp; Mã</th>
+                <th style={{ width: "220px" }}>Tên nhãn trên TKB &amp; Xem trước</th>
                 <th style={{ width: "130px" }}>Màu nền / Chữ</th>
-                <th>Ghi chú theo sở thích (Note)</th>
-                <th style={{ width: "135px", textAlign: "right" }}>Thao tác</th>
+                <th>Ghi chú riêng (Note)</th>
+                <th style={{ width: "145px", textAlign: "right" }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -221,24 +236,26 @@ export function ColorPaletteManager({
                       />
                     </td>
                     <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      <button
+                      <ActionButton
                         type="button"
-                        className="primary"
+                        variant="primary"
+                        icon="check"
                         disabled={busy}
                         onClick={() => void saveRule(orig)}
                         style={{ minHeight: "30px", height: "30px", padding: "0 10px", fontSize: "11.5px", marginRight: "6px" }}
                       >
                         Lưu
-                      </button>
-                      <button
+                      </ActionButton>
+                      <ActionButton
                         type="button"
-                        className="btn-remove"
+                        variant="danger"
+                        icon="trash"
                         disabled={busy}
                         onClick={() => void onCommand("color-rules", { delete_id: r.id })}
                         style={{ minHeight: "30px", height: "30px", padding: "0 9px", fontSize: "11.5px" }}
                       >
                         Xóa
-                      </button>
+                      </ActionButton>
                     </td>
                   </tr>
                 );
@@ -275,8 +292,9 @@ export function ColorPaletteManager({
           borderRadius: "8px",
         }}
       >
-        <b style={{ fontSize: "12.5px", display: "block", marginBottom: "8px" }}>
-          ➕ Thêm mã màu mới hoặc đổi màu chú thích mặc định
+        <b style={{ fontSize: "12.5px", display: "inline-flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+          <Icon name="plus" size={14} />
+          <span>Thêm mã màu mới hoặc đổi màu chú thích mặc định</span>
         </b>
         <div className="editor-row" style={{ flexWrap: "wrap", alignItems: "flex-end" }}>
           <label style={{ flex: 1.15, minWidth: "180px" }}>
@@ -364,14 +382,15 @@ export function ColorPaletteManager({
               style={{ height: "38px", minHeight: "38px" }}
             />
           </label>
-          <button
+          <ActionButton
             type="submit"
-            className="primary"
+            variant="primary"
+            icon="plus"
             disabled={busy || !newRule.key.trim()}
             style={{ height: "38px", minHeight: "38px", whiteSpace: "nowrap" }}
           >
-            + Lưu màu
-          </button>
+            Lưu màu
+          </ActionButton>
         </div>
       </form>
     </section>

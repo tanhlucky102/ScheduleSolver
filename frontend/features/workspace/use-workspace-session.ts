@@ -1,28 +1,112 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Profile, SolverProgress, Workspace } from "./types";
+import type { NotificationItem, Profile, SolverProgress, Workspace } from "./types";
 import { requestJson, exportWorkbook } from "./api-client";
 
+export type ToastTone = "success" | "info" | "warning" | "error";
+export type ToastItem = {
+  id: string;
+  text: string;
+  tone: ToastTone;
+};
+
 let browserAuth: SupabaseClient | null = null;
+
+const COMMAND_TOAST_MESSAGES: Record<string, string> = {
+  solve: "Đã tìm được phương án xếp lịch hợp lệ với phòng cụ thể",
+  assign: "Đã lưu phân công giảng viên",
+  submit: "Đã nộp kế hoạch phân công cho Giáo vụ",
+  send: "Đã gửi kế hoạch phân công cho bộ môn",
+  "send-all": "Đã gửi kế hoạch phân công đồng loạt cho các bộ môn",
+  return: "Đã mở khóa và gửi yêu cầu điều chỉnh cho bộ môn",
+  publish: "Đã công bố thời khóa biểu chính thức",
+  external: "Đã lưu vào lịch cá nhân",
+  "external-import": "Đã nhập danh sách lịch ngoài trường & lịch đi học",
+  "color-rules": "Đã cập nhật bảng mã màu & ghi chú tùy chỉnh",
+  "department-save": "Đã lưu thông tin bộ môn",
+  "department-delete": "Đã xóa bộ môn",
+  teacher: "Đã cập nhật hồ sơ giảng viên",
+  "teacher-save": "Đã cập nhật trạng thái giảng viên",
+  "teacher-delete": "Đã xóa nhân sự khỏi danh sách",
+  "capabilities-import": "Đã cập nhật hồ sơ năng lực giảng viên từ CSV",
+  rooms: "Đã lưu cấu hình danh sách phòng học",
+  "rooms-delete": "Đã xóa phòng học đã chọn",
+  "rooms-preset": "Đã nạp danh sách phòng học chuẩn",
+  requirements: "Đã cập nhật yêu cầu phòng cho lớp học phần",
+  reservation: "Đã thêm lịch chiếm dụng phòng",
+  "reservation-delete": "Đã giải phóng lịch chiếm dụng phòng",
+  offerings: "Đã nhập kế hoạch đào tạo và chia lớp học phần",
+  "plan-reset": "Đã đặt lại kế hoạch mở lớp",
+  config: "Đã lưu cấu hình khung giờ và học kỳ",
+  catalog: "Đã lưu thay đổi danh mục nhân sự & bộ môn",
+  balance: "Đã chia đều các lớp học phần cho giảng viên đủ năng lực",
+};
 
 export function useWorkspaceSession() {
   const [auth, setAuth] = useState<SupabaseClient | null>(null);
   const [token, setToken] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [message, setMessage] = useState("");
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [config, setConfig] = useState("");
   const [solverProgress, setSolverProgress] = useState<Record<string, SolverProgress>>({});
   const [solverRunning, setSolverRunning] = useState(false);
   const [onlineTeachers, setOnlineTeachers] = useState<string[]>([]);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const workspaceRef = useRef<Workspace | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
+  const lastLocalRevisionRef = useRef<number>(-1);
+  const suppressCommandToastRef = useRef(false);
+  const toastTimersRef = useRef<Map<string, number>>(new Map());
   const refreshRef = useRef<() => Promise<void>>(async () => {});
+
+  const dismissToast = useCallback((id: string) => {
+    const timer = toastTimersRef.current.get(id);
+    if (timer !== undefined) {
+      window.clearTimeout(timer);
+      toastTimersRef.current.delete(id);
+    }
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const pushToast = useCallback(
+    (text: string, tone: ToastTone = "info") => {
+      if (!text.trim()) return;
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setToasts((prev) => [...prev.slice(-4), { id, text, tone }]);
+      if (tone !== "error" && typeof window !== "undefined") {
+        const timer = window.setTimeout(() => {
+          toastTimersRef.current.delete(id);
+          setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 3800);
+        toastTimersRef.current.set(id, timer);
+      }
+    },
+    []
+  );
+
+  const pushToastRef = useRef(pushToast);
+  useEffect(() => {
+    pushToastRef.current = pushToast;
+  }, [pushToast]);
+
+  useEffect(() => {
+    const timers = toastTimersRef.current;
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -38,9 +122,13 @@ export function useWorkspaceSession() {
     setAuth(client);
     const { data } = client.auth.onAuthStateChange((_event, session) => {
       setToken(session?.access_token || "");
+      const uid = session?.user?.id ?? null;
+      setCurrentUserId(uid);
+      currentUserIdRef.current = uid;
       if (!session) {
         setProfile(null);
         setWorkspace(null);
+        setLastSyncedAt(null);
         setMessage("");
       }
     });
@@ -55,16 +143,24 @@ export function useWorkspaceSession() {
       ]);
       setProfile(p);
       setWorkspace(w);
+      setLastSyncedAt(new Date());
       if (w.state?.config) setConfig(JSON.stringify(w.state?.config, null, 2));
     } else {
       const w = await requestJson<Workspace>(apiUrl, token, "/api/workspace");
       setWorkspace(w);
+      setLastSyncedAt(new Date());
       if (w.state?.config) setConfig(JSON.stringify(w.state?.config, null, 2));
     }
   }
+
   useEffect(() => {
     workspaceRef.current = workspace;
   }, [workspace]);
+
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId;
+  }, [currentUserId]);
+
   useEffect(() => {
     refreshRef.current = refresh;
   });
@@ -100,11 +196,18 @@ export function useWorkspaceSession() {
       socket.onopen = () => {
         socket?.send(JSON.stringify({ type: "auth", token }));
       };
-      socket.onmessage = (message) => {
+      socket.onmessage = (wsMsg) => {
         let event: {
           type?: string;
           teachers?: string[];
           revision?: number;
+          actor?: string;
+          actor_id?: string;
+          notification?: NotificationItem | null;
+          payload?: {
+            actor?: string;
+            notification?: NotificationItem | null;
+          };
           algorithm?: string;
           step?: number;
           iterations?: number;
@@ -112,7 +215,7 @@ export function useWorkspaceSession() {
           soft?: number;
         };
         try {
-          event = JSON.parse(message.data);
+          event = JSON.parse(wsMsg.data);
         } catch {
           setFailed(true);
           setMessage("Dữ liệu realtime không hợp lệ; đang kết nối lại.");
@@ -139,10 +242,28 @@ export function useWorkspaceSession() {
           typeof event.revision === "number" &&
           event.revision > (workspaceRef.current?.revision ?? -1)
         ) {
-          refreshRef.current().catch((error: unknown) => {
-            setFailed(true);
-            setMessage(error instanceof Error ? error.message : "Không thể đồng bộ không gian làm việc.");
-          });
+          const actor =
+            event.actor ?? event.actor_id ?? event.payload?.actor ?? event.notification?.actor_id;
+          const notif = event.notification ?? event.payload?.notification;
+          if (
+            actor &&
+            actor !== currentUserIdRef.current &&
+            event.revision !== lastLocalRevisionRef.current &&
+            notif?.summary
+          ) {
+            pushToastRef.current(notif.summary, "info");
+          }
+          refreshRef
+            .current()
+            .then(() => {
+              setLastSyncedAt(new Date());
+            })
+            .catch((error: unknown) => {
+              setFailed(true);
+              setMessage(
+                error instanceof Error ? error.message : "Không thể đồng bộ không gian làm việc."
+              );
+            });
         }
       };
       socket.onerror = () => setRealtimeConnected(false);
@@ -166,17 +287,26 @@ export function useWorkspaceSession() {
     };
   }, [apiUrl, token]);
 
-  async function perform(fn: () => Promise<void>) {
+  async function perform(fn: () => Promise<void>, actionKey?: string, successMsg?: string) {
     if (busy) return;
     setBusy(true);
+    if (actionKey) setPendingAction(actionKey);
     setMessage("");
     setFailed(false);
+    if (successMsg) suppressCommandToastRef.current = true;
     try {
       await fn();
+      if (successMsg) {
+        pushToast(successMsg, "success");
+      }
     } catch (e) {
+      const errText = e instanceof Error ? e.message : "Không thể xử lý thao tác này.";
       setFailed(true);
-      setMessage(e instanceof Error ? e.message : "Không thể xử lý thao tác này.");
+      setMessage(errText);
+      pushToast(errText, "error");
     } finally {
+      suppressCommandToastRef.current = false;
+      setPendingAction(null);
       setBusy(false);
     }
   }
@@ -184,6 +314,7 @@ export function useWorkspaceSession() {
   async function command(action: string, payload: unknown = {}) {
     if (!workspace) return;
     const solving = action === "solve";
+    setPendingAction((cur) => cur ?? action);
     if (solving) {
       setSolverProgress({});
       setSolverRunning(true);
@@ -197,37 +328,28 @@ export function useWorkspaceSession() {
         { revision: workspace.revision, payload }
       );
       completed = true;
+      if (typeof res?.revision === "number") {
+        lastLocalRevisionRef.current = res.revision;
+      }
       if (res?.workspace) {
         setWorkspace(res.workspace);
-        if (res.workspace.state?.config) setConfig(JSON.stringify(res.workspace.state?.config, null, 2));
+        setLastSyncedAt(new Date());
+        if (res.workspace.state?.config) {
+          setConfig(JSON.stringify(res.workspace.state?.config, null, 2));
+        }
       } else {
         await refresh();
       }
-      setMessage(
-        ({
-          solve: "Đã tìm được phương án xếp lịch hợp lệ với phòng cụ thể.",
-          assign: "Đã lưu phân công giảng viên.",
-          submit: "Đã nộp phân công cho giáo vụ.",
-          send: "Đã gửi kế hoạch cho bộ môn.",
-          return: "Đã gửi yêu cầu điều chỉnh cho bộ môn.",
-          publish: "Đã công bố thời khóa biểu chính thức.",
-          external: "Đã lưu vào lịch cá nhân.",
-          "external-import": "Đã import thành công danh sách lịch ngoài trường & lịch đi học.",
-          "color-rules": "Đã cập nhật bảng mã màu & ghi chú tùy chỉnh.",
-          "department-save": "Đã lưu thông tin bộ môn.",
-          "department-delete": "Đã xóa bộ môn thành công.",
-          "teacher-save": "Đã lưu thông tin giảng viên.",
-          "teacher-delete": "Đã xóa giảng viên thành công.",
-          "rooms-preset": "Đã khởi tạo thành công 17 phòng học mẫu từ danh mục.",
-          balance: "Đã chia đều các lớp học phần cho giảng viên đủ năng lực.",
-          "capabilities-preset": "Đã tự động cập nhật năng lực giảng viên theo thời khóa biểu gốc.",
-        } as Record<string, string>)[action] ?? "Đã lưu thay đổi thành công."
-      );
+      if (!suppressCommandToastRef.current) {
+        const toastMsg = COMMAND_TOAST_MESSAGES[action] ?? "Đã lưu thay đổi";
+        pushToast(toastMsg, "success");
+      }
     } catch (error) {
       if (solving && !completed) setSolverProgress({});
       throw error;
     } finally {
       if (solving) setSolverRunning(false);
+      setPendingAction((cur) => (cur === action ? null : cur));
     }
   }
 
@@ -241,14 +363,43 @@ export function useWorkspaceSession() {
   }
 
   async function loginWithPassword(email: string, password: string) {
-    await perform(async () => {
-      if (!auth) throw new Error("Chưa kết nối dịch vụ xác thực Supabase.");
-      const { error } = await auth.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-    });
+    await perform(
+      async () => {
+        if (!auth) throw new Error("Chưa kết nối dịch vụ xác thực Supabase.");
+        const { error } = await auth.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      },
+      "login"
+    );
   }
 
-  return { auth, token, profile, workspace, message, setMessage, failed, loading, busy,
-    config, setConfig, apiUrl, refresh, perform, command, download, loginWithPassword,
-    solverProgress, solverRunning, onlineTeachers, realtimeConnected };
+  return {
+    auth,
+    token,
+    currentUserId,
+    profile,
+    workspace,
+    message,
+    setMessage,
+    failed,
+    loading,
+    busy,
+    pendingAction,
+    lastSyncedAt,
+    toasts,
+    pushToast,
+    dismissToast,
+    config,
+    setConfig,
+    apiUrl,
+    refresh,
+    perform,
+    command,
+    download,
+    loginWithPassword,
+    solverProgress,
+    solverRunning,
+    onlineTeachers,
+    realtimeConnected,
+  };
 }

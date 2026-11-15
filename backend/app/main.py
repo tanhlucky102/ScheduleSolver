@@ -12,6 +12,7 @@ from .timetable.rules import SchedulingConflict
 from .models import AuditLog, Publication
 from .workspace.schemas import Command
 from .workspace.visibility import visible
+from .workspace.notifications import build_notification
 from .identity.policies import RequestError, require_teacher_profile
 from .workspace.commands import apply
 from . import storage
@@ -156,6 +157,10 @@ async def solve_command(request: Command, p: Principal = Depends(principal)):
         def persist_result():
             with storage.transaction(p.workspace_id, request.revision) as (state, revision, session):
                 state.draft = placements
+                latest_notif = build_notification("solve", request.payload, state, revision + 1, p)
+                if latest_notif is not None:
+                    state.notifications.append(latest_notif)
+                    state.notifications = state.notifications[-60:]
                 session.add(AuditLog(
                     workspace_id=UUID(str(p.workspace_id)),
                     actor=UUID(str(p.id)),
@@ -163,14 +168,17 @@ async def solve_command(request: Command, p: Principal = Depends(principal)):
                     revision=revision + 1,
                 ))
                 ws_data = visible(state, revision + 1, p)
-                return revision + 1, ws_data
+                return revision + 1, ws_data, latest_notif
 
-        new_revision, workspace_data = await asyncio.to_thread(persist_result)
-        await hub.broadcast(p.workspace_id, {
+        new_revision, workspace_data, latest_notif = await asyncio.to_thread(persist_result)
+        broadcast_payload = {
             "type": "workspace:updated",
             "revision": new_revision,
             "actor": p.id,
-        })
+        }
+        if latest_notif is not None:
+            broadcast_payload["notification"] = latest_notif.model_dump()
+        await hub.broadcast(p.workspace_id, broadcast_payload)
         return {
             "revision": new_revision,
             "workspace": workspace_data,
@@ -191,6 +199,10 @@ def command(action: str, request: Command, background_tasks: BackgroundTasks, p:
     try:
         with storage.transaction(p.workspace_id, request.revision) as (state, revision, session):
             result = apply(state, action, request.payload, p)
+            latest_notif = build_notification(action, request.payload, state, revision + 1, p)
+            if latest_notif is not None:
+                state.notifications.append(latest_notif)
+                state.notifications = state.notifications[-60:]
             session.add(AuditLog(
                 workspace_id=UUID(str(p.workspace_id)),
                 actor=UUID(str(p.id)),
@@ -205,11 +217,14 @@ def command(action: str, request: Command, background_tasks: BackgroundTasks, p:
                     body=state.published,
                 ))
             workspace_data = visible(state, revision + 1, p)
-        background_tasks.add_task(hub.broadcast, p.workspace_id, {
+        broadcast_payload = {
             "type": "workspace:updated",
             "revision": revision + 1,
             "actor": p.id,
-        })
+        }
+        if latest_notif is not None:
+            broadcast_payload["notification"] = latest_notif.model_dump()
+        background_tasks.add_task(hub.broadcast, p.workspace_id, broadcast_payload)
         return {"revision": revision + 1, "workspace": workspace_data, **(result or {})}
     except (StopIteration, KeyError):
         raise HTTPException(422, "Missing or unknown input reference")

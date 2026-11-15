@@ -176,6 +176,7 @@ class SchedulingConflict(ValueError):
 
 def events(state: State, placements: list[Placement]):
     sessions = {s.id: s for s in state.sessions}
+    offerings = {o.id: o for o in state.offerings}
     rows, errors, seen = [], [], set()
     for p in placements:
         if p.session in seen:
@@ -188,8 +189,21 @@ def events(state: State, placements: list[Placement]):
             errors.append(f"Invalid placement: {p.session}")
             continue
         slot = state.config.slots[p.slot]
-        rows.append(dict(s.model_dump(), day=slot.day, start=slot.start,
-                         end=slot.start + duration(s, state.config), evening=slot.evening, room_id=p.room_id))
+        offering = offerings.get(s.offering)
+        course_name = offering.name if offering else ""
+        start_date = s.start_date or (offering.start_date if offering else "") or state.config.term_start_date
+        end_date = s.end_date or (offering.end_date if offering else "") or state.config.term_end_date
+        rows.append(dict(
+            s.model_dump(),
+            course_name=course_name,
+            start_date=start_date,
+            end_date=end_date,
+            day=slot.day,
+            start=slot.start,
+            end=slot.start + duration(s, state.config),
+            evening=slot.evening,
+            room_id=p.room_id,
+        ))
     errors.extend(f"Missing session: {s.id}" for s in state.sessions if s.id not in {r["id"] for r in rows})
     return rows, errors
 

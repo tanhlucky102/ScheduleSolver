@@ -560,7 +560,7 @@ def teacher_workbook(
                         )
                     else:
                         c_code = str(it.get("course") or "")
-                        c_name = course_names.get(c_code, "")
+                        c_name = str(it.get("course_name") or "") or course_names.get(c_code, "")
                         head_txt = f"{c_name} ({c_code})" if c_name else c_code
                         lines.append(
                             f"{head_txt}\n"
@@ -617,7 +617,7 @@ def teacher_workbook(
         else:
             src_txt = "Lịch Khoa"
             c_code = str(it.get("course") or "")
-            c_title = course_names.get(c_code, f"Bộ môn {it.get('department', '')}")
+            c_title = str(it.get("course_name") or "") or course_names.get(c_code, f"Bộ môn {it.get('department', '')}")
             grp = f"K{it.get('cohort', '')} - N{it.get('section', '')}"
             kind_txt = str(it.get("kind") or "")
             rm = str(it.get("room_id") or "")

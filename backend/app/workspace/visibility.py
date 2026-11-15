@@ -1,5 +1,6 @@
 from ..identity.policies import require_teacher_profile
 from ..timetable.rules import evaluate
+from .notifications import filter_notifications
 
 _eval_cache: dict[tuple[str, int], dict] = {}
 _online_teachers: dict[str, set[str]] = {}
@@ -24,23 +25,36 @@ def visible(state, revision, p):
 
     if p.role == "STAFF":
         body = state.model_dump()
-        body.pop("external")
+        body.pop("external", None)
+        body.pop("notifications", None)
         return {
             "has_publication": bool(state.published),
             "revision": revision,
             "online_teachers": online_list,
+            "notifications": filter_notifications(state.notifications, p, state),
             "state": body,
             "evaluation": get_cached_evaluation(str(p.workspace_id), revision, state),
         }
+
     teacher_obj = next((t for t in state.teachers if p.teacher and t.id == p.teacher), None)
     personal_color_rules = (
         [c.model_dump() for c in teacher_obj.color_rules]
         if teacher_obj is not None and teacher_obj.color_rules
         else [c.model_dump() for c in state.config.color_rules]
     )
+    period_config = {
+        "period_minutes": state.config.period_minutes,
+        "break_minutes": state.config.break_minutes,
+        "include_break": state.config.include_break,
+        "first_period_start": state.config.first_period_start,
+        "afternoon_start": state.config.afternoon_start,
+        "evening_start": state.config.evening_start,
+        "inter_shift_gap": state.config.inter_shift_gap,
+    }
 
     if p.role == "HEAD":
         body = state.model_dump()
+        body.pop("notifications", None)
         dept_courses = {
             x["course"] for x in body["sessions"] if x["department"] == p.department
         } | {
@@ -61,19 +75,23 @@ def visible(state, revision, p):
             "has_publication": bool(state.published),
             "revision": revision,
             "online_teachers": online_list,
+            "notifications": filter_notifications(state.notifications, p, state),
             "color_rules": personal_color_rules,
+            "shift_rules": [s.model_dump() for s in state.config.shift_rules],
             "term_config": {
                 "term_name": state.config.term_name,
                 "term_start_date": state.config.term_start_date,
                 "term_end_date": state.config.term_end_date,
                 "holidays": [h.model_dump() for h in state.config.holidays],
             },
+            "period_config": period_config,
             "state": body,
         }
     return {
         "has_publication": bool(state.published),
         "revision": revision,
         "online_teachers": online_list,
+        "notifications": filter_notifications(state.notifications, p, state),
         "color_rules": personal_color_rules,
         "shift_rules": [s.model_dump() for s in state.config.shift_rules],
         "term_config": {
@@ -82,12 +100,7 @@ def visible(state, revision, p):
             "term_end_date": state.config.term_end_date,
             "holidays": [h.model_dump() for h in state.config.holidays],
         },
-        "period_config": {
-            "period_minutes": state.config.period_minutes,
-            "break_minutes": state.config.break_minutes,
-            "include_break": state.config.include_break,
-            "first_period_start": state.config.first_period_start,
-        },
+        "period_config": period_config,
         "state": {
             "published": [r for r in state.published if r["teacher"] == p.teacher],
             "external": [r.model_dump() for r in state.external if r.teacher == p.teacher],
