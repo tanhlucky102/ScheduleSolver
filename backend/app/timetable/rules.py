@@ -69,8 +69,21 @@ def duration(s: Session, c: Config):
     return shift_duration(s.periods, c.period_minutes, c.break_minutes, c.include_break)
 
 
+def slot_event_end(s: Session, slot, c: Config) -> int:
+    if c.shift_rules:
+        ordered = sorted([sh for sh in c.shift_rules if sh.end > sh.start], key=lambda x: x.start)
+        for idx, sh in enumerate(ordered):
+            if sh.start == slot.start:
+                if s.kind == "COMBINED":
+                    if idx + 1 < len(ordered) and ordered[idx + 1].end <= slot.end:
+                        return ordered[idx + 1].end
+                    return slot.start + duration(s, c)
+                return sh.end
+    return slot.start + duration(s, c)
+
+
 def legal_slots(s: Session, c: Config):
-    return [i for i, slot in enumerate(c.slots) if slot.start + duration(s, c) <= slot.end]
+    return [i for i, slot in enumerate(c.slots) if slot_event_end(s, slot, c) <= slot.end]
 
 
 def dates_overlap(a_start: str = "", a_end: str = "", b_start: str = "", b_end: str = "") -> bool:
@@ -149,7 +162,7 @@ def placement_domains(state: State):
         candidates, reasons = [], Counter()
         for i in legal_slots(s, state.config):
             slot = state.config.slots[i]
-            event = dict(day=slot.day, start=slot.start, end=slot.start + duration(s, state.config),
+            event = dict(day=slot.day, start=slot.start, end=slot_event_end(s, slot, state.config),
                          start_date=s.start_date, end_date=s.end_date)
             if s.teacher and any(ext["start"] < event["end"] and event["start"] < ext["end"]
                                  and dates_overlap(ext["start_date"], ext["end_date"], s.start_date, s.end_date)
@@ -185,7 +198,7 @@ def events(state: State, placements: list[Placement]):
         seen.add(p.session)
         s = sessions.get(p.session)
         if (s is None or not 0 <= p.slot < len(state.config.slots)
-                or state.config.slots[p.slot].start + duration(s, state.config) > state.config.slots[p.slot].end):
+                or slot_event_end(s, state.config.slots[p.slot], state.config) > state.config.slots[p.slot].end):
             errors.append(f"Invalid placement: {p.session}")
             continue
         slot = state.config.slots[p.slot]
@@ -200,7 +213,7 @@ def events(state: State, placements: list[Placement]):
             end_date=end_date,
             day=slot.day,
             start=slot.start,
-            end=slot.start + duration(s, state.config),
+            end=slot_event_end(s, slot, state.config),
             evening=slot.evening,
             room_id=p.room_id,
         ))

@@ -130,7 +130,7 @@ export default function Home() {
     start: "07:10",
     end: "09:15",
     activity_type: "EXTERNAL_TEACHING",
-    color: "#fef3c7",
+    color: "",
     note: "",
   });
 

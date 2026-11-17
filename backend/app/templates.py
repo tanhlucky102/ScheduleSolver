@@ -22,14 +22,14 @@ def build_plan_template_xlsx() -> bytes:
     ws.title = "KeHoachDaoTao"
     ws.append([
         "Mã môn", "Tên học phần", "Khóa", "Bộ môn", "Sĩ số",
-        "Số tiết Lec", "Số tiết Tut", "Lec+Tut liền",
+        "Lec+Tut liền",
         "Phòng Lec", "Phòng Tut", "Số lớp Lec", "Số lớp Tut",
         "Ngày bắt đầu", "Ngày kết thúc",
     ])
-    ws.append(["61FIT3SS1", "Phát triển phần mềm nguồn mở", "2024", "CNPM", 120, 2.5, 2.5, "", "Máy chiếu", "Máy tính", 1, 4, "17/08/2026", "22/11/2026"])
-    ws.append(["61FIT3OS1CLC", "Hệ điều hành (CLC)", "2024", "HTTT", 60, 2.5, 2.5, "", "Máy chiếu", "Máy tính", 1, 2, "17/08/2026", "22/11/2026"])
-    ws.append(["66FIT3AI1", "Trí tuệ nhân tạo (Tiên tiến TT)", "2024", "KHMT", 55, 2.5, 2.5, "", "Máy chiếu", "Máy tính", 1, 2, "17/08/2026", "22/11/2026"])
-    ws.append(["61MME2GD1", "Thiết kế đồ họa đa phương tiện", "2025", "TTDPT", 80, 2, 2, "x", "Máy tính", "Máy tính", "", 3, "07/09/2026", "13/12/2026"])
+    ws.append(["61FIT3SS1", "Phát triển phần mềm nguồn mở", "2024", "CNPM", 120, "", "Máy chiếu", "Máy tính", 1, 4, "17/08/2026", "22/11/2026"])
+    ws.append(["61FIT3OS1CLC", "Hệ điều hành (CLC)", "2024", "HTTT", 60, "", "Máy chiếu", "Máy tính", 1, 2, "17/08/2026", "22/11/2026"])
+    ws.append(["66FIT3AI1", "Trí tuệ nhân tạo (Tiên tiến TT)", "2024", "KHMT", 55, "", "Máy chiếu", "Máy tính", 1, 2, "17/08/2026", "22/11/2026"])
+    ws.append(["61MME2GD1", "Thiết kế đồ họa đa phương tiện", "2025", "TTDPT", 80, "x", "Máy tính", "Máy tính", "", 3, "07/09/2026", "13/12/2026"])
     _style_header(ws)
     out = BytesIO()
     wb.save(out)

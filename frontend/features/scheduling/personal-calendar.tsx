@@ -166,132 +166,172 @@ export function PersonalCalendar({
         : "");
 
     return (
-      colorRules.find((r) => r.category === "CUSTOM" && courseUp.includes(r.key.toUpperCase())) ||
-      (instUp ? colorRules.find((r) => r.category === "INSTITUTION" && instUp.includes(r.key.toUpperCase())) : undefined) ||
-      (kindUp ? colorRules.find((r) => r.category === "KIND" && r.key.toUpperCase() === kindUp) : undefined) ||
-      colorRules.find((r) => r.category === "PROGRAM" && courseUp.includes(r.key.toUpperCase()))
+      colorRules.find(
+        (r) =>
+          r.category === "CUSTOM" &&
+          r.key &&
+          (courseUp.includes(r.key.toUpperCase()) || idUp.includes(r.key.toUpperCase()))
+      ) ||
+      (instUp
+        ? colorRules.find(
+            (r) => r.category === "INSTITUTION" && r.key && instUp.includes(r.key.toUpperCase())
+          )
+        : undefined) ||
+      (kindUp
+        ? colorRules.find((r) => r.category === "KIND" && r.key.toUpperCase() === kindUp)
+        : undefined) ||
+      colorRules.find(
+        (r) =>
+          r.category === "PROGRAM" &&
+          r.key &&
+          (courseUp.includes(r.key.toUpperCase()) || (e.program || "").toUpperCase() === r.key.toUpperCase())
+      )
     );
   };
 
   const getEventStyle = (e: RichPersonalEvent) => {
     const occ = e._occ;
-    if (occ.status === "HOLIDAY_OFF") {
-      return { bg: "#fff1f2", border: "#fb7185", text: "#881337", accent: "#be123c", ruleNote: "" };
-    }
     if (isConflict(e)) {
-      const cRule = resolveRule("STATUS", "CONFLICT", colorRules);
+      const cRule = findStatusRule("CONFLICT") ?? resolveRule("STATUS", "CONFLICT", colorRules);
       return {
-        bg: cRule.bg_color || "#fef3c7",
+        bg: cRule.bg_color || "#fee2e2",
         border: "#dc2626",
-        text: "#7f1d1d",
+        text: cRule.text_color || "#7f1d1d",
         accent: "#dc2626",
-        ruleNote: cRule.note,
+        ruleNote: cRule.note || "",
+        ruleLabel: cRule.label || "",
       };
     }
+
     const matched = findCustomMatch(e);
+    if (matched) {
+      const bdr = matched.border_color || "#475569";
+      return {
+        bg: matched.bg_color,
+        border: bdr,
+        text: matched.text_color,
+        accent: bdr,
+        ruleNote: matched.note || "",
+        ruleLabel: matched.label || "",
+      };
+    }
+
     if (e.isExternal) {
-      if (matched) {
-        return {
-          bg: matched.bg_color,
-          border: matched.border_color,
-          text: matched.text_color,
-          accent: matched.border_color,
-          ruleNote: matched.note,
-        };
-      }
       const actKey = (e.activity_type || "EXTERNAL_TEACHING").toUpperCase();
       const customStatus = findStatusRule(actKey);
       if (customStatus) {
+        const bdr = customStatus.border_color || "#475569";
         return {
           bg: customStatus.bg_color,
-          border: customStatus.border_color,
+          border: bdr,
           text: customStatus.text_color,
-          accent: customStatus.border_color,
-          ruleNote: customStatus.note,
+          accent: bdr,
+          ruleNote: customStatus.note || "",
+          ruleLabel: customStatus.label || "",
         };
       }
-      if (e.color && e.color.startsWith("#")) {
-        return { bg: e.color, border: "#64748b", text: "#0f172a", accent: "#475569", ruleNote: "" };
+    } else {
+      if (occ.status === "SHIFTED_NEXT_WEEK" || occ.status === "MAKEUP_EXTENSION") {
+        const makeupStatus = findStatusRule("MAKEUP");
+        if (makeupStatus) {
+          const bdr = makeupStatus.border_color || "#7c3aed";
+          return {
+            bg: makeupStatus.bg_color,
+            border: bdr,
+            text: makeupStatus.text_color,
+            accent: bdr,
+            ruleNote: makeupStatus.note || "",
+            ruleLabel: makeupStatus.label || "",
+          };
+        }
       }
-      if (actKey === "STUDYING") {
-        return { bg: "#dcfce7", border: "#16a34a", text: "#14532d", accent: "#15803d", ruleNote: "" };
+      const facRule = findStatusRule("FACULTY");
+      if (facRule) {
+        const bdr = facRule.border_color || "#2b6cb0";
+        return {
+          bg: facRule.bg_color,
+          border: bdr,
+          text: facRule.text_color,
+          accent: bdr,
+          ruleNote: facRule.note || "",
+          ruleLabel: facRule.label || "",
+        };
       }
-      if (actKey === "MAKEUP") {
-        return { bg: "#f3e8ff", border: "#9333ea", text: "#581c87", accent: "#7e22ce", ruleNote: "" };
-      }
-      return { bg: "#fef3c7", border: "#d97706", text: "#78350f", accent: "#b45309", ruleNote: "" };
     }
 
-    if (occ.status === "SHIFTED_NEXT_WEEK" || occ.status === "MAKEUP_EXTENSION") {
-      return { bg: "#f3e8ff", border: "#9333ea", text: "#581c87", accent: "#7e22ce", ruleNote: "" };
-    }
-    if (matched) {
-      return {
-        bg: matched.bg_color,
-        border: matched.border_color,
-        text: matched.text_color,
-        accent: matched.border_color,
-        ruleNote: matched.note,
-      };
-    }
-    const facRule = findStatusRule("FACULTY");
-    if (facRule) {
-      return {
-        bg: facRule.bg_color,
-        border: facRule.border_color,
-        text: facRule.text_color,
-        accent: facRule.border_color,
-        ruleNote: facRule.note,
-      };
-    }
+    // Mặc định hệ thống: chỉ Xanh dương = Lý thuyết (LEC), Đỏ = Thực hành (TUT)
     const idUp = (e.id || "").toUpperCase();
     if ((e.kind || "").toUpperCase() === "TUT" || idUp.includes("-TUT-")) {
-      return { bg: "#fce8ea", border: "#c53030", text: "#3b0d11", accent: "#c53030", ruleNote: "" };
+      return {
+        bg: "#fce8ea",
+        border: "#c53030",
+        text: "#3b0d11",
+        accent: "#c53030",
+        ruleNote: "",
+        ruleLabel: "",
+      };
     }
-    return { bg: "#dceefb", border: "#2b6cb0", text: "#0f2942", accent: "#b91c1c", ruleNote: "" };
+    return {
+      bg: "#dceefb",
+      border: "#2b6cb0",
+      text: "#0f2942",
+      accent: "#2b6cb0",
+      ruleNote: "",
+      ruleLabel: "",
+    };
   };
 
-  const legendItems = useMemo(() => {
-    const facultyRule = findStatusRule("FACULTY");
-    const extRule = findStatusRule("EXTERNAL_TEACHING");
-    const studyRule = findStatusRule("STUDYING");
-    const makeupRule = findStatusRule("MAKEUP");
-    const conflictRule = findStatusRule("CONFLICT");
+  const hasAnyConflict = useMemo(
+    () => events.some((ev) => isConflict(ev)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [events, published, external]
+  );
 
-    return [
+  const legendItems = useMemo(() => {
+    const lecRule = colorRules.find((r) => r.category === "KIND" && r.key.toUpperCase() === "LEC");
+    const tutRule = colorRules.find((r) => r.category === "KIND" && r.key.toUpperCase() === "TUT");
+    const items: { id: string; label: string; bg: string; border: string; note?: string }[] = [
       {
-        id: "fac",
-        label: facultyRule?.label || "Lịch khoa",
-        bg: facultyRule?.bg_color || "#dceefb",
-        border: facultyRule?.border_color || "#2b6cb0",
+        id: "default-lec",
+        label: lecRule?.label || "Lý thuyết (LEC)",
+        bg: lecRule?.bg_color || "#dceefb",
+        border: lecRule?.border_color || "#2b6cb0",
+        note: lecRule?.note || "",
       },
       {
-        id: "ext",
-        label: extRule?.label || "Dạy trường ngoài",
-        bg: extRule?.bg_color || "#fef3c7",
-        border: extRule?.border_color || "#d97706",
-      },
-      {
-        id: "study",
-        label: studyRule?.label || "Đi học / NCS",
-        bg: studyRule?.bg_color || "#dcfce7",
-        border: studyRule?.border_color || "#16a34a",
-      },
-      {
-        id: "makeup",
-        label: makeupRule?.label || "Dạy bù",
-        bg: makeupRule?.bg_color || "#f3e8ff",
-        border: makeupRule?.border_color || "#9333ea",
-      },
-      {
-        id: "conflict",
-        label: conflictRule?.label || "Trùng lịch",
-        bg: conflictRule?.bg_color || "#fef3c7",
-        border: "#dc2626",
+        id: "default-tut",
+        label: tutRule?.label || "Thực hành (TUT)",
+        bg: tutRule?.bg_color || "#fce8ea",
+        border: tutRule?.border_color || "#c53030",
+        note: tutRule?.note || "",
       },
     ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colorRules]);
+
+    for (const r of colorRules) {
+      if (r.category === "KIND" && (r.key.toUpperCase() === "LEC" || r.key.toUpperCase() === "TUT")) {
+        continue;
+      }
+      items.push({
+        id: r.id,
+        label: r.label || r.key,
+        bg: r.bg_color,
+        border: r.border_color || "#475569",
+        note: r.note || "",
+      });
+    }
+
+    if (hasAnyConflict && !colorRules.some((r) => r.category === "STATUS" && r.key.toUpperCase() === "CONFLICT")) {
+      items.push({
+        id: "conflict-alert",
+        label: "Trùng lịch",
+        bg: "#fee2e2",
+        border: "#dc2626",
+        note: "Cảnh báo đụng giờ với lịch Khoa",
+      });
+    }
+
+    return items;
+  }, [colorRules, hasAnyConflict]);
 
   const weekDays = [2, 3, 4, 5, 6, 7, 8];
 
@@ -436,9 +476,14 @@ export function PersonalCalendar({
         <div className="qldt-course-meta">
           <strong>Phòng:</strong> {ev.room_id || ev.room || "Chưa gán"}
         </div>
-        {(ev.note || st.ruleNote) && (
+        {st.ruleNote && (
+          <div className="qldt-course-meta" style={{ fontStyle: "italic", fontWeight: 500 }}>
+            📌 {st.ruleNote}
+          </div>
+        )}
+        {ev.note && ev.note !== st.ruleNote && (
           <div className="qldt-course-meta" style={{ fontStyle: "italic" }}>
-            {ev.note || st.ruleNote}
+            {ev.note}
           </div>
         )}
 
@@ -576,7 +621,7 @@ export function PersonalCalendar({
 
               <div className="qldt-legend">
                 {legendItems.map((item) => (
-                  <span key={item.id} className="qldt-legend-item">
+                  <span key={item.id} className="qldt-legend-item" title={item.note || ""}>
                     <span
                       className="qldt-legend-swatch"
                       style={{ background: item.bg, border: `1.5px solid ${item.border}` }}

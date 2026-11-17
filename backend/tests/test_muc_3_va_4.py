@@ -414,7 +414,32 @@ def test_muc3_4_end_to_end_hanu_6_shifts_full_workflow(api):
 
     mme_events = [e for e in pub if e["course"] == "61MME2GD1"]
     assert len(mme_events) == 3  # 3 COMBINED classes
-    assert all(e["kind"] == "COMBINED" and (e["end"] - e["start"] == 200) for e in mme_events)
+    assert all(e["kind"] == "COMBINED" and (e["end"] - e["start"] == 265) for e in mme_events)
+
+    # 7. Updating shift/period times via config dynamically updates published & draft timetable times!
+    shifted_hanu = [dict(sh, start=sh["start"] + 15, end=sh["end"] + 15) for sh in hanu_shifts]
+    shifted_slots = [dict(sl, start=sl["start"] + 15, end=sl["end"] + 15) for sl in hanu_slots]
+    rev_cfg = client.get("/api/workspace").json()["revision"]
+    assert post(
+        client,
+        "config",
+        {
+            "period_minutes": 50,
+            "break_minutes": 0,
+            "include_break": False,
+            "first_period_start": 445,
+            "active_days": [2, 3, 4, 5, 6, 7],
+            "shift_rules": shifted_hanu,
+            "max_periods": 8,
+            "rooms": {"PROJECTOR": 15, "COMPUTER": 10},
+            "slots": shifted_slots,
+        },
+        revision=rev_cfg,
+    ).status_code == 200
+    ws_shifted = client.get("/api/workspace").json()["state"]
+    assert len(ws_shifted["draft"]) == len(sessions)
+    shifted_starts = {sh["start"] for sh in shifted_hanu}
+    assert all(e["start"] in shifted_starts for e in ws_shifted["published"])
 
 
 def test_real_hanu_external_csv_exact_overlap(api):

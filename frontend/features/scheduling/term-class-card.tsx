@@ -45,6 +45,7 @@ export function ClassCard({
       ? `Nghỉ lễ: ${occ?.holidayName} → Học bù ${dayTxt} tuần sau (${formatDateVN(occ?.makeupNextDate)})`
       : "",
     isMakeupShift ? `Buổi học bù lễ: ${occ?.holidayName}` : "",
+    palette.note ? `Ghi chú màu: ${palette.note}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -110,6 +111,12 @@ export function ClassCard({
       <div className="qldt-course-meta">
         <strong>GV:</strong> {e.teacher || "Chưa phân công"}
       </div>
+
+      {palette.note && (
+        <div className="qldt-course-meta" style={{ fontStyle: "italic" }}>
+          📌 {palette.note}
+        </div>
+      )}
 
       {isHolOff && (
         <span

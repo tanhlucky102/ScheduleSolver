@@ -61,8 +61,15 @@ async def preview(file: UploadFile = File(...), p: Principal = Depends(principal
     raw = await file.read(5_000_001)
     if len(raw) > 5_000_000:
         raise HTTPException(413, "Workbook limit is 5 MB")
+    default_shift_periods = 2.5
     try:
-        return preview_workbook(raw)
+        state, _ = storage.read(p.workspace_id)
+        if state.config.shift_rules:
+            default_shift_periods = float(state.config.shift_rules[0].periods or 2.5)
+    except Exception:
+        pass
+    try:
+        return preview_workbook(raw, default_shift_periods=default_shift_periods)
     except (ValueError, StopIteration) as exc:
         raise HTTPException(422, str(exc))
     except Exception:

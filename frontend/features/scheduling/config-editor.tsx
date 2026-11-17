@@ -788,7 +788,18 @@ export function ConfigEditor({
                       onChange={(e) => {
                         setPresetApplied(false);
                         const en = minutes(e.target.value);
-                        const next = shifts.map((x, j) => (j === idx ? { ...x, end: en } : x));
+                        const next = shifts.map((x, j) =>
+                          j === idx
+                            ? {
+                                ...x,
+                                end: en,
+                                periods:
+                                  en > x.start
+                                    ? Math.max(0.5, Number(((en - x.start) / config.period_minutes).toFixed(2)))
+                                    : x.periods,
+                              }
+                            : x
+                        );
                         applyShiftsAndDays(next, activeDays);
                       }}
                       style={{ minHeight: "32px", height: "32px", fontSize: "12px" }}

@@ -170,9 +170,9 @@ def main():
     assert len(unassigned) == 0, f"Vẫn còn {len(unassigned)} buổi chưa có giảng viên!"
 
     # -------------------------------------------------------------------------
-    # BƯỚC 4: Khai báo lịch đi học / dạy trường ngoài của giảng viên KhoaTN
+    # BƯỚC 4: Khai báo lịch đi học / dạy trường ngoài & Bảng màu cá nhân + Note (cả TBM & Giảng viên)
     # -------------------------------------------------------------------------
-    print("\n5. Giảng viên KhoaTN khai báo lịch bận (Dạy trường ngoài & Đi học NCS)...")
+    print("\n5. Khai báo lịch ngoài khoa & Bảng màu cá nhân kèm Note chuẩn (cho cả TBM & Giảng viên)...")
     ws_teacher = api_get("/api/workspace", role="TEACHER").json()
     existing_ext = ws_teacher["state"].get("external", [])
     if not existing_ext:
@@ -186,7 +186,7 @@ def main():
                 "start": 430,
                 "end": 555,
                 "room": "502-A2",
-                "color": "#fef3c7",
+                "color": "",
                 "note": "Dạy Lập trình mạng sáng Thứ 5",
             },
             {
@@ -198,7 +198,7 @@ def main():
                 "start": 430,
                 "end": 555,
                 "room": "B1-302",
-                "color": "#f3e8ff",
+                "color": "",
                 "note": "Nghiên cứu sinh sáng Thứ 7",
             },
         ]
@@ -206,6 +206,108 @@ def main():
         print("  ✓ Đã lưu lịch Thứ 5 (07:10–09:15 PTIT) và Thứ 7 (07:10–09:15 VNU) cho giảng viên KhoaTN.")
     else:
         print(f"  ✓ Giảng viên KhoaTN đã có sẵn {len(existing_ext)} lịch hoạt động ngoài trường.")
+
+    api_post_cmd("color-rules", {
+        "rules": [
+            {
+                "id": "demo-khoatn-ptit",
+                "category": "INSTITUTION",
+                "key": "PTIT",
+                "label": "Thỉnh giảng PTIT",
+                "bg_color": "#fef3c7",
+                "border_color": "#d97706",
+                "text_color": "#78350f",
+                "note": "Điểm danh cổng giảng viên PTIT nhà A2 trước 07:05",
+            },
+            {
+                "id": "demo-khoatn-ncs",
+                "category": "STATUS",
+                "key": "STUDYING",
+                "label": "Đi học NCS (VNU)",
+                "bg_color": "#dcfce7",
+                "border_color": "#16a34a",
+                "text_color": "#14532d",
+                "note": "Seminar nghiên cứu sinh tại phòng B1-302 ĐHQGHN",
+            },
+            {
+                "id": "demo-khoatn-tt",
+                "category": "CUSTOM",
+                "key": "66FIT2PCO",
+                "label": "Lớp Tiên tiến 66FIT2PCO",
+                "bg_color": "#ede9fe",
+                "border_color": "#7c3aed",
+                "text_color": "#2e1065",
+                "note": "Giảng dạy 100% tiếng Anh - chuẩn bị slide & bài lab EN",
+            },
+        ]
+    }, role="TEACHER")
+
+    ws_head_khmt = api_get("/api/workspace", role="HEAD_KHMT").json()
+    if not ws_head_khmt["state"].get("external"):
+        api_post_cmd("external-import", {
+            "items": [
+                {
+                    "activity_type": "EXTERNAL_TEACHING",
+                    "institution": "ĐH Công nghệ - ĐHQGHN (UET)",
+                    "course": "INT3405",
+                    "class_name": "K69-AI",
+                    "day": 3,
+                    "start": 430,
+                    "end": 555,
+                    "room": "204-G2",
+                    "color": "",
+                    "note": "Thỉnh giảng Học máy sáng Thứ 3",
+                },
+                {
+                    "activity_type": "STUDYING",
+                    "institution": "Viện CNTT - ĐHQGHN",
+                    "course": "HĐKH-KHMT",
+                    "class_name": "Hội đồng",
+                    "day": 6,
+                    "start": 880,
+                    "end": 1005,
+                    "room": "P.301-E3",
+                    "color": "",
+                    "note": "Hội đồng chuyên môn & hướng dẫn NCS",
+                },
+            ]
+        }, role="HEAD_KHMT")
+
+    api_post_cmd("color-rules", {
+        "rules": [
+            {
+                "id": "demo-thaodtp-uet",
+                "category": "INSTITUTION",
+                "key": "UET",
+                "label": "Thỉnh giảng ĐH Công nghệ (UET)",
+                "bg_color": "#fef3c7",
+                "border_color": "#d97706",
+                "text_color": "#78350f",
+                "note": "Mang tài liệu thực hành AI phòng 204-G2",
+            },
+            {
+                "id": "demo-thaodtp-study",
+                "category": "STATUS",
+                "key": "STUDYING",
+                "label": "Hội đồng & Bồi dưỡng (VNU)",
+                "bg_color": "#dcfce7",
+                "border_color": "#16a34a",
+                "text_color": "#14532d",
+                "note": "Họp chuyên môn & duyệt đề tài NCS chiều Thứ 6",
+            },
+            {
+                "id": "demo-thaodtp-pop",
+                "category": "CUSTOM",
+                "key": "66FIT2POP",
+                "label": "Lớp Tiên tiến 66FIT2POP",
+                "bg_color": "#ede9fe",
+                "border_color": "#7c3aed",
+                "text_color": "#2e1065",
+                "note": "Hệ Tiên tiến dạy bằng tiếng Anh - lưu ý kiểm tra máy chiếu",
+            },
+        ]
+    }, role="HEAD_KHMT")
+    print("  ✓ Đã đồng bộ Bảng màu cá nhân + Note chuẩn cho Giảng viên (KhoaTN) và Trưởng BM (ThaoDTP).")
 
     # -------------------------------------------------------------------------
     # BƯỚC 5: Giáo vụ chạy Solver giải bài toán TKB

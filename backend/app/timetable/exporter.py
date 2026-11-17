@@ -402,47 +402,56 @@ def _evaluate_holiday_occurrence(item: dict, monday: date | None, holidays: list
     }
 
 
-def _resolve_teacher_item_colors(item: dict, rules: list[ColorRule]) -> tuple[str, str]:
+def _match_teacher_color_rule(item: dict, rules: list[ColorRule]) -> ColorRule | None:
     course_up = str(item.get("course") or "").upper()
+    id_up = str(item.get("id") or "").upper()
     inst_up = str(item.get("institution") or "").upper()
-    kind_up = str(item.get("kind") or "").upper()
+    kind_up = str(item.get("kind") or "").upper() or (
+        "LEC" if "-LEC-" in id_up else "TUT" if "-TUT-" in id_up else "COMBINED" if "-COMBINED-" in id_up else ""
+    )
     act_up = str(item.get("activity_type") or "EXTERNAL_TEACHING").upper()
     is_ext = bool(item.get("_is_external"))
 
     for r in rules:
         key_up = r.key.upper()
-        if r.category == "CUSTOM" and key_up and key_up in course_up:
-            return _hex(r.bg_color, "F8FAFC"), _hex(r.text_color, "0F172A")
-        if is_ext and r.category == "INSTITUTION" and key_up and key_up in inst_up:
-            return _hex(r.bg_color, "FEF3C7"), _hex(r.text_color, "713F12")
-        if not is_ext and r.category == "KIND" and key_up == kind_up:
-            return _hex(r.bg_color, "EFF6FF"), _hex(r.text_color, "1D4ED8")
-        if not is_ext and r.category == "PROGRAM" and key_up and key_up in course_up:
-            return _hex(r.bg_color, "DBEAFE"), _hex(r.text_color, "1E3A8A")
-
+        if r.category == "CUSTOM" and key_up and (key_up in course_up or key_up in id_up):
+            return r
     if is_ext:
         for r in rules:
-            if r.category == "STATUS" and r.key.upper() == act_up:
-                return _hex(r.bg_color, "FEF9C3"), _hex(r.text_color, "713F12")
-        raw_c = str(item.get("color") or "")
-        if raw_c.startswith("#"):
-            return _hex(raw_c, "FEF9C3"), "0F172A"
-        if act_up == "STUDYING":
-            return "DCFCE7", "14532D"
-        if act_up == "MAKEUP":
-            return "F3E8FF", "581C87"
-        return "FEF9C3", "713F12"
-
-    if item.get("evening") or int(item.get("start", 0)) >= 1020:
+            key_up = r.key.upper()
+            if r.category == "INSTITUTION" and key_up and key_up in inst_up:
+                return r
         for r in rules:
-            if r.category == "STATUS" and r.key.upper() == "EVENING":
-                return _hex(r.bg_color, "E0F2FE"), _hex(r.text_color, "0C4A6E")
-        return "E0F2FE", "0C4A6E"
+            if r.category == "STATUS" and r.key.upper() == act_up:
+                return r
+    else:
+        for r in rules:
+            key_up = r.key.upper()
+            if r.category == "KIND" and key_up == kind_up:
+                return r
+        for r in rules:
+            key_up = r.key.upper()
+            if r.category == "PROGRAM" and key_up and (key_up in course_up or str(item.get("program") or "").upper() == key_up):
+                return r
+        if item.get("evening") or int(item.get("start", 0)) >= 1020:
+            for r in rules:
+                if r.category == "STATUS" and r.key.upper() == "EVENING":
+                    return r
+        for r in rules:
+            if r.category == "STATUS" and r.key.upper() == "FACULTY":
+                return r
+    return None
 
-    for r in rules:
-        if r.category == "STATUS" and r.key.upper() == "FACULTY":
-            return _hex(r.bg_color, "DBEAFE"), _hex(r.text_color, "1E3A8A")
-    return "DBEAFE", "1E3A8A"
+
+def _resolve_teacher_item_colors(item: dict, rules: list[ColorRule]) -> tuple[str, str]:
+    matched = _match_teacher_color_rule(item, rules)
+    if matched is not None:
+        return _hex(matched.bg_color, "DCEEFB"), _hex(matched.text_color, "0F2942")
+    id_up = str(item.get("id") or "").upper()
+    kind_up = str(item.get("kind") or "").upper()
+    if kind_up == "TUT" or "-TUT-" in id_up:
+        return "FCE8EA", "3B0D11"
+    return "DCEEFB", "0F2942"
 
 
 def teacher_workbook(
@@ -552,11 +561,14 @@ def teacher_workbook(
                     elif occ_status in ("SHIFTED_NEXT_WEEK", "MAKEUP_EXTENSION"):
                         occ_note = f"\n🔄 HỌC BÙ LỄ: {occ.get('holiday_name', '')}"
 
+                    matched_rule = _match_teacher_color_rule(it, rules)
+                    rule_note_txt = f"\n📌 {matched_rule.note}" if (matched_rule and matched_rule.note) else ""
                     if it.get("_is_external"):
+                        ev_note_txt = f"\n📝 {it['note']}" if it.get("note") else ""
                         lines.append(
                             f"[{it.get('institution', 'Ngoài')}] {it.get('course', '')}\n"
                             f"Lớp: {it.get('class_name', '')} · P: {it.get('room') or '-'}\n"
-                            f"🕒 {time_fmt(it['start'])}–{time_fmt(it['end'])}{occ_note}"
+                            f"🕒 {time_fmt(it['start'])}–{time_fmt(it['end'])}{rule_note_txt}{ev_note_txt}{occ_note}"
                         )
                     else:
                         c_code = str(it.get("course") or "")
@@ -565,16 +577,10 @@ def teacher_workbook(
                         lines.append(
                             f"{head_txt}\n"
                             f"{it.get('kind', '')} · Nhóm {it.get('section', '')} · P: {it.get('room_id') or '-'}\n"
-                            f"🕒 {time_fmt(it['start'])}–{time_fmt(it['end'])}{occ_note}"
+                            f"🕒 {time_fmt(it['start'])}–{time_fmt(it['end'])}{rule_note_txt}{occ_note}"
                         )
                 row_vals.append(safe("\n---\n".join(lines)))
-                top_occ = (matched[0].get("_occ") or {}).get("status", "NORMAL")
-                if top_occ == "HOLIDAY_OFF":
-                    row_styles.append(("FFF1F2", "9F1239"))
-                elif top_occ in ("SHIFTED_NEXT_WEEK", "MAKEUP_EXTENSION"):
-                    row_styles.append(("F3E8FF", "581C87"))
-                else:
-                    row_styles.append(_resolve_teacher_item_colors(matched[0], rules))
+                row_styles.append(_resolve_teacher_item_colors(matched[0], rules))
             else:
                 row_vals.append("")
                 row_styles.append(None)
@@ -623,7 +629,12 @@ def teacher_workbook(
             rm = str(it.get("room_id") or "")
             base_note = ""
 
-        extra_notes = [base_note] if base_note else []
+        matched_rule = _match_teacher_color_rule(it, rules)
+        extra_notes = []
+        if matched_rule and matched_rule.note:
+            extra_notes.append(matched_rule.note)
+        if base_note and base_note not in extra_notes:
+            extra_notes.append(base_note)
         occ_st = occ.get("status", "NORMAL")
         if occ_st == "HOLIDAY_OFF":
             mk = _format_vn_date(occ.get("makeup_next_date", ""))

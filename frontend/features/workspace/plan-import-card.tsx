@@ -35,7 +35,7 @@ export function PlanImportCard({
         <div>
           <h2>Nhập kế hoạch đào tạo Excel (.xlsx)</h2>
           <p>
-            Tải file mẫu chuẩn (hỗ trợ số tiết lẻ như <b>2.5 tiết HANU</b>, hệ <b>CLC / Tiên tiến TT / MME / Đại trà</b>), điền danh sách học phần và tải lên để thẩm định trước khi chia lớp.
+            Tải file mẫu chuẩn (hệ <b>CLC / Tiên tiến TT / MME / Đại trà</b>, thời lượng tiết/ca tự động đồng bộ theo cấu hình Khung giờ bên dưới), điền danh sách học phần và tải lên để thẩm định trước khi chia lớp.
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
@@ -65,7 +65,7 @@ export function PlanImportCard({
             onClick={() => setShowSampleColumns((prev) => !prev)}
             style={{ fontSize: "12px", minHeight: "32px", padding: "4px 10px" }}
           >
-            {showSampleColumns ? "Ẩn cấu trúc cột mẫu" : "Xem cấu trúc 14 cột chuẩn"}
+            {showSampleColumns ? "Ẩn cấu trúc cột mẫu" : "Xem cấu trúc 12 cột chuẩn"}
           </ActionButton>
           {sessionsCount > 0 && (
             <ActionButton
@@ -117,7 +117,7 @@ export function PlanImportCard({
             }}
           >
             <Icon name="list" size={15} />
-            <span>Cấu trúc bảng Kế hoạch đào tạo (14 cột chuẩn trong 1 sheet Excel duy nhất):</span>
+            <span>Cấu trúc bảng Kế hoạch đào tạo (12 cột chuẩn trong 1 sheet Excel duy nhất):</span>
           </b>
           <div className="table-wrap">
             <table>
@@ -128,8 +128,6 @@ export function PlanImportCard({
                   <th>Khóa</th>
                   <th>Bộ môn</th>
                   <th>Sĩ số</th>
-                  <th>Số tiết Lec</th>
-                  <th>Số tiết Tut</th>
                   <th>Lec+Tut liền</th>
                   <th>Phòng Lec</th>
                   <th>Phòng Tut</th>
@@ -146,8 +144,6 @@ export function PlanImportCard({
                   <td>2024</td>
                   <td>CNPM</td>
                   <td>120</td>
-                  <td>2.5</td>
-                  <td>2.5</td>
                   <td></td>
                   <td>Máy chiếu</td>
                   <td>Máy tính</td>
@@ -162,8 +158,6 @@ export function PlanImportCard({
                   <td>2024</td>
                   <td>KHMT</td>
                   <td>55</td>
-                  <td>2.5</td>
-                  <td>2.5</td>
                   <td></td>
                   <td>Máy chiếu</td>
                   <td>Máy tính</td>
@@ -178,8 +172,6 @@ export function PlanImportCard({
                   <td>2025</td>
                   <td>TTDPT</td>
                   <td>80</td>
-                  <td>2</td>
-                  <td>2</td>
                   <td>x</td>
                   <td>Máy tính</td>
                   <td>Máy tính</td>
@@ -242,7 +234,7 @@ export function PlanImportCard({
                     <th>Tên học phần</th>
                     <th>Khóa / Bộ môn</th>
                     <th>Sĩ số</th>
-                    <th>Tiết Lec / Tut</th>
+                    <th>Phòng (Lec / Tut)</th>
                     <th>Thời gian học (BĐ - KT)</th>
                   </tr>
                 </thead>
@@ -253,7 +245,7 @@ export function PlanImportCard({
                       <td>{o.name}</td>
                       <td>K{o.cohort} · {o.department}</td>
                       <td>{o.students}</td>
-                      <td>{o.lecture_periods} / {o.tutorial_periods}</td>
+                      <td>{[o.lecture_room, o.tutorial_room].filter(Boolean).join(" / ") || o.room}</td>
                       <td>
                         {o.start_date || o.end_date
                           ? `${formatDateVN(o.start_date)} - ${formatDateVN(o.end_date)}`

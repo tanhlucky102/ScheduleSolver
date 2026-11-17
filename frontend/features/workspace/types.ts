@@ -26,6 +26,10 @@ export type OfferingItem = {
   students: number;
   lecture_periods: number;
   tutorial_periods: number;
+  room?: string;
+  lecture_room?: string | null;
+  tutorial_room?: string | null;
+  combined?: boolean | null;
   program?: string;
   start_date?: string;
   end_date?: string;

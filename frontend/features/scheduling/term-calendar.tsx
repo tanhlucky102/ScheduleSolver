@@ -641,27 +641,49 @@ export function TermCalendar({
               </label>
 
               <div className="qldt-legend">
-                <span className="qldt-legend-item">
-                  <span
-                    className="qldt-legend-swatch"
-                    style={{ background: "#dceefb", border: "1.5px solid #2b6cb0" }}
-                  />
-                  Lý thuyết
-                </span>
-                <span className="qldt-legend-item">
-                  <span
-                    className="qldt-legend-swatch"
-                    style={{ background: "#fce8ea", border: "1.5px solid #c53030" }}
-                  />
-                  Thực hành
-                </span>
-                <span className="qldt-legend-item">
-                  <span
-                    className="qldt-legend-swatch"
-                    style={{ background: "#ede9fe", border: "1.5px solid #7c3aed" }}
-                  />
-                  Dạy bù / Nghỉ lễ
-                </span>
+                {(() => {
+                  const lecRule = colorRules.find((r) => r.category === "KIND" && r.key.toUpperCase() === "LEC");
+                  const tutRule = colorRules.find((r) => r.category === "KIND" && r.key.toUpperCase() === "TUT");
+                  const extraRules = colorRules.filter(
+                    (r) => !(r.category === "KIND" && (r.key.toUpperCase() === "LEC" || r.key.toUpperCase() === "TUT"))
+                  );
+                  return (
+                    <>
+                      <span className="qldt-legend-item" title={lecRule?.note || ""}>
+                        <span
+                          className="qldt-legend-swatch"
+                          style={{
+                            background: lecRule?.bg_color || "#dceefb",
+                            border: `1.5px solid ${lecRule?.border_color || "#2b6cb0"}`,
+                          }}
+                        />
+                        {lecRule?.label || "Lý thuyết (LEC)"}
+                      </span>
+                      <span className="qldt-legend-item" title={tutRule?.note || ""}>
+                        <span
+                          className="qldt-legend-swatch"
+                          style={{
+                            background: tutRule?.bg_color || "#fce8ea",
+                            border: `1.5px solid ${tutRule?.border_color || "#c53030"}`,
+                          }}
+                        />
+                        {tutRule?.label || "Thực hành (TUT)"}
+                      </span>
+                      {extraRules.map((r) => (
+                        <span key={r.id} className="qldt-legend-item" title={r.note || ""}>
+                          <span
+                            className="qldt-legend-swatch"
+                            style={{
+                              background: r.bg_color,
+                              border: `1.5px solid ${r.border_color || r.bg_color}`,
+                            }}
+                          />
+                          {r.label || r.key}
+                        </span>
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>

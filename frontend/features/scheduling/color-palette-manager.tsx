@@ -3,26 +3,45 @@ import { useState } from "react";
 import { Icon, ActionButton } from "../shared/ui";
 import type { ColorRule } from "../catalog/types";
 
+function deriveBorderColor(hex: string): string {
+  const cleaned = hex.replace("#", "");
+  if (cleaned.length !== 6) return "#475569";
+  const r = Math.max(0, Math.round(parseInt(cleaned.slice(0, 2), 16) * 0.72));
+  const g = Math.max(0, Math.round(parseInt(cleaned.slice(2, 4), 16) * 0.72));
+  const b = Math.max(0, Math.round(parseInt(cleaned.slice(4, 6), 16) * 0.72));
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 const SIMPLE_STARTER_EXAMPLES: ColorRule[] = [
   {
-    id: "sample-truong-a",
-    category: "INSTITUTION",
-    key: "TRƯỜNG A",
-    label: "Trường A",
+    id: "sample-external-teaching",
+    category: "STATUS",
+    key: "EXTERNAL_TEACHING",
+    label: "Dạy trường ngoài",
     bg_color: "#fef3c7",
-    border_color: "#fcd34d",
-    text_color: "#92400e",
-    note: "Lịch thỉnh giảng tại Trường A",
+    border_color: "#d97706",
+    text_color: "#78350f",
+    note: "Lịch giảng dạy thỉnh giảng ngoài trường - kiểm tra phòng trước giờ lên lớp",
   },
   {
-    id: "sample-truong-b",
-    category: "INSTITUTION",
-    key: "TRƯỜNG B",
-    label: "Trường B",
-    bg_color: "#e0f2fe",
-    border_color: "#7dd3fc",
-    text_color: "#075985",
-    note: "Lịch thỉnh giảng tại Trường B",
+    id: "sample-studying",
+    category: "STATUS",
+    key: "STUDYING",
+    label: "Đi học / NCS",
+    bg_color: "#dcfce7",
+    border_color: "#16a34a",
+    text_color: "#14532d",
+    note: "Lịch học tập / Nghiên cứu sinh - không nhận lịch họp trùng ca",
+  },
+  {
+    id: "sample-makeup",
+    category: "STATUS",
+    key: "MAKEUP",
+    label: "Dạy bù",
+    bg_color: "#f3e8ff",
+    border_color: "#9333ea",
+    text_color: "#581c87",
+    note: "Buổi dạy bù nghỉ lễ / công tác - báo lớp trưởng điểm danh",
   },
 ];
 
@@ -111,7 +130,7 @@ export function ColorPaletteManager({
             <span>Bảng mã màu &amp; Ghi chú cá nhân</span>
           </h2>
           <p>
-            Khi cập nhật <b>Tên nhãn</b> hoặc <b>Màu sắc</b> rồi bấm Lưu, ô lịch và thanh chú thích trên Thời khóa biểu cá nhân sẽ áp dụng ngay lập tức.
+            Mặc định hệ thống chỉ hiển thị 2 màu gốc: <b>Xanh dương = Lý thuyết (LEC)</b> và <b>Đỏ = Thực hành (TUT)</b>. Các màu khác (Dạy trường ngoài, Đi học / NCS, Dạy bù, từng trường hoặc từng môn) do bạn tự thiết lập kèm <b>Note</b> bên dưới.
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
@@ -123,7 +142,7 @@ export function ColorPaletteManager({
               onClick={() => void onCommand("color-rules", { rules: SIMPLE_STARTER_EXAMPLES })}
               style={{ minHeight: "38px", height: "38px", padding: "0 12px", fontSize: "12px" }}
             >
-              Nạp ví dụ mẫu (Trường A, Trường B)
+              Nạp bộ màu &amp; ghi chú mẫu chuẩn
             </ActionButton>
           )}
           <select
@@ -152,7 +171,7 @@ export function ColorPaletteManager({
             color: "var(--muted)",
           }}
         >
-          Chưa có mã màu riêng nào. Bạn có thể thêm ở khung bên dưới (VD: Trường A, Trường B, mã môn, LEC/TUT hoặc tùy biến màu Lịch khoa / Đi học / Dạy bù).
+          Chưa có mã màu riêng nào — Thời khóa biểu đang dùng mặc định chuẩn (<b>Xanh = Lý thuyết LEC</b>, <b>Đỏ = Thực hành TUT</b>). Bạn có thể tự thêm mã màu &amp; ghi chú riêng ở khung bên dưới hoặc nhấn &quot;Nạp bộ màu &amp; ghi chú mẫu chuẩn&quot;.
         </div>
       ) : (
         <div className="table-wrap">
@@ -211,7 +230,10 @@ export function ColorPaletteManager({
                             type="color"
                             value={r.bg_color.startsWith("#") && r.bg_color.length === 7 ? r.bg_color : "#ffffff"}
                             onChange={(e) =>
-                              setField(orig, { bg_color: e.target.value, border_color: e.target.value })
+                              setField(orig, {
+                                bg_color: e.target.value,
+                                border_color: deriveBorderColor(e.target.value),
+                              })
                             }
                             style={{ width: "36px", height: "28px", minHeight: "28px", padding: "1px", cursor: "pointer" }}
                           />
@@ -277,7 +299,7 @@ export function ColorPaletteManager({
             key,
             label: newRule.label.trim() || STATUS_PRESETS[key] || newRule.key.trim(),
             bg_color: newRule.bg_color,
-            border_color: newRule.bg_color,
+            border_color: deriveBorderColor(newRule.bg_color),
             text_color: newRule.text_color,
             note: newRule.note.trim(),
           };

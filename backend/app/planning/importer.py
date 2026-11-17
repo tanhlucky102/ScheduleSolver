@@ -368,7 +368,7 @@ def Counter_mode(items: list[str]) -> str | None:
     return max(counts, key=counts.get)
 
 
-def preview_workbook(raw: bytes):
+def preview_workbook(raw: bytes, default_shift_periods: float = 2.5):
     with ZipFile(BytesIO(raw)) as archive:
         if sum(info.file_size for info in archive.infolist()) > 25_000_000:
             raise ValueError("Expanded workbook limit is 25 MB")
@@ -411,9 +411,13 @@ def preview_workbook(raw: bytes):
         "tính chất phòng học": "room_text", "tinh chat phong hoc": "room_text",
     }
     norm_headers = [vn_map.get(h.lower().strip(), h) for h in raw_headers]
-    required_vn = {"course", "name", "cohort", "department", "students", "lecture_periods", "tutorial_periods"}
-    is_vn = required_vn.issubset(norm_headers)
-    is_hanu_session_sheet = {"course", "name", "cohort", "students", "periods", "room_text"}.issubset(norm_headers) and not is_vn
+    is_hanu_session_sheet = (
+        {"course", "name", "cohort", "students", "periods", "room_text"}.issubset(norm_headers)
+        and "lecture_periods" not in norm_headers
+        and "lecture_room" not in norm_headers
+    )
+    required_vn = {"course", "name", "cohort", "department", "students"}
+    is_vn = required_vn.issubset(norm_headers) and not is_hanu_session_sheet
 
     if is_hanu_session_sheet:
         sheet_dates = _extract_hanu_sheet_dates(book)
@@ -426,6 +430,8 @@ def preview_workbook(raw: bytes):
         raise ValueError("Required exact headers: " + ", ".join(Offering.model_fields))
 
     active_headers = raw_headers if is_canonical else norm_headers
+    has_explicit_period_cols = "lecture_periods" in active_headers or "tutorial_periods" in active_headers
+    sp = float(default_shift_periods or 2.5)
     offerings, errors = [], []
     for number, values in enumerate(ws.iter_rows(min_row=header_row_idx + 1, values_only=True), start=header_row_idx + 1):
         if number > 2001:
@@ -444,21 +450,38 @@ def preview_workbook(raw: bytes):
                 c_up = c.upper()
                 prog = _infer_program(c_up, str(record.get("program") or ""))
                 students = int(record.get("students") or 0)
-                lec = float(record.get("lecture_periods") or 0)
-                tut = float(record.get("tutorial_periods") or 0)
                 comb_raw = record.get("combined")
                 combined = bool(comb_raw and str(comb_raw).strip().lower() in ("x", "1", "true", "có", "co")) if comb_raw is not None and str(comb_raw).strip() != "" else False
 
                 lr_parsed = _parse_room_kind(record.get("lecture_room"))
                 tr_parsed = _parse_room_kind(record.get("tutorial_room"))
+                lc_raw = record.get("lecture_count")
+                tc_raw = record.get("tutorial_count")
+
+                if has_explicit_period_cols:
+                    lec = float(record.get("lecture_periods") or 0)
+                    tut = float(record.get("tutorial_periods") or 0)
+                elif combined:
+                    lec = sp
+                    tut = sp
+                else:
+                    explicit_zero_lec = str(lc_raw).strip() == "0"
+                    explicit_zero_tut = str(tc_raw).strip() == "0"
+                    has_lec_spec = (lc_raw not in (None, "", 0, "0")) or (lr_parsed is not None)
+                    has_tut_spec = (tc_raw not in (None, "", 0, "0")) or (tr_parsed is not None)
+                    if not has_lec_spec and not has_tut_spec:
+                        lec = 0.0 if explicit_zero_lec else sp
+                        tut = 0.0 if explicit_zero_tut else sp
+                    else:
+                        lec = sp if (has_lec_spec and not explicit_zero_lec) else 0.0
+                        tut = sp if (has_tut_spec and not explicit_zero_tut) else 0.0
+
                 lecture_room = lr_parsed if lr_parsed is not None else ("PROJECTOR" if (lec and not combined) else None)
                 tutorial_room = tr_parsed if tr_parsed is not None else ("COMPUTER" if tut else None)
 
-                lc_raw = record.get("lecture_count")
-                tc_raw = record.get("tutorial_count")
                 advanced = prog in ("CLC", "TT")
-                lecture_count = int(lc_raw) if lc_raw not in (None, "") else (ceil(students / 40) if advanced and lec and not combined else None)
-                tutorial_count = int(tc_raw) if tc_raw not in (None, "") else (ceil(students / 40) if advanced and tut else None)
+                lecture_count = int(lc_raw) if lc_raw not in (None, "", 0, "0") else (ceil(students / 40) if advanced and lec and not combined else None)
+                tutorial_count = int(tc_raw) if tc_raw not in (None, "", 0, "0") else (ceil(students / 40) if advanced and tut else None)
 
                 record["course"] = c
                 record["cohort"] = cohort

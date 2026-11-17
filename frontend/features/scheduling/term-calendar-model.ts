@@ -145,18 +145,37 @@ export function buildPeriodRows(
   ];
 
   // Respect explicit "Tiết X – Y" overrides if configured by staff
+  const explicitCovered = new Set<number>();
   for (const sh of sortedShifts) {
     const explicit = parsePeriodRangeFromLabel(sh.periods_label) || parsePeriodRangeFromLabel(sh.label);
     if (!explicit) continue;
     const [sP, eP] = explicit;
     const count = eP - sP + 1;
+    const totalDur = Math.max(20, sh.end - sh.start);
+    const step = sh.start + (count - 1) * pMin < sh.end ? pMin : Math.max(15, Math.floor(totalDur / count));
     for (let k = 0; k < count; k++) {
       const idx = sP + k - 1;
       if (idx < 0 || idx >= 15) continue;
-      const st = sh.start + k * pMin;
-      const en = k === count - 1 ? Math.max(st + 20, sh.end) : Math.min(sh.end, st + pMin);
+      const st = sh.start + k * step;
+      const en = k === count - 1 ? Math.max(st + 15, sh.end) : Math.min(sh.end, st + step);
       schedule[idx] = [st, en, Boolean(sh.evening) || idx >= 10];
+      explicitCovered.add(idx);
     }
+  }
+
+  // Keep Tiết 1–2 and Tiết 15 dynamically anchored if not explicitly overridden by a shift
+  if (!explicitCovered.has(1)) {
+    const t3Start = schedule[2][0];
+    schedule[1] = [Math.max(0, t3Start - pMin), t3Start, false];
+  }
+  if (!explicitCovered.has(0)) {
+    const t2Start = schedule[1][0];
+    schedule[0] = [Math.max(0, t2Start - pMin), t2Start, false];
+  }
+  if (!explicitCovered.has(14)) {
+    const t14End = schedule[13][1];
+    const t15St = Math.min(1410, Math.max(t14End, schedule[13][0] + pMin));
+    schedule[14] = [t15St, Math.min(1440, t15St + pMin), true];
   }
 
   return schedule.map(([st, en, eve], idx) => ({
@@ -279,33 +298,49 @@ export function buildDayPeriodClusters<T extends { start: number; end: number; p
 export function getQldtBlockPalette(
   e: Event,
   colorRules?: ColorRule[]
-): { bg: string; border: string; text: string; accent: string } {
-  const occ = e._occ;
-  if (occ?.status === "HOLIDAY_OFF") {
-    return { bg: "#fff1f2", border: "#fb7185", text: "#881337", accent: "#be123c" };
-  }
-  if (occ?.status === "SHIFTED_NEXT_WEEK" || occ?.status === "MAKEUP_EXTENSION" || e.activity_type === "MAKEUP") {
-    return { bg: "#ede9fe", border: "#7c3aed", text: "#2e1065", accent: "#6d28d9" };
-  }
+): { bg: string; border: string; text: string; accent: string; note: string } {
+  const rules = colorRules ?? [];
+  const courseUp = (e.course || "").toUpperCase();
+  const idUp = (e.id || "").toUpperCase();
   const kindUp = (e.kind || "").toUpperCase();
-  const customKind = (colorRules ?? []).find(
-    (r) => r.category === "KIND" && r.key.toUpperCase() === kindUp
-  );
-  if (customKind) {
+  const pType = getProgramType(e);
+  const occ = e._occ;
+  const isMakeup =
+    occ?.status === "SHIFTED_NEXT_WEEK" ||
+    occ?.status === "MAKEUP_EXTENSION" ||
+    e.activity_type === "MAKEUP";
+
+  const matched =
+    rules.find(
+      (r) =>
+        r.category === "CUSTOM" &&
+        r.key &&
+        (courseUp.includes(r.key.toUpperCase()) || idUp.includes(r.key.toUpperCase()))
+    ) ||
+    (isMakeup
+      ? rules.find((r) => r.category === "STATUS" && r.key.toUpperCase() === "MAKEUP")
+      : undefined) ||
+    rules.find((r) => r.category === "PROGRAM" && r.key.toUpperCase() === pType) ||
+    (kindUp
+      ? rules.find((r) => r.category === "KIND" && r.key.toUpperCase() === kindUp)
+      : undefined);
+
+  if (matched) {
+    const bdr = matched.border_color || "#64748b";
     return {
-      bg: customKind.bg_color,
-      border: customKind.border_color,
-      text: customKind.text_color,
-      accent: customKind.border_color,
+      bg: matched.bg_color,
+      border: bdr,
+      text: matched.text_color,
+      accent: bdr,
+      note: matched.note || "",
     };
   }
-  if (kindUp === "TUT") {
-    return { bg: "#fce8ea", border: "#c53030", text: "#3b0d11", accent: "#c53030" };
+
+  // Mặc định chuẩn: Xanh dương = Lý thuyết (LEC), Đỏ = Thực hành (TUT)
+  if (kindUp === "TUT" || idUp.includes("-TUT-")) {
+    return { bg: "#fce8ea", border: "#c53030", text: "#3b0d11", accent: "#c53030", note: "" };
   }
-  if (kindUp === "COMBINED") {
-    return { bg: "#ede9fe", border: "#7c3aed", text: "#2e1065", accent: "#6d28d9" };
-  }
-  return { bg: "#dceefb", border: "#2b6cb0", text: "#0f2942", accent: "#b91c1c" };
+  return { bg: "#dceefb", border: "#2b6cb0", text: "#0f2942", accent: "#2b6cb0", note: "" };
 }
 
 export function getProgramType(e: Event): "CLC" | "TT" | "MME" | "STANDARD" {
@@ -327,17 +362,9 @@ export function getProgramType(e: Event): "CLC" | "TT" | "MME" | "STANDARD" {
 }
 
 export const DEFAULT_COLOR_RULES: ColorRule[] = [
-  { id: "prog-clc", category: "PROGRAM", key: "CLC", label: "Hệ Chất lượng cao (CLC)", bg_color: "#dbeafe", border_color: "#93c5fd", text_color: "#1e3a8a", note: "Ưu tiên phòng máy lạnh, sĩ số chuẩn" },
-  { id: "prog-tt", category: "PROGRAM", key: "TT", label: "Hệ Tiên tiến (TT / 66FIT)", bg_color: "#d1fae5", border_color: "#6ee7b7", text_color: "#065f46", note: "Giảng dạy 100% tiếng Anh" },
-  { id: "prog-mme", category: "PROGRAM", key: "MME", label: "Truyền thông ĐPT (MME)", bg_color: "#ffedd5", border_color: "#fed7aa", text_color: "#7c2d12", note: "Cần phòng đồ họa cấu hình cao" },
-  { id: "prog-std", category: "PROGRAM", key: "STANDARD", label: "Hệ Đại trà tiêu chuẩn", bg_color: "#ffffff", border_color: "#cbd5e1", text_color: "#0f172a", note: "Chương trình chuẩn Khoa CNTT" },
-  { id: "kind-lec", category: "KIND", key: "LEC", label: "Buổi Lý thuyết (LEC)", bg_color: "#dceefb", border_color: "#2b6cb0", text_color: "#0f2942", note: "Phòng máy chiếu sức chứa lớn" },
-  { id: "kind-tut", category: "KIND", key: "TUT", label: "Buổi Thực hành (TUT)", bg_color: "#fce8ea", border_color: "#c53030", text_color: "#3b0d11", note: "Phòng máy tính chia nhóm nhỏ" },
-  { id: "kind-comb", category: "KIND", key: "COMBINED", label: "Buổi Gộp LT + TH", bg_color: "#ede9fe", border_color: "#7c3aed", text_color: "#2e1065", note: "Học liền mạch Lý thuyết & Thực hành" },
-  { id: "st-evening", category: "STATUS", key: "EVENING", label: "Thời khóa biểu tối", bg_color: "#e0f2fe", border_color: "#38bdf8", text_color: "#0369a1", note: "Ca học từ sau 16:55" },
-  { id: "st-makeup", category: "STATUS", key: "MAKEUP", label: "Lịch Dạy bù", bg_color: "#f3e8ff", border_color: "#9333ea", text_color: "#581c87", note: "Buổi dạy bù nghỉ lễ / công tác" },
-  { id: "st-study", category: "STATUS", key: "STUDYING", label: "Lịch Đi học / NCS", bg_color: "#dcfce7", border_color: "#16a34a", text_color: "#14532d", note: "Giảng viên đi học cao học / NCS / bồi dưỡng" },
-  { id: "st-conflict", category: "STATUS", key: "CONFLICT", label: "Cảnh báo Trùng lịch", bg_color: "#fef3c7", border_color: "#d97706", text_color: "#78350f", note: "Cần điều chỉnh ngay để tránh đụng giờ" },
+  { id: "kind-lec", category: "KIND", key: "LEC", label: "Lý thuyết (LEC)", bg_color: "#dceefb", border_color: "#2b6cb0", text_color: "#0f2942", note: "" },
+  { id: "kind-tut", category: "KIND", key: "TUT", label: "Thực hành (TUT)", bg_color: "#fce8ea", border_color: "#c53030", text_color: "#3b0d11", note: "" },
+  { id: "st-conflict", category: "STATUS", key: "CONFLICT", label: "Trùng lịch", bg_color: "#fee2e2", border_color: "#dc2626", text_color: "#7f1d1d", note: "" },
 ];
 
 export function resolveRule(
@@ -359,9 +386,9 @@ export function resolveRule(
       category,
       key: k,
       label: key,
-      bg_color: "#ffffff",
-      border_color: "#cbd5e1",
-      text_color: "#0f172a",
+      bg_color: k === "TUT" ? "#fce8ea" : "#dceefb",
+      border_color: k === "TUT" ? "#c53030" : "#2b6cb0",
+      text_color: k === "TUT" ? "#3b0d11" : "#0f2942",
       note: "",
     }
   );
@@ -379,6 +406,9 @@ export function buildDraftEvents(state?: Workspace["state"]): Event[] {
     (state.offerings ?? []).map((o) => [o.course, o.name])
   );
   const cfg = state.config;
+  const orderedShifts = [...(cfg.shift_rules ?? [])]
+    .filter((sh) => sh.end > sh.start)
+    .sort((a, b) => a.start - b.start);
   const result: Event[] = [];
 
   for (const p of state.draft) {
@@ -389,9 +419,20 @@ export function buildDraftEvents(state?: Workspace["state"]): Event[] {
     const dur = calcShiftDuration(
       s.periods ?? 2,
       cfg.period_minutes ?? 50,
-      cfg.break_minutes ?? 10,
-      cfg.include_break ?? true
+      cfg.break_minutes ?? 0,
+      cfg.include_break ?? false
     );
+    let computedEnd = slot.start + dur;
+    const shIdx = orderedShifts.findIndex((sh) => sh.start === slot.start);
+    if (shIdx >= 0) {
+      if (s.kind === "COMBINED") {
+        if (shIdx + 1 < orderedShifts.length && orderedShifts[shIdx + 1].end <= slot.end) {
+          computedEnd = orderedShifts[shIdx + 1].end;
+        }
+      } else {
+        computedEnd = orderedShifts[shIdx].end;
+      }
+    }
     result.push({
       id: s.id,
       offering: s.offering,
@@ -409,7 +450,7 @@ export function buildDraftEvents(state?: Workspace["state"]): Event[] {
       room_id: p.room_id ?? undefined,
       day: slot.day,
       start: slot.start,
-      end: slot.start + dur,
+      end: computedEnd,
       evening: slot.evening,
       start_date: s.start_date || off?.start_date || "",
       end_date: s.end_date || off?.end_date || "",
